@@ -1,7 +1,7 @@
 {
   "domain": "zidoo",
   "name": "Zidoo Media Player",
-  "documentation": "https://www.github.com/wizmo2/zidoo",
-  "version": "1.0.1",
-  "codeowners": ["@wizmo"]
+  "documentation": "https://www.gethub.com/wizmo2/zidoo",
+  "codeowners": ["@wizmo"],
+  "version": "1.1.0"
 }
