@@ -1,10 +1,9 @@
-# Custom home-assitant component for Zidoo media players
+# Custom home-assistant component for Zidoo media players
 HA media-player and api wrapper.
 
 NOTE: This is a dirty functioning solution for controlling my Zidoo media player on Home assistant.  Tested on a Z9S (as its the only one I got!)
 
-ZidooRC is a warapper compaonent and will eventually need to be released as a python library per HA requirements
-Version 1.1 now has Media Brose support with favorites
+ZidooRC will eventually need to be released as a python library per HA requirements.  Version 1.1 now has Media Browse support with favorites
 
 The component is tested up to 2021.10, but currently requires manual integration (Cover-flow in the works)
 
