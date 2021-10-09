@@ -8,7 +8,7 @@ Version 1.1 now has Media Brose support with favorites
 
 The component is tested up to 2021.10, but currently requires manual integration (Cover-flow in the works)
 
-#Installation
+# Installation
 1. Copy files to \config\custom_components (create folder if this is yuor first custom integration)
 2. Restart HA
 3. Edit your /config/configuration.yaml with
