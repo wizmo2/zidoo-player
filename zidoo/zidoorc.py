@@ -1,7 +1,6 @@
 """
-Sony Zidoo RC API
-By Antonio Parraga Navarro
-dedicated to Isabel
+Zidoo RC API
+Based on the Sony BraviaRC BY Antonio Parraga Navarro
 """
 import logging
 import collections
@@ -74,9 +73,16 @@ ZKEY_RESOLUTION = "Key.Resolution"
 ZKEY_POWER_REBOOT = "Key.PowerOn.Reboot"
 ZKEY_POWER_OFF = "Key.PowerOn.Poweroff"
 ZKEY_POWER_STANDBY = "Key.PowerOn.Standby"
-KEY_PICTURE_IN_PICTURE = "Key.Pip"
-KEY_SCREENSHOT = "Key.Screenshot"
-KEY_APP_SWITCH = "Key.APP.Switch"
+ZKEY_PICTURE_IN_PICTURE = "Key.Pip"
+ZKEY_SCREENSHOT = "Key.Screenshot"
+ZKEY_APP_SWITCH = "Key.APP.Switch"
+
+ZTYPE_VIDEO = 0
+ZTYPE_MOVIE = 1
+ZTYPE_TV_SHOW = 3
+ZTYPE_TV_SEASON = 4
+ZTYPE_TV_EPISODE = 5
+ZTYPE_OTHER = 6
 
 CONF_PORT = 9529
 
@@ -96,6 +102,7 @@ class ZidooRC(object):
         self._content_mapping = []
         self._current_source = None
         self._app_list = {}
+        self._power_status = False
 
     def _jdata_build(self, method, params=None):
         if params:
@@ -147,12 +154,22 @@ class ZidooRC(object):
             )
             response.raise_for_status()
 
-        except requests.exceptions.HTTPError as exception_instance:
-            _LOGGER.error("[W] HTTPError: " + str(exception_instance))
+        except requests.exceptions.ConnectionError as exception_instance:
+            _LOGGER.info("[I] Connect occurred: " + str(exception_instance))
             return False
 
         except requests.exceptions.Timeout as exception_instance:
-            _LOGGER.error("[W] Timeout occurred: " + str(exception_instance))
+            _LOGGER.info("[I] Timeout occurred: " + str(exception_instance))
+            return False
+
+        except requests.exceptions.ConnectTimeout as exception_instance:
+            _LOGGER.info("[I] ConnectTimeout occurred: " + str(exception_instance))
+            return False
+
+        except requests.exceptions.HTTPError as exception_instance:
+            _LOGGER.warning("[W] HTTPError: " + str(exception_instance))
+            return False
+
             return False
 
         except Exception as exception_instance:  # pylint: disable=broad-except
@@ -161,12 +178,13 @@ class ZidooRC(object):
 
         else:
             resp = response.json()
-            # _LOGGER.debug(json.dumps(resp, indent=4))
+            _LOGGER.debug(json.dumps(resp, indent=4))
             if resp is not None or resp.get("status") == 200:
                 self._cookies = response.cookies
-                # _LOGGER.debug("cookie: " + str(response.cookies))
+                _LOGGER.debug("cookie: " + str(response.cookies))
                 if self._mac is None:
                     self._mac = resp.get("net_mac")
+                self._power_status = True
                 return True
 
         return False
@@ -207,7 +225,7 @@ class ZidooRC(object):
         return self.zidoo_req_json(url, params)
 
     def zidoo_req_json(self, url, params={}, log_errors=True):
-        """ Send request command via HTTP json to Zidoo Device."""
+        """Send request command via HTTP json to Zidoo Device."""
 
         headers = {}
         if self._psk is not None:
@@ -220,9 +238,24 @@ class ZidooRC(object):
                 url, params, cookies=self._cookies, timeout=TIMEOUT, headers=headers
             )
 
+        except requests.exceptions.Timeout as exception_instance:
+            if log_errors and self._power_status:
+                _LOGGER.info("[I] Timeout occurred: " + str(exception_instance))
+            return False
+
+        except requests.exceptions.ConnectTimeout as exception_instance:
+            if log_errors and self._power_status:
+                _LOGGER.info("[I] ConnectTimeout occurred: " + str(exception_instance))
+            return False
+
+        except requests.exceptions.ConnectionError as exception_instance:
+            if log_errors and self._power_status:
+                _LOGGER.info("[I] Connect occurred: " + str(exception_instance))
+            return False
+
         except requests.exceptions.HTTPError as exception_instance:
             if log_errors:
-                _LOGGER.error("HTTPError: " + str(exception_instance))
+                _LOGGER.warning("HTTPError: " + str(exception_instance))
 
         except Exception as exception_instance:  # pylint: disable=broad-except
             if log_errors:
@@ -241,28 +274,12 @@ class ZidooRC(object):
         if response and response.get("status") == 200:
             return response
 
-    """
-    Play Movie
-    /ZidooPoster/PlayVideo?id=' + id + '&type=' + type
-    """
-
-    """
-    Get Poster
-    GET/ZidooPoster/getFile/getPoster?id=id&w=width&hheight
-    """
-
-    """
-    Search for Movie using name or person
-    GET/ZidooPoster/search?q=x&type=0&page=page&pagesize=size
-    ZidooPoster/search/person?name=' + keywords
-    """
-
     def get_source(self, source):
         """Returns list of Sources"""
         return self._current_source
 
     def load_source_list(self):
-        """ Load App list from Zidoo device."""
+        """Load App list from Zidoo device."""
         return self.get_app_list()
 
     def get_playing_info(self):
@@ -373,16 +390,19 @@ class ZidooRC(object):
     def get_power_status(self):
         """Get power status: off, active, standby.
         By default the TV is turned off."""
-        return_value = "off"
-
+        self._power_status = False
         try:
             response = self.zidoo_req_json("ZidooControlCenter/getModel")
 
-            if response is not None:
-                return_value = "on"
+            if response is not None and response.get("status") == 200:
+                self._power_status = True
+
         except:  # pylint: disable=broad-except
             pass
-        return return_value
+
+        if self._power_status is True:
+            return "on"
+        return "off"
 
     def get_volume_info(self):
         """Get volume info.
@@ -419,7 +439,7 @@ class ZidooRC(object):
         return return_values
 
     def start_app(self, app_name, log_errors=True):
-        """Start an app by name """
+        """Start an app by name"""
         if len(self._app_list) == 0:
             self._app_list = self.get_app_list(log_errors)
         if app_name in self._app_list:
@@ -437,14 +457,13 @@ class ZidooRC(object):
         )
 
         try:
-            # printf(url)
             cookies = self._recreate_auth_cookie()
             response = requests.post(
                 url, cookies=cookies, timeout=TIMEOUT, headers=headers
             )
         except requests.exceptions.HTTPError as exception_instance:
             if log_errors:
-                _LOGGER.error("HTTPError: " + str(exception_instance))
+                _LOGGER.waning("HTTPError: " + str(exception_instance))
 
         except Exception as exception_instance:  # pylint: disable=broad-except
             if log_errors:
@@ -452,6 +471,97 @@ class ZidooRC(object):
         else:
             content = response.content
             return content
+
+    def get_device_list(self):
+        """Return list of movies in hass format"""
+
+        response = self.zidoo_req_json("ZidooFileControl/getDevices")
+
+        if response is not None and response.get("status") == 200:
+            return response
+
+        return None
+        """
+            for result in response["devices"]:
+                name = result.get("name")
+                id = result.get("path")
+                return_values[name] = id
+
+        return return_values
+"""
+
+    def get_movie_list(self, page_limit=1000, video_type=-1):
+        """Return list of movies"""
+        return_values = {}
+
+        response = self.zidoo_req_json(
+            "ZidooPoster/getVideoList?page=1&pagesize={}&type=()".format(page_limit, video_type)
+        )
+
+        return response
+        if response is not None and response.get("status") == 200:
+            for result in response["data"]:
+                if result.get("isCanOpen"):
+                    name = result.get("name")
+                    id = result.get("packageName")
+                    return_values[name] = id
+
+        return return_values
+
+    def get_collection_list(self, movie_id):
+        """Return video collection details"""
+        url = 'ZidooPoster/getCollection?id={}'.format(movie_id)
+
+        response = self.zidoo_req_json(url)
+
+        if response is not None and response.get("status") == 200:
+            return response
+
+        return None
+
+    def _collection_video_id(self, movie_id):
+
+        url = 'ZidooPoster/getCollection?id={}'.format(movie_id)
+
+        response = self.zidoo_req_json(url)
+
+        if response is not None and response.get("status") == 200:
+            for result in response["data"]:
+                return result["aggregationId"]
+
+        return None
+
+    def play_movie(self, movie_id, video_type=0):
+        """Play content by Movie id."""
+        video_id = self._collection_video_id(movie_id)
+        #print("Video id : {}".format(video_id))
+        url = "ZidooPoster/PlayVideo?id={}&type={}".format(video_id, video_type)
+
+        response = self.zidoo_req_json(url)
+        print(url)
+        if response and response.get("status") == 200:
+            return response
+
+    def generate_movie_image_url(self, id, width=75, height=120):
+        """ Return movie thumbnail link """
+
+        url = "http://{}/ZidooPoster/getFile/getPoster?id={}&w={}&h={}".format(self._host,id,width,height)
+
+        return url
+
+    def get_file_list(self, uri, file_type=0):
+        """Return list of movies in hass format"""
+
+        url = "ZidooFileControl/getFileList?path={}&type={}".format(uri, file_type)
+
+        response = self.zidoo_req_json(url)
+
+        if response is not None and response.get("status") == 200:
+            return response
+            # response["data"]:
+
+        return None
+
 
     def select_source(self, source):
         """Set the input source."""
@@ -470,7 +580,7 @@ class ZidooRC(object):
 
     def turn_off(self):
         """Turn off media player."""
-        self.zidoo_send_key(ZKEY_POWER_STANDBY)
+        self.zidoo_send_key(ZKEY_POWER_OFF)
 
     def volume_up(self):
         """Volume up the media player."""
@@ -552,3 +662,4 @@ class ZidooRC(object):
         return_value["media_position_perc"] = perc_playingtime
 
         return return_value
+    
