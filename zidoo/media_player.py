@@ -3,11 +3,11 @@ import ipaddress
 import logging
 
 from .zidoorc import ZidooRC
-from getmac import get_mac_address
 import voluptuous as vol
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
+    SUPPORT_BROWSE_MEDIA,
     SUPPORT_CLEAR_PLAYLIST,
     SUPPORT_NEXT_TRACK,
     SUPPORT_PAUSE,
@@ -49,6 +49,9 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.util.json import load_json, save_json
 from homeassistant.util.dt import utcnow
 
+from .media_browser import browse_media  # build_item_response, library_payload
+from homeassistant.helpers.network import is_internal_request
+
 DEFAULT_NAME = "Zidoo MediaPlayer"
 
 # Map ip to request id for configuring
@@ -73,6 +76,7 @@ SUPPORT_ZIDOO = (
     | SUPPORT_TURN_ON
     | SUPPORT_TURN_OFF
     | SUPPORT_SELECT_SOURCE
+    | SUPPORT_BROWSE_MEDIA
 )
 # SUPPORT_CLEAR_PLAYLIST
 # SUPPORT_SEEK
@@ -95,16 +99,17 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     host = config.get(CONF_HOST)
     name = config.get(CONF_NAME)
 
-    add_entities([ZidooPlayerDevice(host, name)])
+    add_entities([ZidooPlayerDevice(hass, host, name)])
 
 
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
 
-    def __init__(self, host, name):
+    def __init__(self, hass, host, name):
         """Initialize the Zidoo device."""
 
-        self._zidoorc = ZidooRC(host)
+        self._player = ZidooRC(host)
+        self._hass = hass
         self._name = name
         self._state = STATE_OFF
         self._muted = False
@@ -126,26 +131,26 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
 
-        self._zidoorc.connect(CLIENTID_PREFIX, NICKNAME)
-        if self._zidoorc.is_connected():
+        self._player.connect(CLIENTID_PREFIX, NICKNAME)
+        if self._player.is_connected():
             self.update()
         else:
             self._state = STATE_OFF
 
     def update(self):
         """Update TV info."""
-        if not self._zidoorc.is_connected():
-            if self._zidoorc.get_power_status() != "off":
-                self._zidoorc.connect(CLIENTID_PREFIX, NICKNAME)
-            if not self._zidoorc.is_connected():
+        if not self._player.is_connected():
+            if self._player.get_power_status() != "off":
+                self._player.connect(CLIENTID_PREFIX, NICKNAME)
+            if not self._player.is_connected():
                 return
 
         # Retrieve the latest data.
         try:
-            power_status = self._zidoorc.get_power_status()
+            power_status = self._player.get_power_status()
             if power_status == "on":
                 self._state = STATE_PAUSED
-                playing_info = self._zidoorc.get_playing_info()
+                playing_info = self._player.get_playing_info()
                 self._reset_playing_info()
                 if playing_info is None or not playing_info:
                     self._channel_name = "Standby"
@@ -192,7 +197,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def _refresh_volume(self):
         """Refresh volume information."""
-        volume_info = self._zidoorc.get_volume_info()
+        volume_info = self._player.get_volume_info()
         if volume_info is not None:
             self._volume = volume_info.get("volume")
             self._min_volume = volume_info.get("minVolume")
@@ -201,7 +206,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def _refresh_channels(self):
         if not self._source_list:
-            self._content_mapping = self._zidoorc.load_source_list()
+            self._content_mapping = self._player.load_source_list()
             self._source_list = []
             for key in self._content_mapping:
                 self._source_list.append(key)
@@ -288,32 +293,32 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     # def set_volume_level(self, volume):
     #    """Set volume level, range 0..1."""
-    #    self._zidoorc.set_volume_level(volume)
+    #    self._player.set_volume_level(volume)
 
     def turn_on(self):
         """Turn the media player on."""
-        self._zidoorc.turn_on()
+        self._player.turn_on()
 
     def turn_off(self):
         """Turn off media player."""
-        self._zidoorc.turn_off()
+        self._player.turn_off()
 
     def volume_up(self):
         """Volume up the media player."""
-        self._zidoorc.volume_up()
+        self._player.volume_up()
 
     def volume_down(self):
         """Volume down media player."""
-        self._zidoorc.volume_down()
+        self._player.volume_down()
 
     def mute_volume(self, mute):
         """Send mute command."""
-        self._zidoorc.mute_volume()
+        self._player.mute_volume()
 
     def select_source(self, source):
         """Set the input source."""
         if source in self._content_mapping:
-            self._zidoorc.start_app(source)
+            self._player.start_app(source)
             # uri = self._content_mapping[source]
             # play_content(uri)
 
@@ -327,17 +332,48 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def media_play(self):
         """Send play command."""
         self._playing = True
-        self._zidoorc.media_play()
+        self._player.media_play()
 
     def media_pause(self):
         """Send media pause command to media player."""
         self._playing = False
-        self._zidoorc.media_pause()
+        self._player.media_pause()
 
     def media_next_track(self):
         """Send next track command."""
-        self._zidoorc.media_next_track()
+        self._player.media_next_track()
 
     def media_previous_track(self):
         """Send the previous track command."""
-        self._zidoorc.media_previous_track()
+        self._player.media_previous_track()
+
+    def play_media(self, media_type, media_id, **kwargs):
+        """Play a piece of media."""
+        if media_type and media_type == 'movie':
+            self._player.play_movie(media_id)
+        else:
+            self._player.play_content(media_id)
+
+    async def async_browse_media(self, media_content_type=None, media_content_id=None):
+        """Implement the websocket media browsing helper"""
+
+        is_internal = is_internal_request(self.hass)
+
+        return await self.hass.async_add_executor_job(
+            browse_media,
+            self,
+            is_internal,
+            media_content_type,
+            media_content_id,
+        )
+
+    async def async_get_browse_image(
+        self, media_content_type, media_content_id, media_image_id=None
+    ):
+        """Get media image from server."""
+        image_url = self._player.generate_movie_image_url(media_content_id)
+        if image_url:
+            result = await self._async_fetch_image(image_url)
+            return result
+
+        return (None, None)
