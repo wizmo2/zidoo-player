@@ -21,6 +21,10 @@ media_player:
 
 4. Restart HA
 
+If you have issues connecting with the device, it may be an authorization issue.  
+> 1. Try opening the 'Control Center' app and retry. 
+> 2. Try turning off validation using the button in the app.   
+
 
 
 
