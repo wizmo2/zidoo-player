@@ -1,7 +1,10 @@
 {
   "domain": "zidoo",
-  "name": "Zidoo Media Player",
-  "documentation": "https://www.gethub.com/wizmo2/zidoo",
-  "codeowners": ["@wizmo"],
-  "version": "1.1.0"
+  "name": "Zidoo",
+  "config_flow": true,
+  "documentation": "https://www.github.com/wizmo2/zidoo",
+  "requirements": [],
+  "codeowners": ["@wizmo2"],
+  "iot_class": "local_polling",
+  "version": "1.1.1"
 }

@@ -1,5 +1,4 @@
 """Support for interface with Zidoo Media Player."""
-import ipaddress
 import logging
 
 from .zidoorc import ZidooRC
@@ -39,33 +38,38 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
+    CONF_PATH,
+    CONF_PASSWORD,
     STATE_IDLE,
     STATE_OFF,
     STATE_PAUSED,
     STATE_PLAYING,
 )
+from .const import DOMAIN, _LOGGER, CLIENTID_PREFIX, CLIENTID_NICKNAME, CONF_SHORTCUT
 
 import homeassistant.helpers.config_validation as cv
-from homeassistant.util.json import load_json, save_json
-from homeassistant.util.dt import utcnow
 
-from .media_browser import browse_media  # build_item_response, library_payload
+# from homeassistant.util.json import load_json, save_json
+from homeassistant.util.dt import utcnow
+from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.helpers.network import is_internal_request
 
-DEFAULT_NAME = "Zidoo MediaPlayer"
+from .media_browser import browse_media  # build_item_response, library_payload
 
-# Map ip to request id for configuring
-_LOGGER = logging.getLogger(__name__)
+DEFAULT_NAME = "Zidoo Media Player"
+
+SHORTCUT_SCHEMA = vol.Schema(
+    {vol.Required(CONF_PATH): cv.string, vol.Optional(CONF_NAME): cv.string}
+)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_HOST): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+        vol.Optional(CONF_SHORTCUT): vol.All(cv.ensure_list, [SHORTCUT_SCHEMA]),
     }
 )
 
-CLIENTID_PREFIX = "HomeAssistant"
-NICKNAME = "Home Assistant"
 ZIDOO_VIDEOPLAYER = "Media Center"
 ZIDOO_ZIDOOPOSTER = "Home Theater 3.0"
 ZIDOO_MUSICPLAYER = "Music Player 5.0"
@@ -77,12 +81,9 @@ SUPPORT_ZIDOO = (
     | SUPPORT_TURN_OFF
     | SUPPORT_SELECT_SOURCE
     | SUPPORT_BROWSE_MEDIA
+    | SUPPORT_SEEK
 )
-# SUPPORT_CLEAR_PLAYLIST
-# SUPPORT_SEEK
-# SUPPORT_SELECT_SOUND_MODE
-# SUPPORT_SHUFFLE_SET
-# SUPPORT_VOLUME_SET
+# SUPPORT_CLEAR_PLAYLIST # SUPPORT_SEEK # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
 
 SUPPORT_MEDIA_MODES = (
     SUPPORT_PAUSE
@@ -94,23 +95,73 @@ SUPPORT_MEDIA_MODES = (
 )
 
 
-def setup_platform(hass, config, add_entities, discovery_info=None):
-    """Set up the Zidoo platform."""
-    host = config.get(CONF_HOST)
-    name = config.get(CONF_NAME)
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Add Media Player form configuration."""
 
-    add_entities([ZidooPlayerDevice(hass, host, name)])
+    _LOGGER.warning(
+        "Loading zidoo via platform config is deprecated, it will be automatically imported; Please remove it afterwards"
+    )
+
+    config_new = {
+        CONF_NAME: config[CONF_NAME],
+        CONF_HOST: config[CONF_HOST],
+    }
+
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_IMPORT}, data=config_new
+        )
+    )
+
+
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    """Add Media Player from a config entry."""
+    """
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_PTZ,
+        {
+            vol.Required(ATTR_MOVEMENT): vol.In(
+                [
+                    DIR_UP,
+                    DIR_DOWN,
+                    DIR_LEFT,
+                    DIR_RIGHT,
+                    DIR_TOPLEFT,
+                    DIR_TOPRIGHT,
+                    DIR_BOTTOMLEFT,
+                    DIR_BOTTOMRIGHT,
+                ]
+            ),
+            vol.Optional(ATTR_TRAVELTIME, default=DEFAULT_TRAVELTIME): cv.small_float,
+        },
+        "async_perform_ptz",
+    )
+
+    platform.async_register_entity_service(
+        SERVICE_PTZ_PRESET,
+        {
+            vol.Required(ATTR_PRESET_NAME): cv.string,
+        },
+        "async_perform_ptz_preset",
+    )
+    """
+
+    player = ZidooRC(config_entry.data[CONF_HOST])
+
+    async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
 
 
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
 
-    def __init__(self, hass, host, name):
+    def __init__(self, hass, player, config_entry):
         """Initialize the Zidoo device."""
 
-        self._player = ZidooRC(host)
+        self._player = player
         self._hass = hass
-        self._name = name
+        self._name = config_entry.title
+        self._unique_id = config_entry.entry_id
         self._state = STATE_OFF
         self._muted = False
         self._source = None
@@ -131,17 +182,17 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
 
-        self._player.connect(CLIENTID_PREFIX, NICKNAME)
-        if self._player.is_connected():
-            self.update()
-        else:
-            self._state = STATE_OFF
+        #response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
+        #if response is not None:
+        #    self.update()
+        #else:
+        #    self._state = STATE_OFF
 
     def update(self):
         """Update TV info."""
         if not self._player.is_connected():
             if self._player.get_power_status() != "off":
-                self._player.connect(CLIENTID_PREFIX, NICKNAME)
+                self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
             if not self._player.is_connected():
                 return
 
@@ -183,6 +234,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         except Exception as exception_instance:  # pylint: disable=broad-except
             _LOGGER.error(exception_instance)
             # self._state = STATE_OFF
+
+    @property
+    def unique_id(self):
+        """Return the unique id of the device."""
+        return self._unique_id
 
     def _reset_playing_info(self):
         self._title = None
@@ -335,7 +391,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._player.media_play()
 
     def media_pause(self):
-        """Send media pause command to media player."""
+        """Send media pause command."""
         self._playing = False
         self._player.media_pause()
 
@@ -349,10 +405,14 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and media_type == 'movie':
+        if media_type and media_type == "movie":
             self._player.play_movie(media_id)
         else:
             self._player.play_content(media_id)
+
+    def media_seek(self, position):
+        """Send media_seek command to media player."""
+        self._player.set_media_position(position, self._duration)
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
         """Implement the websocket media browsing helper"""
@@ -371,7 +431,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self, media_content_type, media_content_id, media_image_id=None
     ):
         """Get media image from server."""
-        image_url = self._player.generate_movie_image_url(media_content_id)
+        image_url = self._player.generate_movie_image_url(media_content_id, 200, 300)
         if image_url:
             result = await self._async_fetch_image(image_url)
             return result

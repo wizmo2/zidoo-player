@@ -18,6 +18,7 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_PLAYLIST,
     MEDIA_TYPE_TRACK,
     MEDIA_TYPE_MOVIE,
+    MEDIA_TYPE_URL,
 )
 
 BROWSE_LIMIT = 1000
@@ -41,34 +42,31 @@ MOVIE_TYPE_MEDIA_CLASS = {
     2: MEDIA_CLASS_TRACK,
     3: MEDIA_CLASS_TV_SHOW,
     4: MEDIA_CLASS_SEASON,
-    5: MEDIA_CLASS_TRACK, #MEDIA_CLASS_EPISODE, # no episode images with zidoo
+    5: MEDIA_CLASS_TRACK,  # MEDIA_CLASS_EPISODE, # no episode images with zidoo
     6: MEDIA_CLASS_TRACK,
+    7: MEDIA_CLASS_TRACK,
 }
 
 CONTENT_ITEM_TYPE = {
     0: "file",
     1: "track",
     2: "video",
-    # 3: 'image',
-    # 4: 'text',
-    # 5: 'apk',
-    # 6: 'pdf',
-    # 7: document?
-    # 8: spreadsheet?
-    # 9:
-    # 10:
-    # 11: 'file',
-    # 12: other
-    1000: "file",
-    1001: "file",
-    1002: "file",
-    1003: "file",
-    1004: "file",
-    1005: "file",
+    # 3: 'image', # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
+    1000: "file",  # hhd
+    1001: "file",  # usb
+    1002: "file",  # usb
+    1003: "file",  # tf
+    1004: "file",  # nfs
+    1005: "file",  # smb
     1006: "file",
     1007: "file",
     1008: "file",
 }
+
+FAVORITES = [
+    {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/10.10.101.101%23SHARED/DOWNLOAD"},
+    {"name": "AUDIO", "path": "/tmp/ramfs/mnt/10.10.101.101%23SHARED/AUDIO"},
+]
 
 
 def browse_media(  # noqa: C901
@@ -123,7 +121,7 @@ def browse_media(  # noqa: C901
             if result is not None and result.get("data"):
                 child_media_class = MEDIA_CLASS_MOVIE
                 if result.get("type"):
-                    child_media_class = MOVIE_TYPE_MEDIA_CLASS[result["type"]+1]
+                    child_media_class = MOVIE_TYPE_MEDIA_CLASS[result["type"] + 1]
                 children = []
                 for item in result["data"]:
                     child_type = item["type"]
@@ -138,7 +136,7 @@ def browse_media(  # noqa: C901
                             media_class=MEDIA_CLASS_MOVIE,
                             media_content_id=str(item_id),
                             media_content_type=item_type,
-                            can_play=child_type in {1, 5},
+                            can_play=child_type in {1, 5, 6},
                             can_expand=child_type in {3, 4},
                             thumbnail=item_thumbnail,
                         )
@@ -171,16 +169,17 @@ def browse_media(  # noqa: C901
         }
 
         # Add favorite
-        library_info["children"].append(
-            BrowseMedia(
-                title="DOWNLOAD",
-                media_class=MEDIA_CLASS_DIRECTORY,
-                media_content_id="/tmp/ramfs/mnt/10.10.101.101%23SHARED/DOWNLOAD",
-                media_content_type="file",
-                can_play=False,
-                can_expand=True,
+        for item in FAVORITES:
+            library_info["children"].append(
+                BrowseMedia(
+                    title=item["name"],
+                    media_class=MEDIA_CLASS_DIRECTORY,
+                    media_content_id=item["path"],
+                    media_content_type="file",
+                    can_play=False,
+                    can_expand=True,
+                )
             )
-        )
 
         # Add Movies
         library_info["children"].append(
