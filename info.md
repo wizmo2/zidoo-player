@@ -3,7 +3,11 @@
 
 [Zidoo Media Player Custom Component](https://github.com/wizmo2/zidoo-player) for homeassistant
 
+![Zidoo Logo](images/logo.png)
+
 This is a custom component to allow control of Zidoo Media Player devices in [Homeassistant](https://home-assistant.io) using the Zidoo API
+
+
 
 ## Features
 
