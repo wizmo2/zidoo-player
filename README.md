@@ -5,11 +5,17 @@ NOTE: This is a dirty functioning solution for controlling my Zidoo media player
 
 ZidooRC will eventually need to be released as a python library per HA requirements.  Version 1.1 now has Media Browse support with favorites
 
-The component is tested up to 2021.10, but currently requires manual integration (Cover-flow in the works)
+Dev is tested up to 2021.10 and uses cover-flow step. 
+Release 1.1 is tested from 2021.1 up to 2021.10, and requires manual integration (Cover-flow in the works)
+
 
 ## Installation
 1. Copy zidoo folder to \config\custom_components (create folder if this is yuor first custom integration)
 2. Restart HA
+for version 1.2:
+3. Add Zidoo Integration using IP address of player
+
+for version 1.1:
 3. Edit your /config/configuration.yaml with
 
 ```
