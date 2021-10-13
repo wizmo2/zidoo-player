@@ -1,21 +1,21 @@
 # Custom home-assistant component for Zidoo media players
 HA media-player and api wrapper.
 
-NOTE: This is a functioning solution for controlling my Zidoo media player on Home assistant.  Tested on a Z9S (as its the only one I got!)
+This is a functioning solution for controlling my Z9S Zidoo media player on Home-Assistant.  Based on the Zidoo rest api, it should work on other devices (feedback/PRs welcome)
 
 ZidooRC will eventually need to be released as a python library per HA requirements.  
 
 Includes Media Browse support with favorites (althouight the latter is work-in-progress - currently hard-coded into media_player)
 
-Dev is tested up to 2021.10 and uses cover-flow.   
-Release 1.1 is tested from 2021.1 up to 2021.10, and requires manual integration.
+Dev is tested up to HA version 2021.10 and uses cover-flow.   
+Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual integration.
 
 
 ## Installation
 1. Copy zidoo folder to \config\custom_components (create folder if this is yuor first custom integration)
 2. Restart HA
 
-for version 1.2:
+for latest version:
 
 3. Add Zidoo Integration using IP address of player
 
