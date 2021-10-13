@@ -5,7 +5,7 @@ import voluptuous as vol
 from .zidoorc import ZidooRC
 
 from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_PAYLOAD
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import callback
 
 from .const import (
@@ -13,6 +13,7 @@ from .const import (
     DOMAIN,
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
+    CONF_SHORTCUT,
 )
 
 DATA_SCHEMA = vol.Schema(
@@ -114,8 +115,8 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
         data_schema = vol.Schema(
             {
                 vol.Optional(
-                    CONF_PAYLOAD,
-                    default=self.config_entry.options.get(CONF_PAYLOAD),
+                    CONF_SHORTCUT,
+                    default=self.config_entry.options.get(CONF_SHORTCUT),
                 ): str,
             }
         )
