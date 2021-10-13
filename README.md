@@ -12,10 +12,13 @@ Release 1.1 is tested from 2021.1 up to 2021.10, and requires manual integration
 ## Installation
 1. Copy zidoo folder to \config\custom_components (create folder if this is yuor first custom integration)
 2. Restart HA
+
 for version 1.2:
+
 3. Add Zidoo Integration using IP address of player
 
 for version 1.1:
+
 3. Edit your /config/configuration.yaml with
 
 ```
