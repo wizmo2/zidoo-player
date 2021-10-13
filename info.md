@@ -1,7 +1,7 @@
-![GitHub all releases](https://img.shields.io/github/downloads/custom-components/zidoo_media_player/total)
-![GitHub release (latest by SemVer)](https://img.shields.io/github/downloads/custom-components/zidoo_media_player/latest/total)
+![GitHub all releases](https://img.shields.io/github/downloads/wizmo2/zidoo-player/total)
+![GitHub release (main by Wizmo2)](https://img.shields.io/github/downloads/wizmo2/zidoo-player/main/total)
 
-[Zidoo Media Player Custom Component](https://github.com/custom-components/alexa_media_player) for homeassistant
+[Zidoo Media Player Custom Component](https://github.com/wizmo2/zidoo-player) for homeassistant
 
 This is a custom component to allow control of Zidoo Media Player devices in [Homeassistant](https://home-assistant.io) using the Zidoo API
 
@@ -12,8 +12,4 @@ This is a custom component to allow control of Zidoo Media Player devices in [Ho
 
 ## Useful links
 
-- [General documentation](https://github.com/custom-components/alexa_media_player/wiki)
-- [Installation and Configuration](https://github.com/custom-components/alexa_media_player/wiki/Configuration)
-- [FAQ](https://github.com/custom-components/alexa_media_player/wiki/FAQ)
-- [Repository](https://github.com/custom-components/alexa_media_player)
-- [Forum post](https://community.home-assistant.io/t/echo-devices-alexa-as-media-player-testers-needed/58639)
+- [Repository](https://github.com/wizmo2/zidoo-player)
