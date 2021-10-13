@@ -10,8 +10,8 @@ Includes Media Browse support with favorites (although the latter is work-in-pro
 Dev is tested up to HA version 2021.10 and uses cover-flow.   
 Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual integration.
 
-![Media_Player](images/media_player.png)
-![Media_Library](images/media_browser.png)
+![Media_Library](images/media_browser.png) ![Media_Player](images/media_player.png)
+
 
 ## Installation
 1. Copy zidoo folder to \config\custom_components (create folder if this is yuor first custom integration)
