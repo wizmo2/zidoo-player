@@ -64,8 +64,8 @@ CONTENT_ITEM_TYPE = {
 }
 
 FAVORITES = [
-    {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/10.10.101.101%23SHARED/DOWNLOAD"},
-    {"name": "AUDIO", "path": "/tmp/ramfs/mnt/10.10.101.101%23SHARED/AUDIO"},
+#    {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD"},
+#    {"name": "AUDIO", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/AUDIO"},
 ]
 
 
