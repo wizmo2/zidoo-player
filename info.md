@@ -5,7 +5,7 @@
 
 This is a custom component to allow control of Zidoo Media Player devices in [Homeassistant](https://home-assistant.io) using the Zidoo API
 
-## Highlights of what alexa_media can do
+## Highlights of what component can do
 
 - Control Zidoo devices as media players through HA
 - Browse Movies, File System, and Share mounts through HA Media Browser 
