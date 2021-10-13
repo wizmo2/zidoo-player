@@ -1,0 +1,36 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This device is already configured."
+    },
+    "error": {
+      "already_in_progress": "Device configuration is already in progress.",
+      "auth_failure": "Unable to authenticate with the device. Check the password and try again.",
+      "not_successful": "Unable to connect to device.",
+      "not_wiser_device": "This device is currently not supported.",
+      "one_instance_only": "Only 1 instance of the wiser hub is supported. Check in ignored devices.",
+      "timeout_error": "Connection to device has timed out. Check the IP address and try again."
+    },
+    "flow_title": "Zidoo Player: {name}",
+    "step": {
+      "user": {
+        "data": {
+          "host": "IP Address",
+          "password": "Password"
+        },
+        "description": "Please enter the ip address.",
+        "title": "Zidoo Player Setup"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "shortcut_json": "Shortcut List"
+        },
+        "title": "Zidoo Player Options"
+      }
+    }
+  }
+}

@@ -27,9 +27,7 @@
       "step": {
           "user": {
               "data": {
-                  "boost_temp": "Default Boost Temperature",
-                  "boost_time": "Default Boost Duration",
-                  "content_list" : "Shortcut List"
+                  "shortcut_json" : "Shortcut List"
               },
               "title": "Zidoo Media Player Options"
           }

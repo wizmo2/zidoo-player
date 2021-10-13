@@ -18,5 +18,4 @@ CLIENTID_PREFIX = "home-assistant"
 CLIENTID_NICKNAME = "Home Assistant"
 
 # Default Values
-CONF_SHORTCUT = 'shortcut'
-
+CONF_SHORTCUT = "shortcut_json"

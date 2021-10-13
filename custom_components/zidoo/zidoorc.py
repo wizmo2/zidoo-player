@@ -282,8 +282,6 @@ class ZidooRC(object):
             return_value["source"] = "music"
             return return_value
 
-        return None
-
     def _get_video_playing_info(self):
         """Get information from built in video player."""
         return_value = {}
@@ -376,6 +374,7 @@ class ZidooRC(object):
         """Set volume level.
         ? Not currently supported."""
         # api_volume = str(int(round(volume * 100)))
+        return 0
 
     def _recreate_auth_cookie(self):
         """
@@ -420,8 +419,6 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             return response
 
-        return None
-
     def get_movie_list(self, page_limit=1000, video_type=-1):
         """Return list of movies"""
         response = self._req_json(
@@ -430,7 +427,8 @@ class ZidooRC(object):
             )
         )
 
-        return response
+        if response is not None and response.get("status") == 200:
+            return response
 
     def get_collection_list(self, movie_id):
         """Return video collection details"""
@@ -480,6 +478,7 @@ class ZidooRC(object):
         """Set the input source."""
         if len(self._content_mapping) == 0:
             self._content_mapping = self.load_source_list()
+
         if source in self._content_mapping:
             uri = self._content_mapping[source]
             self.play_content(uri)
@@ -581,17 +580,17 @@ class ZidooRC(object):
         if self._set_movie_position(setdatetime) is None:
             self._set_audio_position(setdatetime)
 
-    def _set_movie_position(self, setdatetime, durationsec=1):
+    def _set_movie_position(self, position):
         response = self._req_json(
-            "ZidooVideoPlay/seekTo?positon={}".format(int(setdatetime))
+            "ZidooVideoPlay/seekTo?positon={}".format(int(position))
         )
 
         if response is not None and response.get("status") == 200:
             return response
 
-    def _set_audio_position(self, setdatetime, durationsec=1):
+    def _set_audio_position(self, position):
         response = self._req_json(
-            "ZidooMusicControl/seekTo?time={}".format(int(setdatetime))
+            "ZidooMusicControl/seekTo?time={}".format(int(position))
         )
 
         if response is not None and response.get("status") == 200:

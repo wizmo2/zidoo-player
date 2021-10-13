@@ -49,7 +49,6 @@ from .const import DOMAIN, _LOGGER, CLIENTID_PREFIX, CLIENTID_NICKNAME, CONF_SHO
 
 import homeassistant.helpers.config_validation as cv
 
-# from homeassistant.util.json import load_json, save_json
 from homeassistant.util.dt import utcnow
 from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.helpers.network import is_internal_request
