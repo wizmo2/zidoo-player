@@ -43,6 +43,8 @@ async def validate_input(hass, data):
 
         return {"title": name, "unique_id": unique_id}
 
+    raise CannotConnect
+
 
 @config_entries.HANDLERS.register(DOMAIN)
 class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
