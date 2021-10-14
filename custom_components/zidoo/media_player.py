@@ -115,36 +115,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add Media Player from a config entry."""
-    """
-    platform = entity_platform.async_get_current_platform()
-    platform.async_register_entity_service(
-        SERVICE_PTZ,
-        {
-            vol.Required(ATTR_MOVEMENT): vol.In(
-                [
-                    DIR_UP,
-                    DIR_DOWN,
-                    DIR_LEFT,
-                    DIR_RIGHT,
-                    DIR_TOPLEFT,
-                    DIR_TOPRIGHT,
-                    DIR_BOTTOMLEFT,
-                    DIR_BOTTOMRIGHT,
-                ]
-            ),
-            vol.Optional(ATTR_TRAVELTIME, default=DEFAULT_TRAVELTIME): cv.small_float,
-        },
-        "async_perform_ptz",
-    )
-
-    platform.async_register_entity_service(
-        SERVICE_PTZ_PRESET,
-        {
-            vol.Required(ATTR_PRESET_NAME): cv.string,
-        },
-        "async_perform_ptz_preset",
-    )
-    """
 
     player = ZidooRC(config_entry.data[CONF_HOST])
 
