@@ -7,7 +7,9 @@
 
 This is a custom component to allow control of [Zidoo Media Player](https://www.zidoo.tv) devices in [Homeassistant](https://home-assistant.io) using the Zidoo API
 
-
+{% if prerelease %}
+### NB!: This is a Beta version!
+{% endif %}
 
 ## Features
 
