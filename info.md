@@ -1,5 +1,5 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/wizmo2/zidoo-player/total)
-![GitHub release (main by Wizmo2)](https://img.shields.io/github/downloads/wizmo2/zidoo-player/1.2/total)
+![GitHub release (main by Wizmo2)](https://img.shields.io/github/downloads/wizmo2/zidoo-player/latest/total)
 
 [Zidoo Media Player Custom Component](https://github.com/wizmo2/zidoo-player) for homeassistant
 
