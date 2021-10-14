@@ -14,16 +14,31 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual
 
 
 ## Installation
+
+## Installation
+
+### HACS Install
+
+1. Search for `Zidoo` under `Integrations` in the HACS Store tab.
+2. **You will need to restart after installation for the component to start working.**
+3. Configure the integation (see Configuration section)
+
+### Manual Install
+
 1. Copy zidoo folder to \config\custom_components (create folder if this is yuor first custom integration)
 2. Restart HA
 
+### Configuration
+
 for latest version:
 
-3. Add Zidoo Integration using IP address of player
+1. Add Zidoo Integration from the Configuraion-Integration menu
+2. Add the IP address of player
+3. Enter the Password if you have authentication enabled
 
 for version 1.1:
 
-3. Edit your /config/configuration.yaml with
+1. Edit your /config/configuration.yaml with
 
 ```
 media_player:
@@ -31,14 +46,18 @@ media_player:
     name: Zidoo
     host: 192.168.1.11
 ```
-
-4. Restart HA
+2. Restart HA
 
 If you have issues connecting with the device, it may be an authorization issue.  
 > 1. Try opening the 'Control Center' app and retry. 
 > 2. Try turning off validation using the button in the app.   
 
+##ToDo
 
+- Testing on other devices
+  - WOL (does not work on Z9S due to hardware limitations - current code uses ethernet mac address)
+  - Authentication ( not sure if newer devices are more secure)   
+- Add Coverflow options for Shortcuts
 
 
 
