@@ -15,8 +15,6 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual
 
 ## Installation
 
-## Installation
-
 ### HACS Install
 
 1. Search for `Zidoo` under `Integrations` in the HACS Store tab.
