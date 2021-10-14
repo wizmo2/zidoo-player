@@ -7,5 +7,5 @@
   "iot_class": "local_poll",
   "zip_release": true,
   "filename": "alexa_media.zip",
-  "homeassistant": "2010.10"
+  "homeassistant": "2021.9"
 }
