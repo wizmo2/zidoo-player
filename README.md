@@ -7,7 +7,7 @@ ZidooRC will eventually need to be released as a python library per HA requireme
 
 Includes Media Browse support with favorites (although the latter is work-in-progress - currently hard-coded into media_player)
 
-Dev is tested up to HA version 2021.10 and uses cover-flow.   
+1.2 is tested up to HA version 2021.10 and uses cover-flow.   
 Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual integration.
 
 ![Media_Library](images/media_browser.png) ![Media_Player](images/media_player.png)
