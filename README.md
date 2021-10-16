@@ -23,20 +23,20 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual
 
 ### Manual Install
 
-1. Copy 'zidoo' folder to '\config\custom_components' (create folder if this is yuor first custom integration)
+1. Copy `zidoo` folder to `\config\custom_components` (create folder if this is yuor first custom integration)
 2. Restart HA
 
 ### Configuration
 
 for latest version:
 
-1. Add 'Zido'o Integration from the 'Configuraion-Integration' menu
+1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu
 2. Add the IP address of player
 3. Enter the Password if you have authentication enabled
 
 for version 1.1:
 
-1. Edit your '/config/configuration.yaml' with
+1. Edit your `/config/configuration.yaml` with
 
 ```
 media_player:
