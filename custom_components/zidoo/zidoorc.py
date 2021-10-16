@@ -86,6 +86,9 @@ ZTYPE_TV_EPISODE = 5
 
 CONF_PORT = 9529
 
+ZCONTENT_VIDEO = 'Video Player'
+ZCONTENT_MUSIC = 'Music Player'
+ZCONTENT_NONE = ''
 
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
@@ -103,6 +106,10 @@ class ZidooRC(object):
         self._current_source = None
         self._app_list = {}
         self._power_status = False
+        self._video_id = -1
+        self._music_id = -1
+        self._last_video_path = None
+
 
     def _jdata_build(self, method, params=None):
         if params:
@@ -274,13 +281,19 @@ class ZidooRC(object):
         if response is not None:
             return_value = response
             return_value["source"] = "video"
-            return return_value
+            if return_value.get("status") == True:
+                self._current_source = ZCONTENT_VIDEO
+                return return_value
 
         response = self._get_music_playing_info()
         if response is not None:
             return_value = response
             return_value["source"] = "music"
-            return return_value
+            if return_value["status"] == True:
+                self._current_source = ZCONTENT_MUSIC
+                return return_value
+
+        return return_value
 
     def _get_video_playing_info(self):
         """Get information from built in video player."""
@@ -296,8 +309,21 @@ class ZidooRC(object):
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("currentPosition")
+                if return_value["status"] == True and return_value["uri"] != self._last_video_path:
+                    self._last_video_path = return_value["uri"]
+                    self._video_id = self._get_id_from_uri(self._last_video_path)
                 return return_value
         return None
+
+    def _get_id_from_uri(self, uri):
+        response = self._req_json('ZidooPoster/v2/getAggregationOfFile?path={}'.format(uri))
+
+        if response: # and response.get("status") == 200:
+            result = response.get("video")
+            if result is not None:
+                return result.get("parentId")
+
+        return 0
 
     def _get_music_playing_info(self):
         """Get information from the Music Player"""
@@ -307,11 +333,12 @@ class ZidooRC(object):
         # _LOGGER.debug(json.dumps(response, indent=4))
         if response is not None and response.get("status") == 200:
             return_value["status"] = response.get("isPlay")
-            if response.get("music"):
-                result = response.get("music")
+            result = response.get("music")
+            if result is not None:
                 return_value["title"] = result.get("title")
                 return_value["artist"] = result.get("artist")
                 return_value["uri"] = result.get("uri")
+                self._music_id = result.get("databaseId")
 
                 result = response.get("state")
                 return_value["duration"] = result.get("duration")
@@ -328,7 +355,7 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("file"):
                 result = response.get("file")
-                return_value["status"] = result.get("status")
+                return_value["status"] = result.get("status")==1
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
@@ -462,6 +489,21 @@ class ZidooRC(object):
         url = "http://{}/ZidooPoster/getFile/getPoster?id={}&w={}&h={}".format(
             self._host, movie_id, width, height
         )
+
+        return url
+
+    def generate_current_image_url(self, width=1080, height=720):
+        url = None
+
+        if self._current_source == ZCONTENT_VIDEO and self._video_id > 0:
+            url = "http://{}/ZidooPoster/getFile/getBackdrop?id={}&w={}&h={}".format(
+                self._host, self._video_id, width, height
+            )
+
+        if self._current_source == ZCONTENT_MUSIC and self._music_id > 0:
+            url = "http://{}/ZidooMusicControl/v2/getImage?id={}&musicType=1&type=4&target=16".format(
+                self._host, self._music_id
+            )
 
         return url
 
