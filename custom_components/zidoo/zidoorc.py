@@ -1,7 +1,7 @@
 """
-Sony Zidoo RC API
-By Antonio Parraga Navarro
-dedicated to Isabel
+Zidoo Remote Control API
+By Wizmo
+  Based on the Sony BraviaRC BY Antonio Parraga Navarro
 """
 import logging
 import collections
@@ -109,7 +109,6 @@ class ZidooRC(object):
         self._video_id = -1
         self._music_id = -1
         self._last_video_path = None
-
 
     def _jdata_build(self, method, params=None):
         if params:
@@ -347,7 +346,7 @@ class ZidooRC(object):
         return None
 
     def _get_movie_playing_info(self):
-        """Get information """
+        """Get information."""
         return_value = {}
 
         response = self._req_json("ZidooControlCenter/getPlayStatus")
@@ -355,7 +354,7 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("file"):
                 result = response.get("file")
-                return_value["status"] = result.get("status")==1
+                return_value["status"] = result.get("status") == 1
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
