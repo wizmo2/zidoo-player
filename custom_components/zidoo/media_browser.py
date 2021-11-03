@@ -18,6 +18,7 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_PLAYLIST,
     MEDIA_TYPE_TRACK,
     MEDIA_TYPE_MOVIE,
+    MEDIA_TYPE_TVSHOW,
     MEDIA_TYPE_URL,
 )
 
@@ -30,7 +31,7 @@ ITEM_TYPE_MEDIA_CLASS = {
     "movie": MEDIA_CLASS_MOVIE,
     "playlist": MEDIA_CLASS_PLAYLIST,
     "season": MEDIA_CLASS_SEASON,
-    "show": MEDIA_CLASS_TV_SHOW,
+    "tvshow": MEDIA_CLASS_TV_SHOW,
     "track": MEDIA_CLASS_TRACK,
     "video": MEDIA_CLASS_VIDEO,
     "file": MEDIA_CLASS_DIRECTORY,
@@ -111,10 +112,12 @@ def browse_media(  # noqa: C901
                             )
                         )
 
-        if media_class == MEDIA_CLASS_MOVIE:
+        if media_class == MEDIA_CLASS_MOVIE or media_class == MEDIA_CLASS_TV_SHOW:
             result = None
             if search_id == MEDIA_TYPE_MOVIE:
-                result = player.get_movie_list()
+                result = player.get_movie_list(1000, 3)
+            elif search_id == MEDIA_TYPE_TVSHOW:
+                result = player.get_movie_list(1000, 4)
             else:
                 result = player.get_collection_list(search_id)
 
@@ -188,6 +191,17 @@ def browse_media(  # noqa: C901
                 media_class=MEDIA_CLASS_MOVIE,
                 media_content_id=MEDIA_TYPE_MOVIE,
                 media_content_type=MEDIA_TYPE_MOVIE,
+                can_play=False,
+                can_expand=True,
+            )
+        )
+        # Add TV
+        library_info["children"].append(
+            BrowseMedia(
+                title="TV SHOWS",
+                media_class=MEDIA_CLASS_TV_SHOW,
+                media_content_id=MEDIA_TYPE_TVSHOW,
+                media_content_type=MEDIA_TYPE_TVSHOW,
                 can_play=False,
                 can_expand=True,
             )
