@@ -370,7 +370,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and media_type == "movie":
+        if media_type and (media_type == "movie" or media_type == 'tvshow'):
             self._player.play_movie(media_id)
         else:
             self._player.play_content(media_id)
@@ -382,7 +382,8 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def media_image_url(self):
         """Image url of current playing media."""
-        return self._player.generate_current_image_url()
+        if self._playing:
+            return self._player.generate_current_image_url()
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
         """Implement the websocket media browsing helper"""

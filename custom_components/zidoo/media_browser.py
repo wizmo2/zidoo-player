@@ -84,6 +84,7 @@ def browse_media(  # noqa: C901
         media_class = ITEM_TYPE_MEDIA_CLASS[search_type]
         child_media_class = MEDIA_CLASS_DIRECTORY
         children = None
+        title = "Zidoo Media"
 
         if media_class == MEDIA_CLASS_DIRECTORY:
             result = player.get_file_list(search_id)
@@ -115,8 +116,10 @@ def browse_media(  # noqa: C901
         if media_class == MEDIA_CLASS_MOVIE or media_class == MEDIA_CLASS_TV_SHOW:
             result = None
             if search_id == MEDIA_TYPE_MOVIE:
+                title = "MOVIES"
                 result = player.get_movie_list(1000, 3)
             elif search_id == MEDIA_TYPE_TVSHOW:
+                title = "TV SHOW"
                 result = player.get_movie_list(1000, 4)
             else:
                 result = player.get_collection_list(search_id)
@@ -129,14 +132,14 @@ def browse_media(  # noqa: C901
                 for item in result["data"]:
                     child_type = item["type"]
                     item_id = item["id"]
-                    item_type = MEDIA_TYPE_MOVIE
+                    item_type = search_type
                     # item_thumbnail = None
                     item_thumbnail = entity.get_browse_image_url(item_type, item_id)
 
                     children.append(
                         BrowseMedia(
                             title=item["name"],
-                            media_class=MEDIA_CLASS_MOVIE,
+                            media_class=media_class,
                             media_content_id=str(item_id),
                             media_content_type=item_type,
                             can_play=child_type in {1, 5, 6},
@@ -144,12 +147,14 @@ def browse_media(  # noqa: C901
                             thumbnail=item_thumbnail,
                         )
                     )
+                if result.get("name"):
+                    title = result.get("name")
 
         if children is None:
             raise BrowseError(f"Media not found: {search_type} / {search_id}")
 
         return BrowseMedia(
-            title="Zidoo Media",
+            title=title,
             media_class=media_class,
             children_media_class=child_media_class,
             media_content_id=search_id,
