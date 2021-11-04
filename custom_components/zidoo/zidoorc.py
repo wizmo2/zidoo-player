@@ -78,6 +78,7 @@ ZKEY_APP_SWITCH = "Key.APP.Switch"
 
 ZTYPE_VIDEO = 0
 ZTYPE_MOVIE = 1
+ZTYPE_COLLECTION = 2
 ZTYPE_TV_SHOW = 3
 ZTYPE_TV_SEASON = 4
 ZTYPE_TV_EPISODE = 5
@@ -87,6 +88,22 @@ CONF_PORT = 9529
 ZCONTENT_VIDEO = 'Video Player'
 ZCONTENT_MUSIC = 'Music Player'
 ZCONTENT_NONE = ''
+
+ZVIDEO_FILTER_TYPES = {
+    "all": 0,
+    "favorite": 1,
+    "recent": 2,
+    "movie": 3,
+    "tvshow": 4,
+    "sd": 5,
+    "bluray": 6,
+    "4k": 7,
+    "filter8": 8,
+    "unlocked": 9,
+    "filter10": 10,
+    "unwatched": 11,
+    "unmatched": 12,
+}
 
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
@@ -313,7 +330,7 @@ class ZidooRC(object):
         return None
 
     def _get_id_from_uri(self, uri):
-        movie_id = True
+        movie_id = 0
 
         response = self._req_json(
             "ZidooPoster/v2/getAggregationOfFile?path={}".format(urllib.parse.quote(uri))
@@ -450,9 +467,11 @@ class ZidooRC(object):
 
     def get_movie_list(self, page_limit=1000, video_type=-1):
         """Return list of movies
-              where page_limit is max return values and
-              video_type 0-All,1-?,2-Recent,3-Movies,4-TV Shows,5-SD,6-Bluraym,7-4k,8-,9-
+            video_type: ZVIDEO_FILTER_TYPES or 0-All,1-Favs,2-Recent,3-Movies,4-TV Shows,5-SD,6-Bluraym,7-4k,8-,9-unlocked,11-unwatched12-unmatched
         """
+        if video_type in ZVIDEO_FILTER_TYPES:
+            video_type = ZVIDEO_FILTER_TYPES[video_type]
+
         response = self._req_json(
             "ZidooPoster/getVideoList?page=1&pagesize={}&type={}".format(
                 page_limit, video_type
