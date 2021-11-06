@@ -323,17 +323,24 @@ class ZidooRC(object):
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("currentPosition")
-                if return_value["status"] == True and return_value["uri"] != self._last_video_path:
+                if return_value["status"] is True and return_value["uri"] != self._last_video_path:
                     self._last_video_path = return_value["uri"]
                     self._video_id = self._get_id_from_uri(self._last_video_path)
                 return return_value
         return None
 
     def _get_id_from_uri(self, uri):
+        """returns the movie id from the path"""
+        """
+         NOTE: The api call returns movie or season/episode information
+          that could be used for future attributes
+        """
         movie_id = 0
 
         response = self._req_json(
-            "ZidooPoster/v2/getAggregationOfFile?path={}".format(urllib.parse.quote(uri))
+            "ZidooPoster/v2/getAggregationOfFile?path={}".format(
+                urllib.parse.quote(uri)
+            )
         )
 
         if response: # and response.get("status") == 200:
@@ -487,6 +494,26 @@ class ZidooRC(object):
 
         if response is not None and response.get("status") == 200:
             return response
+
+    def get_movie_details(self, movie_id):
+        """Return video details"""
+        response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
+
+        if response is not None:# and response.get("status") == 200:
+            return response
+
+    def get_episode_list(self, season_id):
+        """Returns list video list sorted by episodes"""
+        def byEpisode(e):
+            return e['aggregation']['episodeNumber']
+
+        response = self.get_movie_details(season_id)
+
+        if response is not None:
+            episodes = response['aggregations']
+            episodes.sort(key=byEpisode)
+
+            return episodes
 
     def _collection_video_id(self, movie_id):
         response = self.get_collection_list(movie_id)

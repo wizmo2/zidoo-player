@@ -186,7 +186,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                         self._program_media_type = MEDIA_TYPE_APP
                     status = playing_info.get("status")
                     if status and status is not None:
-                        if status == 1 or status == True:
+                        if status == 1 or status is True:
                             self._state = STATE_PLAYING
                     self._duration = playing_info.get("duration")
                     self._position = playing_info.get("position")
@@ -255,7 +255,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def media_content_type(self):
         """Content type of current playing media."""
-        self._program_media_type
+        return self._program_media_type
 
     # @property
     # def volume_level(self):

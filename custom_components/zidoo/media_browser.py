@@ -130,19 +130,23 @@ def browse_media(  # noqa: C901
             result = None
             if search_id == MEDIA_TYPE_MOVIE:
                 title = "MOVIES"
-                result = player.get_movie_list(1000, ZITEM_TYPE_FILTER[search_id])
+                result = player.get_movie_list(BROWSE_LIMIT, ZITEM_TYPE_FILTER[search_id])
             elif search_id == MEDIA_TYPE_TVSHOW:
                 title = "TV SHOW"
-                result = player.get_movie_list(1000,  ZITEM_TYPE_FILTER[search_id])
+                result = player.get_movie_list(BROWSE_LIMIT,  ZITEM_TYPE_FILTER[search_id])
             else:
                 result = player.get_collection_list(search_id)
 
             if result is not None and result.get("data"):
                 child_media_class = MEDIA_CLASS_MOVIE
-                if result.get("type"):
-                    child_media_class = ZMOVIE_TYPE_MEDIA_CLASS[result["type"] + 1]
+                video_type = result.get("type")
+                data = result["data"]
+                if video_type:
+                    child_media_class = ZMOVIE_TYPE_MEDIA_CLASS[int(video_type) + 1]
+                    if video_type == 4:
+                        data = player.get_episode_list(search_id)
                 children = []
-                for item in result["data"]:
+                for item in data:
                     child_type = item["type"]
                     item_id = item["id"]
                     item_type = search_type
@@ -163,8 +167,8 @@ def browse_media(  # noqa: C901
                 if result.get("name"):
                     title = result.get("name")
 
-        if children is None:
-            raise BrowseError(f"Media not found: {search_type} / {search_id}")
+        #if children is None:
+        #    raise BrowseError(f"Media not found: {search_type} / {search_id}")
 
         return BrowseMedia(
             title=title,
