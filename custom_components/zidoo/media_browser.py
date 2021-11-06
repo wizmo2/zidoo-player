@@ -143,8 +143,11 @@ def browse_media(  # noqa: C901
                 data = result["data"]
                 if video_type:
                     child_media_class = ZMOVIE_TYPE_MEDIA_CLASS[int(video_type) + 1]
-                    if video_type == 4:
-                        data = player.get_episode_list(search_id)
+                    if video_type == 4 and result.get("size") > 1:
+                        # get episodes in sorted order 
+						episodes = player.get_episode_list(search_id)
+                        if episodes is not None:
+                            data = episodes
                 children = []
                 for item in data:
                     child_type = item["type"]

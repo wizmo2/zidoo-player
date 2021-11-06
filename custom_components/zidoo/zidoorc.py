@@ -497,7 +497,8 @@ class ZidooRC(object):
 
     def get_movie_details(self, movie_id):
         """Return video details"""
-        response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
+        #response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
+        response = self._req_json("Poster/v2/getDetail?id={}".format(movie_id))
 
         if response is not None:# and response.get("status") == 200:
             return response
@@ -510,10 +511,16 @@ class ZidooRC(object):
         response = self.get_movie_details(season_id)
 
         if response is not None:
-            episodes = response['aggregations']
-            episodes.sort(key=byEpisode)
+            episodes = response.get('aggregations')
+            if episodes is None:
+				# try alternative location
+                result = response.get('aggregation')
+                if result is not None:
+                    episodes = result.get('aggregations')
 
-            return episodes
+            if episodes is not None:
+                episodes.sort(key=byEpisode)
+                return episodes
 
     def _collection_video_id(self, movie_id):
         response = self.get_collection_list(movie_id)
