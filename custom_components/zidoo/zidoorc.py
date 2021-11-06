@@ -318,7 +318,7 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("video"):
                 result = response.get("video")
-                return_value["status"] = result.get("status")
+                return_value["status"] = (result.get("status")==1)
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
