@@ -1,73 +1,15 @@
 """Support for media browsing."""
 from homeassistant.components.media_player import BrowseError, BrowseMedia
 from homeassistant.components.media_player.const import (
-    MEDIA_CLASS_ALBUM,
-    MEDIA_CLASS_ARTIST,
-    MEDIA_CLASS_GENRE,
     MEDIA_CLASS_DIRECTORY,
-    MEDIA_CLASS_EPISODE,
     MEDIA_CLASS_MOVIE,
-    MEDIA_CLASS_PLAYLIST,
-    MEDIA_CLASS_TRACK,
-    MEDIA_CLASS_SEASON,
     MEDIA_CLASS_TV_SHOW,
-    MEDIA_CLASS_VIDEO,
-    MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_ALBUM,
-    MEDIA_TYPE_ARTIST,
-    MEDIA_TYPE_GENRE,
-    MEDIA_TYPE_PLAYLIST,
-    MEDIA_TYPE_TRACK,
-    MEDIA_TYPE_SEASON,
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_TVSHOW,
-    MEDIA_TYPE_EPISODE,
-    MEDIA_TYPE_VIDEO,
-    MEDIA_TYPE_URL,
 )
+from .const import MEDIA_TYPE_FILE, ZTYPE_MEDIA_TYPE, ZTYPE_MEDIA_CLASS, ZCONTENT_ITEM_TYPE, ITEM_TYPE_MEDIA_CLASS
 
 BROWSE_LIMIT = 1000
-MEDIA_TYPE_FILE = "file"
-
-ITEM_TYPE_MEDIA_CLASS = {
-    MEDIA_TYPE_ALBUM: MEDIA_CLASS_ALBUM,
-    MEDIA_TYPE_ARTIST: MEDIA_CLASS_ARTIST,
-    MEDIA_TYPE_EPISODE: MEDIA_CLASS_EPISODE,
-    MEDIA_TYPE_MOVIE: MEDIA_CLASS_MOVIE,
-    MEDIA_TYPE_PLAYLIST: MEDIA_CLASS_PLAYLIST,
-    MEDIA_TYPE_SEASON: MEDIA_CLASS_SEASON,
-    MEDIA_TYPE_TVSHOW: MEDIA_CLASS_TV_SHOW,
-    MEDIA_TYPE_TRACK: MEDIA_CLASS_TRACK,
-    MEDIA_TYPE_VIDEO: MEDIA_CLASS_VIDEO,
-    MEDIA_TYPE_FILE: MEDIA_CLASS_DIRECTORY,
-}
-
-ZMOVIE_TYPE_MEDIA_CLASS = {
-    0: MEDIA_CLASS_VIDEO,
-    1: MEDIA_CLASS_MOVIE,
-    2: MEDIA_CLASS_TRACK,
-    3: MEDIA_CLASS_TV_SHOW,
-    4: MEDIA_CLASS_SEASON,
-    5: MEDIA_CLASS_TRACK,  # MEDIA_CLASS_EPISODE, # no episode images with zidoo
-    6: MEDIA_CLASS_TRACK,
-    7: MEDIA_CLASS_TRACK,
-}
-
-ZCONTENT_ITEM_TYPE = {
-    0: MEDIA_TYPE_FILE, # folder
-    1: MEDIA_TYPE_TRACK, # music
-    2: MEDIA_TYPE_VIDEO, # video
-    # 3: 'image', # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
-    1000: MEDIA_TYPE_FILE,  # hhd
-    1001: MEDIA_TYPE_FILE,  # usb
-    1002: MEDIA_TYPE_FILE,  # usb
-    1003: MEDIA_TYPE_FILE,  # tf
-    1004: MEDIA_TYPE_FILE,  # nfs
-    1005: MEDIA_TYPE_FILE,  # smb
-    1006: MEDIA_TYPE_FILE,
-    1007: MEDIA_TYPE_FILE,
-    1008: MEDIA_TYPE_FILE,
-}
 
 ZITEM_TYPE_FILTER = {
     MEDIA_TYPE_FILE: 0,
@@ -80,7 +22,7 @@ ZTITLE = "Zidoo Media"
 ZFAVORITES = [
     {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
     {"name": "MOVIES", "path": MEDIA_TYPE_MOVIE, "type": MEDIA_TYPE_MOVIE},
-    {"name": "TV SHOW", "path": MEDIA_TYPE_TVSHOW, "type": MEDIA_TYPE_TVSHOW}
+    {"name": "TV SHOW", "path": MEDIA_TYPE_TVSHOW, "type": MEDIA_TYPE_TVSHOW},
 ]
 
 def browse_media(  # noqa: C901
@@ -98,6 +40,7 @@ def browse_media(  # noqa: C901
         child_media_class = MEDIA_CLASS_DIRECTORY
         children = None
         title = ZTITLE
+        thumbnail = None
 
         if media_class == MEDIA_CLASS_DIRECTORY:
             result = player.get_file_list(search_id)
@@ -142,12 +85,14 @@ def browse_media(  # noqa: C901
                 video_type = result.get("type")
                 data = result["data"]
                 if video_type:
-                    child_media_class = ZMOVIE_TYPE_MEDIA_CLASS[int(video_type) + 1]
+                    child_media_class = ZTYPE_MEDIA_CLASS[int(video_type) + 1]
                     if video_type == 4 and result.get("size") > 1:
-                        # get episodes in sorted order 
+                        # get episodes in sorted order
                         episodes = player.get_episode_list(search_id)
                         if episodes is not None:
                             data = episodes
+                    if video_type == 4 and data[0].get("parentId") > 0:
+                        thumbnail = player.generate_movie_image_url(data[0]["parentId"])
                 children = []
                 for item in data:
                     child_type = item["type"]
@@ -167,10 +112,11 @@ def browse_media(  # noqa: C901
                             thumbnail=item_thumbnail,
                         )
                     )
+
                 if result.get("name"):
                     title = result.get("name")
 
-        #if children is None:
+        # if children is None:
         #    raise BrowseError(f"Media not found: {search_type} / {search_id}")
 
         return BrowseMedia(
@@ -182,6 +128,7 @@ def browse_media(  # noqa: C901
             can_play=False,
             children=children,
             can_expand=True,
+            thumbnail=thumbnail
         )
 
     def library_payload(player):

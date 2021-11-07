@@ -82,6 +82,7 @@ ZTYPE_COLLECTION = 2
 ZTYPE_TV_SHOW = 3
 ZTYPE_TV_SEASON = 4
 ZTYPE_TV_EPISODE = 5
+ZTYPE_OTHER = 6
 
 CONF_PORT = 9529
 
@@ -124,6 +125,7 @@ class ZidooRC(object):
         self._video_id = -1
         self._music_id = -1
         self._last_video_path = None
+        self._movie_info = {}
 
     def _jdata_build(self, method, params=None):
         if params:
@@ -297,7 +299,7 @@ class ZidooRC(object):
             return_value["source"] = "video"
             if return_value.get("status") == True:
                 self._current_source = ZCONTENT_VIDEO
-                return return_value
+                return {**return_value,**self._movie_info}
 
         response = self._get_music_playing_info()
         if response is not None:
@@ -306,7 +308,7 @@ class ZidooRC(object):
             if return_value["status"] == True:
                 self._current_source = ZCONTENT_MUSIC
                 return return_value
-
+        
         return return_value
 
     def _get_video_playing_info(self):
@@ -336,6 +338,7 @@ class ZidooRC(object):
           that could be used for future attributes
         """
         movie_id = 0
+        movie_info = {}
 
         response = self._req_json(
             "ZidooPoster/v2/getAggregationOfFile?path={}".format(
@@ -347,6 +350,24 @@ class ZidooRC(object):
             result = response.get("video")
             if result is not None:
                 movie_id = result.get("parentId")
+            movie_info["type"] = response.get("type")
+            result = response.get("movie")
+            if result is not None:
+                movie_info["movie_name"] = result.get("name")
+                movie_info["tag"] = result["aggregation"].get("tagLine")
+                #movie_info["date"] = result["aggregation"].get("releaseDate").split('-')[0]
+                movie_info["date"] = datetime.strptime(result["aggregation"].get("releaseDate"), "%Y-%m-%d")
+            result = response.get("episode")
+            if result is not None:
+                movie_info["episode"] =  result["aggregation"].get("episodeNumber")
+                movie_info["episode_name"] =  result["aggregation"].get("name")
+            result = response.get("season")
+            if result is not None:
+                movie_info["season"] = result["aggregation"].get("seasonNumber")
+                movie_info["season_name"] = result["aggregation"].get("name")
+                movie_info["series_name"] = result["aggregation"].get("tvName")
+
+            self._movie_info = movie_info
 
         _LOGGER.debug("new media detected: uri-'{}' dbid={}".format(uri, movie_id))
         return movie_id
@@ -363,12 +384,19 @@ class ZidooRC(object):
             if result is not None:
                 return_value["title"] = result.get("title")
                 return_value["artist"] = result.get("artist")
+                return_value["track"] = result.get("number")
                 return_value["uri"] = result.get("uri")
                 self._music_id = result.get("databaseId")
 
                 result = response.get("state")
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("position")
+
+                result = response.get("state")
+                if result is not None:
+                    # update with satte - playing for newer firmware
+                    return_value["status"] = result.get("playing")
+
                 return return_value
         return None
 
@@ -381,7 +409,7 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("file"):
                 result = response.get("file")
-                return_value["status"] = result.get("status") == 1
+                return_value["status"] = (result.get("status")==1)
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
