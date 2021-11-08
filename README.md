@@ -17,7 +17,7 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual
 
 ### HACS Install 
 
-NOTE:  HACS/default PR is awaiting review.  Until then you would have to add the https://github.com/wizmo2/zidoo-player as a custom repository or use the manual method.
+*NOTE:  HACS/default PR is awaiting review.  Until then you would have to add the https://github.com/wizmo2/zidoo-player as a custom repository or use the manual method.*
 
 1. Search for `Zidoo` under `Integrations` in the HACS Store tab.
 2. **You will need to restart after installation for the component to start working.**
