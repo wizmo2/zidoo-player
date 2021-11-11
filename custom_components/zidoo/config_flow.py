@@ -109,7 +109,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     
     async def async_step_ssdp(self, discovery_info):
         """Handle a discovered Harmony device."""
-        _LOGGER.debug("SSDP discovery_info: %s", discovery_info)
+        #_LOGGER.debug("SSDP discovery_info: %s", discovery_info)
 
         parsed_url = urlparse(discovery_info[ssdp.ATTR_SSDP_LOCATION])
         friendly_name = discovery_info[ssdp.ATTR_UPNP_FRIENDLY_NAME]
@@ -124,6 +124,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         }
         _LOGGER.debug("SSDP discovery_info: %s", user_input)
         
+        self._set_confirm_only()
         return await self.async_step_user(user_input)
         
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
