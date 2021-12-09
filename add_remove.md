@@ -40,7 +40,7 @@ a. Restart HA Server
 
 a.  Press the ADD INTEGRATION button
 
-b.  Seach for Zidoo and select Zido Media Player
+b.  Seach for Zidoo and select Zidoo Media Player
 
 d.  Enter the IP address and Password
 
