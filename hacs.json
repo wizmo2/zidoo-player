@@ -4,6 +4,7 @@
   "domains": [
     "media_player"
   ],
+  "zip_release": false,
   "iot_class": "local_polling",
   "homeassistant": "2021.9"
 }
