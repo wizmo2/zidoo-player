@@ -36,7 +36,7 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, requires manual int
 >  2. Clear your Browser Cache
 >  
 > If you have issues connecting with the device, it may be an authorization issue.  
->  1. Try opening the 'Control Center' app and retry. 
+>  1. Try opening the 'Control Center' app on the media player and retry. 
 >  2. Try turning off validation using the button in the app.   
 
 ## ToDo
