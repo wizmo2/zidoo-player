@@ -1,0 +1,28 @@
+## Fixing HACS download issues
+
+An issue with the HACS configuration file was introduced in release versions 1.2.4 and below, which prevents versions from down loading correctly.
+
+v1.2.5 fixes the issue, but if a previous version has been installed, then the following procuedure is required to add and remove the HACS install
+
+### Remove any exisitng HA integrations
+
+1. Goto Configuration/Integrations and remove any installed media player deveice
+
+a. For each Zidoo Media Player, Press the Menu icon and select Delete
+
+b. Confirm
+
+### Remove the HACS Integration
+
+2. Goto HACS/Integrations
+
+a. Press the Menu icon in the Zidoo Media Player integration, and select Remove
+
+b.  Confirm
+
+### Re-Install the HACS Integration
+
+3. Goto Hacs.Integrations
+
+a. Press the 
+
