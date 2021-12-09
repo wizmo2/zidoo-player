@@ -299,7 +299,7 @@ class ZidooRC(object):
             return_value["source"] = "video"
             if return_value.get("status") == True:
                 self._current_source = ZCONTENT_VIDEO
-                return {**return_value, **self._movie_info}
+                return {**return_value,**self._movie_info}
 
         response = self._get_music_playing_info()
         if response is not None:
@@ -308,7 +308,7 @@ class ZidooRC(object):
             if return_value["status"] == True:
                 self._current_source = ZCONTENT_MUSIC
                 return return_value
-
+        
         return return_value
 
     def _get_video_playing_info(self):
@@ -359,8 +359,8 @@ class ZidooRC(object):
                 movie_info["date"] = datetime.strptime(result["aggregation"].get("releaseDate"), "%Y-%m-%d")
             result = response.get("episode")
             if result is not None:
-                movie_info["episode"] = result["aggregation"].get("episodeNumber")
-                movie_info["episode_name"] = result["aggregation"].get("name")
+                movie_info["episode"] =  result["aggregation"].get("episodeNumber")
+                movie_info["episode_name"] =  result["aggregation"].get("name")
             result = response.get("season")
             if result is not None:
                 movie_info["season"] = result["aggregation"].get("seasonNumber")
@@ -525,10 +525,10 @@ class ZidooRC(object):
 
     def get_movie_details(self, movie_id):
         """Return video details"""
-        # response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
+        #response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
         response = self._req_json("Poster/v2/getDetail?id={}".format(movie_id))
 
-        if response is not None:  # and response.get("status") == 200:
+        if response is not None:# and response.get("status") == 200:
             return response
 
     def get_episode_list(self, season_id):
@@ -570,7 +570,7 @@ class ZidooRC(object):
         if response and response.get("status") == 200:
             return response
 
-    def generate_movie_image_url(self, movie_id, width=200, height=300):
+    def generate_movie_image_url(self, movie_id, width=100, height=150):
         """Return movie thumbnail link"""
         url = "http://{}/ZidooPoster/getFile/getPoster?id={}&w={}&h={}".format(
             self._host, movie_id, width, height

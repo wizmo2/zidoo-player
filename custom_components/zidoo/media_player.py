@@ -38,14 +38,7 @@ from homeassistant.const import (
     STATE_PAUSED,
     STATE_PLAYING,
 )
-from .const import (
-    DOMAIN,
-    _LOGGER,
-    CLIENTID_PREFIX,
-    CLIENTID_NICKNAME,
-    CONF_SHORTCUT,
-    ZTYPE_MEDIA_TYPE,
-)
+from .const import DOMAIN, _LOGGER, CLIENTID_PREFIX, CLIENTID_NICKNAME, CONF_SHORTCUT, ZTYPE_MEDIA_TYPE
 
 import homeassistant.helpers.config_validation as cv
 
@@ -140,10 +133,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
 
-        # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
-        # if response is not None:
+        #response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
+        #if response is not None:
         #    self.update()
-        # else:
+        #else:
         #    self._state = STATE_OFF
 
     def update(self):
@@ -384,7 +377,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 		
     def media_seek(self, position):
         """Send media_seek command to media player."""
-        self._player.set_media_position(position, self.media_duration)
+        self._player.set_media_position(position, self._duration)
 
     @property
     def media_image_url(self):
@@ -408,7 +401,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self, media_content_type, media_content_id, media_image_id=None
     ):
         """Get media image from server."""
-        image_url = self._player.generate_movie_image_url(media_content_id)
+        image_url = self._player.generate_movie_image_url(media_content_id, 200, 300)
         if image_url:
             result = await self._async_fetch_image(image_url)
             return result
