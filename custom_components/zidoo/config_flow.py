@@ -7,6 +7,8 @@ from .zidoorc import ZidooRC
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import callback
+from homeassistant.components import ssdp
+from urllib.parse import urlparse
 
 from .const import (
     _LOGGER,
@@ -104,7 +106,27 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, user_input):
         """Handle import."""
         return await self.async_step_user(user_input)
+    
+    async def async_step_ssdp(self, discovery_info):
+        """Handle a discovered Harmony device."""
+        #_LOGGER.debug("SSDP discovery_info: %s", discovery_info)
 
+        parsed_url = urlparse(discovery_info[ssdp.ATTR_SSDP_LOCATION])
+        friendly_name = discovery_info[ssdp.ATTR_UPNP_FRIENDLY_NAME]
+
+        self._async_abort_entries_match({CONF_HOST: parsed_url.hostname})
+
+        self.context["title_placeholders"] = {"name": friendly_name}
+
+        user_input = {
+            CONF_HOST: parsed_url.hostname,
+            CONF_NAME: friendly_name,
+        }
+        _LOGGER.debug("SSDP discovery_info: %s", user_input)
+        
+        self._set_confirm_only()
+        return await self.async_step_user(user_input)
+        
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
 
