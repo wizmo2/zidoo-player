@@ -1,8 +1,10 @@
 ## Fixing HACS download problems
 
-An issue with the HACS configuration file was introduced in release versions 1.2.4 and below, which prevents versions from down loading correctly.
+An issue with the HACS configuration file was introduced in release versions 1.2.4 and below, which prevents Versions from downloading correctly.
 
-v1.2.5 fixes the issue, but if a previous version has been installed, then the following procuedure is required to add and remove the HACS install
+v1.2.5 fixes the issue, but if a previous version had been installed the following procuedure is required to add and remove the HACS install.
+
+_NOTE:  Older versions have been re-built and re-released with the correct HACS configuration file to prevent ongoing issues (using 'v' prefix to the tags)_
 
 ### Remove any exisitng HA integrations
 
