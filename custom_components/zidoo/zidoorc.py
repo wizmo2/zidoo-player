@@ -299,7 +299,7 @@ class ZidooRC(object):
             return_value["source"] = "video"
             if return_value.get("status") == True:
                 self._current_source = ZCONTENT_VIDEO
-                return {**return_value, **self._movie_info}
+                return {**return_value,**self._movie_info}
 
         response = self._get_music_playing_info()
         if response is not None:
@@ -308,7 +308,7 @@ class ZidooRC(object):
             if return_value["status"] == True:
                 self._current_source = ZCONTENT_MUSIC
                 return return_value
-
+        
         return return_value
 
     def _get_video_playing_info(self):
@@ -570,7 +570,7 @@ class ZidooRC(object):
         if response and response.get("status") == 200:
             return response
 
-    def generate_movie_image_url(self, movie_id, width=200, height=300):
+    def generate_movie_image_url(self, movie_id, width=100, height=150):
         """Return movie thumbnail link"""
         url = "http://{}/ZidooPoster/getFile/getPoster?id={}&w={}&h={}".format(
             self._host, movie_id, width, height
