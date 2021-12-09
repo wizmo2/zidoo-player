@@ -3,18 +3,19 @@
 
 [Zidoo Media Player Custom Component](https://github.com/wizmo2/zidoo-player) for homeassistant
 
-![Zidoo Logo](https://github.com/wizmo2/zidoo-player/raw/dev/images/logo.png)
+![Zidoo Logo](images/logo.png)
 
 This is a custom component to allow control of [Zidoo Media Player](https://www.zidoo.tv) devices in [Homeassistant](https://home-assistant.io) using the Zidoo API
 
+{% if prerelease %}
 ### NB!: This is a Beta version!
 Feedback and PRs welcome.
+{% endif %}
 
 ## Features
 
 - Control Zidoo devices as media players through HA
-- Album art and movie backdrops
-- Browse movies, file system, and share mounts through HA Media Browser 
+- Browse Movies, File System, and Share mounts through HA Media Browser 
 
 ## Useful links
 

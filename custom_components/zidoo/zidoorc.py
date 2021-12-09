@@ -1,16 +1,18 @@
 """
-Zidoo Remote Control API
-By Wizmo
-  Based on the Sony BraviaRC BY Antonio Parraga Navarro
+Sony Zidoo RC API
+By Antonio Parraga Navarro
+dedicated to Isabel
 """
 import logging
+import collections
 import json
 import socket
 import struct
 import requests
 from datetime import datetime
 import time
-import urllib.parse
+import sys
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 TIMEOUT = 2
 
@@ -78,33 +80,12 @@ ZKEY_APP_SWITCH = "Key.APP.Switch"
 
 ZTYPE_VIDEO = 0
 ZTYPE_MOVIE = 1
-ZTYPE_COLLECTION = 2
 ZTYPE_TV_SHOW = 3
 ZTYPE_TV_SEASON = 4
 ZTYPE_TV_EPISODE = 5
-ZTYPE_OTHER = 6
 
 CONF_PORT = 9529
 
-ZCONTENT_VIDEO = 'Video Player'
-ZCONTENT_MUSIC = 'Music Player'
-ZCONTENT_NONE = ''
-
-ZVIDEO_FILTER_TYPES = {
-    "all": 0,
-    "favorite": 1,
-    "recent": 2,
-    "movie": 3,
-    "tvshow": 4,
-    "sd": 5,
-    "bluray": 6,
-    "4k": 7,
-    "filter8": 8,
-    "unlocked": 9,
-    "filter10": 10,
-    "unwatched": 11,
-    "unmatched": 12,
-}
 
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
@@ -122,10 +103,6 @@ class ZidooRC(object):
         self._current_source = None
         self._app_list = {}
         self._power_status = False
-        self._video_id = -1
-        self._music_id = -1
-        self._last_video_path = None
-        self._movie_info = {}
 
     def _jdata_build(self, method, params=None):
         if params:
@@ -297,19 +274,13 @@ class ZidooRC(object):
         if response is not None:
             return_value = response
             return_value["source"] = "video"
-            if return_value.get("status") == True:
-                self._current_source = ZCONTENT_VIDEO
-                return {**return_value,**self._movie_info}
+            return return_value
 
         response = self._get_music_playing_info()
         if response is not None:
             return_value = response
             return_value["source"] = "music"
-            if return_value["status"] == True:
-                self._current_source = ZCONTENT_MUSIC
-                return return_value
-        
-        return return_value
+            return return_value
 
     def _get_video_playing_info(self):
         """Get information from built in video player."""
@@ -320,57 +291,13 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("video"):
                 result = response.get("video")
-                return_value["status"] = (result.get("status")==1)
+                return_value["status"] = result.get("status")
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("currentPosition")
-                if return_value["status"] is True and return_value["uri"] != self._last_video_path:
-                    self._last_video_path = return_value["uri"]
-                    self._video_id = self._get_id_from_uri(self._last_video_path)
                 return return_value
         return None
-
-    def _get_id_from_uri(self, uri):
-        """returns the movie id from the path"""
-        """
-         NOTE: The api call returns movie or season/episode information
-          that could be used for future attributes
-        """
-        movie_id = 0
-        movie_info = {}
-
-        response = self._req_json(
-            "ZidooPoster/v2/getAggregationOfFile?path={}".format(
-                urllib.parse.quote(uri)
-            )
-        )
-
-        if response: # and response.get("status") == 200:
-            result = response.get("video")
-            if result is not None:
-                movie_id = result.get("parentId")
-            movie_info["type"] = response.get("type")
-            result = response.get("movie")
-            if result is not None:
-                movie_info["movie_name"] = result.get("name")
-                movie_info["tag"] = result["aggregation"].get("tagLine")
-                #movie_info["date"] = result["aggregation"].get("releaseDate").split('-')[0]
-                movie_info["date"] = datetime.strptime(result["aggregation"].get("releaseDate"), "%Y-%m-%d")
-            result = response.get("episode")
-            if result is not None:
-                movie_info["episode"] =  result["aggregation"].get("episodeNumber")
-                movie_info["episode_name"] =  result["aggregation"].get("name")
-            result = response.get("season")
-            if result is not None:
-                movie_info["season"] = result["aggregation"].get("seasonNumber")
-                movie_info["season_name"] = result["aggregation"].get("name")
-                movie_info["series_name"] = result["aggregation"].get("tvName")
-
-            self._movie_info = movie_info
-
-        _LOGGER.debug("new media detected: uri-'{}' dbid={}".format(uri, movie_id))
-        return movie_id
 
     def _get_music_playing_info(self):
         """Get information from the Music Player"""
@@ -380,28 +307,20 @@ class ZidooRC(object):
         # _LOGGER.debug(json.dumps(response, indent=4))
         if response is not None and response.get("status") == 200:
             return_value["status"] = response.get("isPlay")
-            result = response.get("music")
-            if result is not None:
+            if response.get("music"):
+                result = response.get("music")
                 return_value["title"] = result.get("title")
                 return_value["artist"] = result.get("artist")
-                return_value["track"] = result.get("number")
                 return_value["uri"] = result.get("uri")
-                self._music_id = result.get("databaseId")
 
                 result = response.get("state")
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("position")
-
-                result = response.get("state")
-                if result is not None:
-                    # update with satte - playing for newer firmware
-                    return_value["status"] = result.get("playing")
-
                 return return_value
         return None
 
     def _get_movie_playing_info(self):
-        """Get information."""
+        """Get information """
         return_value = {}
 
         response = self._req_json("ZidooControlCenter/getPlayStatus")
@@ -409,7 +328,7 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("file"):
                 result = response.get("file")
-                return_value["status"] = (result.get("status")==1)
+                return_value["status"] = result.get("status")
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
@@ -490,7 +409,7 @@ class ZidooRC(object):
     def _start_app(self, app_id, log_errors=True):
         """Start an app by package name"""
         self._req_json(
-            "ZidooControlCenter/Apps/openApp?packageName={}".format(app_id)
+            "ZidooControlCenter/Apps/openApp?packageName={}".format(self._host, app_id)
         )
 
     def get_device_list(self):
@@ -501,14 +420,9 @@ class ZidooRC(object):
             return response
 
     def get_movie_list(self, page_limit=1000, video_type=-1):
-        """Return list of movies
-            video_type: ZVIDEO_FILTER_TYPES or 0-All,1-Favs,2-Recent,3-Movies,4-TV Shows,5-SD,6-Bluraym,7-4k,8-,9-unlocked,11-unwatched12-unmatched
-        """
-        if video_type in ZVIDEO_FILTER_TYPES:
-            video_type = ZVIDEO_FILTER_TYPES[video_type]
-
+        """Return list of movies"""
         response = self._req_json(
-            "ZidooPoster/getVideoList?page=1&pagesize={}&type={}".format(
+            "ZidooPoster/getVideoList?page=1&pagesize={}&type=()".format(
                 page_limit, video_type
             )
         )
@@ -522,33 +436,6 @@ class ZidooRC(object):
 
         if response is not None and response.get("status") == 200:
             return response
-
-    def get_movie_details(self, movie_id):
-        """Return video details"""
-        #response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
-        response = self._req_json("Poster/v2/getDetail?id={}".format(movie_id))
-
-        if response is not None:# and response.get("status") == 200:
-            return response
-
-    def get_episode_list(self, season_id):
-        """Returns list video list sorted by episodes"""
-        def byEpisode(e):
-            return e['aggregation']['episodeNumber']
-
-        response = self.get_movie_details(season_id)
-
-        if response is not None:
-            episodes = response.get('aggregations')
-            if episodes is None:
-				# try alternative location
-                result = response.get('aggregation')
-                if result is not None:
-                    episodes = result.get('aggregations')
-
-            if episodes is not None:
-                episodes.sort(key=byEpisode)
-                return episodes
 
     def _collection_video_id(self, movie_id):
         response = self.get_collection_list(movie_id)
@@ -578,24 +465,8 @@ class ZidooRC(object):
 
         return url
 
-    def generate_current_image_url(self, width=1080, height=720):
-        url = None
-
-        if self._current_source == ZCONTENT_VIDEO and self._video_id > 0:
-            url = "http://{}/ZidooPoster/getFile/getBackdrop?id={}&w={}&h={}".format(
-                self._host, self._video_id, width, height
-            )
-
-        if self._current_source == ZCONTENT_MUSIC and self._music_id > 0:
-            url = "http://{}/ZidooMusicControl/v2/getImage?id={}&musicType=1&type=4&target=16".format(
-                self._host, self._music_id
-            )
-
-        #_LOGGER.debug("zidoo getting current image: url-{}".format(url))
-        return url
-
     def get_file_list(self, uri, file_type=0):
-        """Return file list in hass format"""
+        """Return list of movies in hass format"""
         response = self._req_json(
             "ZidooFileControl/getFileList?path={}&type={}".format(uri, file_type)
         )
