@@ -46,6 +46,9 @@ media_player:
 ```
 2. Restart HA
 
+> If you installed versions prior to 1.2.5 using HACS and the integration is not availble in ADD INTEGRATIONS
+>  1. See  [Add / Remove HACS Integration](add_remove.md)
+>  2. Clear your Browser Cache
 > If you have issues connecting with the device, it may be an authorization issue.  
 >  1. Try opening the 'Control Center' app and retry. 
 >  2. Try turning off validation using the button in the app.   
