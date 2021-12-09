@@ -7,10 +7,10 @@ ZidooRC will eventually need to be released as a python library per HA requireme
 
 Includes Media Browse support with favorites (although the latter is work-in-progress - currently hard-coded into media_player)
 
-Dev is tested up to HA version 2021.10 and uses cover-flow.   
+1.2 is tested up to HA version 2021.10 and uses cover-flow.   
 Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual integration.
 
-![Media_Library](images/media_browser.png) ![Media_Player](images/media_player.png)
+![Media_Library](images/media_browser.png) ![Media_Player](images/media_player.png) ![Media_Player](images/movie_playing.png)
 
 
 ## Installation
@@ -23,20 +23,20 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, and requires manual
 
 ### Manual Install
 
-1. Copy zidoo folder to \config\custom_components (create folder if this is yuor first custom integration)
+1. Copy `zidoo` folder to `\config\custom_components` (create folder if this is yuor first custom integration)
 2. Restart HA
 
 ### Configuration
 
 for latest version:
 
-1. Add Zidoo Integration from the Configuraion-Integration menu
+1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu
 2. Add the IP address of player
 3. Enter the Password if you have authentication enabled
 
 for version 1.1:
 
-1. Edit your /config/configuration.yaml with
+1. Edit your `/config/configuration.yaml` with
 
 ```
 media_player:
@@ -46,16 +46,18 @@ media_player:
 ```
 2. Restart HA
 
-If you have issues connecting with the device, it may be an authorization issue.  
-> 1. Try opening the 'Control Center' app and retry. 
-> 2. Try turning off validation using the button in the app.   
+> If you have issues connecting with the device, it may be an authorization issue.  
+>  1. Try opening the 'Control Center' app and retry. 
+>  2. Try turning off validation using the button in the app.   
 
 ## ToDo
 
 - Testing on other devices
   - WOL (does not work on Z9S due to hardware limitations - current code uses ethernet mac address)
-  - Authentication ( not sure if newer devices are more secure)   
-- Add Coverflow options for Shortcuts
+  - Authentication ( not sure if newer devices are more secure)
+  - Possible device specific options.   
+- Add Coverflow options for Shortcuts in Media Browse
+- Add Discovery?
 
 
 

@@ -101,6 +101,9 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_import(self, user_input):
+        """Handle import."""
+        return await self.async_step_user(user_input)
 
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""

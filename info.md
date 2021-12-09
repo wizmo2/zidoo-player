@@ -15,7 +15,8 @@ Feedback and PRs welcome.
 ## Features
 
 - Control Zidoo devices as media players through HA
-- Browse Movies, File System, and Share mounts through HA Media Browser 
+- Album art and movie backdrops
+- Browse movies, file system, and share mounts through HA Media Browser 
 
 ## Useful links
 
