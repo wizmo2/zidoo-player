@@ -8,11 +8,15 @@ v1.2.5 fixes the issue, but if a previous version has been installed, then the f
 
 1. Goto Configuration/Integrations and remove any installed media player devices
 
+![Step1](images/ar_step1.png)
+
 a. For each Zidoo Media Player, Press the Menu icon and select Delete
 
 ### Remove and Re-Download the HACS Integration
 
 2. Goto HACS/Integrations
+
+![Step2](images/ar_step3.png) ![Step3](images/ar_step5.png) ![Step4](images/ar_step6.png)
 
 a. Press the Menu icon in the Zidoo Media Player integration, and select Remove
 
