@@ -1,7 +1,7 @@
 """Support for interface with Zidoo Media Player."""
 import logging
 
-from .zidoorc import ZidooRC
+from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO
 import voluptuous as vol
 
 from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
@@ -68,10 +68,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_SHORTCUT): vol.All(cv.ensure_list, [SHORTCUT_SCHEMA]),
     }
 )
-
-ZIDOO_VIDEOPLAYER = "Media Center"
-ZIDOO_ZIDOOPOSTER = "Home Theater 3.0"
-ZIDOO_MUSICPLAYER = "Music Player 5.0"
 
 SUPPORT_ZIDOO = (
     SUPPORT_VOLUME_STEP
@@ -182,10 +178,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                     if mediatype and mediatype is not None:
                         if mediatype == "video":
                             self._program_media_type = MEDIA_TYPE_VIDEO
-                            self._source = ZIDOO_VIDEOPLAYER
+                            self._source = ZCONTENT_VIDEO
                         else:
                             self._program_media_type = MEDIA_TYPE_MUSIC
-                            self._source = ZIDOO_MUSICPLAYER
+                            self._source = ZCONTENT_MUSIC
                     else:
                         self._program_media_type = MEDIA_TYPE_APP
                     status = playing_info.get("status")
@@ -232,7 +228,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def _refresh_channels(self):
         if not self._source_list:
             self._content_mapping = self._player.load_source_list()
-            self._source_list = []
+            self._source_list = [ ZCONTENT_VIDEO, ZCONTENT_MUSIC ]
             for key in self._content_mapping:
                 self._source_list.append(key)
 
@@ -374,7 +370,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and media_type == "movie":
+        if media_type and (media_type == "movie" or media_type == 'tvshow'):
             self._player.play_movie(media_id)
         else:
             self._player.play_content(media_id)

@@ -4,15 +4,13 @@ By Wizmo
   Based on the Sony BraviaRC BY Antonio Parraga Navarro
 """
 import logging
-import collections
 import json
 import socket
 import struct
 import requests
 from datetime import datetime
 import time
-import sys
-from xml.etree.ElementTree import Element, SubElement, tostring
+import urllib.parse
 
 TIMEOUT = 2
 
@@ -80,6 +78,7 @@ ZKEY_APP_SWITCH = "Key.APP.Switch"
 
 ZTYPE_VIDEO = 0
 ZTYPE_MOVIE = 1
+ZTYPE_COLLECTION = 2
 ZTYPE_TV_SHOW = 3
 ZTYPE_TV_SEASON = 4
 ZTYPE_TV_EPISODE = 5
@@ -89,6 +88,22 @@ CONF_PORT = 9529
 ZCONTENT_VIDEO = 'Video Player'
 ZCONTENT_MUSIC = 'Music Player'
 ZCONTENT_NONE = ''
+
+ZVIDEO_FILTER_TYPES = {
+    "all": 0,
+    "favorite": 1,
+    "recent": 2,
+    "movie": 3,
+    "tvshow": 4,
+    "sd": 5,
+    "bluray": 6,
+    "4k": 7,
+    "filter8": 8,
+    "unlocked": 9,
+    "filter10": 10,
+    "unwatched": 11,
+    "unmatched": 12,
+}
 
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
@@ -315,14 +330,19 @@ class ZidooRC(object):
         return None
 
     def _get_id_from_uri(self, uri):
-        response = self._req_json('ZidooPoster/v2/getAggregationOfFile?path={}'.format(uri))
+        movie_id = 0
+
+        response = self._req_json(
+            "ZidooPoster/v2/getAggregationOfFile?path={}".format(urllib.parse.quote(uri))
+        )
 
         if response: # and response.get("status") == 200:
             result = response.get("video")
             if result is not None:
-                return result.get("parentId")
+                movie_id = result.get("parentId")
 
-        return 0
+        _LOGGER.debug("new media detected: uri-'{}' dbid={}".format(uri, movie_id))
+        return movie_id
 
     def _get_music_playing_info(self):
         """Get information from the Music Player"""
@@ -435,7 +455,7 @@ class ZidooRC(object):
     def _start_app(self, app_id, log_errors=True):
         """Start an app by package name"""
         self._req_json(
-            "ZidooControlCenter/Apps/openApp?packageName={}".format(self._host, app_id)
+            "ZidooControlCenter/Apps/openApp?packageName={}".format(app_id)
         )
 
     def get_device_list(self):
@@ -446,9 +466,14 @@ class ZidooRC(object):
             return response
 
     def get_movie_list(self, page_limit=1000, video_type=-1):
-        """Return list of movies"""
+        """Return list of movies
+            video_type: ZVIDEO_FILTER_TYPES or 0-All,1-Favs,2-Recent,3-Movies,4-TV Shows,5-SD,6-Bluraym,7-4k,8-,9-unlocked,11-unwatched12-unmatched
+        """
+        if video_type in ZVIDEO_FILTER_TYPES:
+            video_type = ZVIDEO_FILTER_TYPES[video_type]
+
         response = self._req_json(
-            "ZidooPoster/getVideoList?page=1&pagesize={}&type=()".format(
+            "ZidooPoster/getVideoList?page=1&pagesize={}&type={}".format(
                 page_limit, video_type
             )
         )
@@ -504,10 +529,11 @@ class ZidooRC(object):
                 self._host, self._music_id
             )
 
+        #_LOGGER.debug("zidoo getting current image: url-{}".format(url))
         return url
 
     def get_file_list(self, uri, file_type=0):
-        """Return list of movies in hass format"""
+        """Return file list in hass format"""
         response = self._req_json(
             "ZidooFileControl/getFileList?path={}&type={}".format(uri, file_type)
         )
