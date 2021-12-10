@@ -185,7 +185,6 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                             self._source = ZCONTENT_MUSIC
                     else:
                         self._media_type = MEDIA_TYPE_APP
-                        self._state = STATE_IDLE
                     self._last_update = utcnow()
                 self._refresh_channels()
             else:
