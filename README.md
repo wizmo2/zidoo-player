@@ -8,7 +8,8 @@ This is a functioning solution for controlling my Z9S Zidoo media player on Home
 - Album art and movie backdrops
 - Browse movies, file system, and share mounts through HA Media Browser 
 
-![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
+![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
+![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
 
 ## Installation
 
