@@ -1,6 +1,6 @@
 # Home-assistant component for Zidoo media players
 
-This is a functioning solution for controlling my Z9S Zidoo media player on Home-Assistant.  Based on the Zidoo rest api, it should work on other devices (feedback/PRs welcome)
+This is a functioning solution for controlling my Z9S Zidoo media player on Home-Assistant.  Based on the Zidoo REST API, it should work on all Zidoo devices (feedback/PRs welcome)
 
 ZidooRC API will eventually need to be released as a python library per HA requirements.  
 
@@ -42,7 +42,7 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, requires manual int
 ## ToDo
 
 - Testing on other devices
-  - WOL (does not work on Z9S due to hardware limitations - current code uses ethernet mac address)
+  - WOL (does not work on Z9S due to hardware limitations - reportedly works on Z9X)
   - Authentication ( not sure if newer devices are more secure)
   - Possible device specific options.   
 - Add Coverflow options for Shortcuts in Media Browse
