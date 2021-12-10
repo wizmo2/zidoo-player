@@ -38,7 +38,14 @@ from homeassistant.const import (
     STATE_PAUSED,
     STATE_PLAYING,
 )
-from .const import DOMAIN, _LOGGER, CLIENTID_PREFIX, CLIENTID_NICKNAME, CONF_SHORTCUT, ZTYPE_MEDIA_TYPE
+from .const import (
+    DOMAIN,
+    _LOGGER,
+    CLIENTID_PREFIX,
+    CLIENTID_NICKNAME,
+    CONF_SHORTCUT,
+    ZTYPE_MEDIA_TYPE,
+)
 
 import homeassistant.helpers.config_validation as cv
 
@@ -133,10 +140,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
 
-        #response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
-        #if response is not None:
+        # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
+        # if response is not None:
         #    self.update()
-        #else:
+        # else:
         #    self._state = STATE_OFF
 
     def update(self):
@@ -157,13 +164,18 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                 if playing_info is None or not playing_info:
                     self._channel_name = "Standby"
                     self._media_type = MEDIA_TYPE_APP
+                    self._state = STATE_IDLE
                 else:
                     self._media_info = playing_info
                     mediatype = playing_info.get("source")
+                    status = playing_info.get("status")
+                    if status and status is not None:
+                        if status == 1 or status is True:
+                            self._state = STATE_PLAYING
                     if mediatype and mediatype is not None:
                         if mediatype == "video":
                             item_type = self._media_info.get("type")
-                            if item_type is not None and item_type == 'tv':
+                            if item_type is not None and item_type == "tv":
                                 self._media_type = MEDIA_TYPE_TVSHOW
                             else:
                                 self._media_type = MEDIA_TYPE_MOVIE
@@ -173,10 +185,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                             self._source = ZCONTENT_MUSIC
                     else:
                         self._media_type = MEDIA_TYPE_APP
-                    status = playing_info.get("status")
-                    if status and status is not None:
-                        if status == 1 or status is True:
-                            self._state = STATE_PLAYING
+                        self._state = STATE_IDLE
                     self._last_update = utcnow()
                 self._refresh_channels()
             else:
@@ -198,7 +207,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def _refresh_channels(self):
         if not self._source_list:
             self._content_mapping = self._player.load_source_list()
-            self._source_list = [ ZCONTENT_VIDEO, ZCONTENT_MUSIC ]
+            self._source_list = [ZCONTENT_VIDEO, ZCONTENT_MUSIC]
             for key in self._content_mapping:
                 self._source_list.append(key)
 
@@ -310,7 +319,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         """NOTE: Shows as small print for movies too"""
         date = self._media_info.get("date")
         if date is not None:
-            return '({})'.format(date.year)
+            return "({})".format(date.year)
 
     # def set_volume_level(self, volume):
     #    """Set volume level, range 0..1."""
@@ -370,11 +379,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and (media_type == "movie" or media_type == 'tvshow'):
+        if media_type and (media_type == "movie" or media_type == "tvshow"):
             self._player.play_movie(media_id)
         else:
             self._player.play_content(media_id)
-		
+
     def media_seek(self, position):
         """Send media_seek command to media player."""
         self._player.set_media_position(position, self._duration)
