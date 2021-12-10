@@ -27,7 +27,7 @@ This is a functioning solution for controlling my Z9S Zidoo media player on Home
 ### Configuration
 
 1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu
-2. Add the IP address of player
+2. Enter the IP address of player
 3. Enter the Password if you have authentication enabled
 4. Add standard Media Control card for newly added media_player device 
 
