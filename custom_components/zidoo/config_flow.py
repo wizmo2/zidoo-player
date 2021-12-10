@@ -19,7 +19,10 @@ from .const import (
 )
 
 DATA_SCHEMA = vol.Schema(
-    {vol.Required(CONF_HOST): str, vol.Optional(CONF_PASSWORD): str}
+    {
+        vol.Required(CONF_HOST): str,
+        vol.Optional(CONF_PASSWORD): str
+    }
 )
 
 
@@ -28,7 +31,6 @@ async def validate_input(hass, data):
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
-
     try:
         player = ZidooRC(data[CONF_HOST])
         response = await hass.async_add_executor_job(

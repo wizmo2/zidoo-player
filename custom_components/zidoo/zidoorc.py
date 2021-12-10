@@ -359,8 +359,8 @@ class ZidooRC(object):
                 movie_info["date"] = datetime.strptime(result["aggregation"].get("releaseDate"), "%Y-%m-%d")
             result = response.get("episode")
             if result is not None:
-                movie_info["episode"] =  result["aggregation"].get("episodeNumber")
-                movie_info["episode_name"] =  result["aggregation"].get("name")
+                movie_info["episode"] = result["aggregation"].get("episodeNumber")
+                movie_info["episode_name"] = result["aggregation"].get("name")
             result = response.get("season")
             if result is not None:
                 movie_info["season"] = result["aggregation"].get("seasonNumber")
@@ -525,10 +525,10 @@ class ZidooRC(object):
 
     def get_movie_details(self, movie_id):
         """Return video details"""
-        #response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
+        # response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
         response = self._req_json("Poster/v2/getDetail?id={}".format(movie_id))
 
-        if response is not None:# and response.get("status") == 200:
+        if response is not None:  # and response.get("status") == 200:
             return response
 
     def get_episode_list(self, season_id):

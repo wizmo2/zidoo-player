@@ -38,7 +38,14 @@ from homeassistant.const import (
     STATE_PAUSED,
     STATE_PLAYING,
 )
-from .const import DOMAIN, _LOGGER, CLIENTID_PREFIX, CLIENTID_NICKNAME, CONF_SHORTCUT, ZTYPE_MEDIA_TYPE
+from .const import (
+    DOMAIN,
+    _LOGGER,
+    CLIENTID_PREFIX,
+    CLIENTID_NICKNAME,
+    CONF_SHORTCUT,
+    ZTYPE_MEDIA_TYPE,
+)
 
 import homeassistant.helpers.config_validation as cv
 
@@ -133,10 +140,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
 
-        #response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
-        #if response is not None:
+        # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
+        # if response is not None:
         #    self.update()
-        #else:
+        # else:
         #    self._state = STATE_OFF
 
     def update(self):
@@ -370,11 +377,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and (media_type == "movie" or media_type == 'tvshow'):
-            self._player.play_movie(media_id)
-        else:
+        if media_type and media_type == "file":
             self._player.play_content(media_id)
-		
+        else:
+            self._player.play_movie(media_id)
+
     def media_seek(self, position):
         """Send media_seek command to media player."""
         self._player.set_media_position(position, self.media_duration)
