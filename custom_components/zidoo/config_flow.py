@@ -119,9 +119,10 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
 
         data_schema = vol.Schema(
             {
+                vol.Optional(CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD),): str,
                 vol.Optional(
                     CONF_SHORTCUT,
-                    default=self.config_entry.options.get(CONF_SHORTCUT),
+                    default=self.config_entry.options.get(CONF_SHORTCUT,""),
                 ): str,
             }
         )
