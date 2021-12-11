@@ -562,6 +562,8 @@ class ZidooRC(object):
         # uses the agreggateid to find the first video to play
         video_id = self._collection_video_id(movie_id)
         # print("Video id : {}".format(video_id))
+        if video_id is None:
+            video_id = movie_id 
 
         response = self._req_json(
             "ZidooPoster/PlayVideo?id={}&type={}".format(video_id, video_type)

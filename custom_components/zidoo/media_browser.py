@@ -10,19 +10,25 @@ from homeassistant.components.media_player.const import (
 from .const import MEDIA_TYPE_FILE, ZTYPE_MEDIA_TYPE, ZTYPE_MEDIA_CLASS, ZCONTENT_ITEM_TYPE, ITEM_TYPE_MEDIA_CLASS
 
 BROWSE_LIMIT = 1000
+MEDIA_SHORTCUT_RECENT = 'RECENT'
+MEDIA_SHORTCUT_MOVIE = 'MOVIES'
+MEDIA_SHORTCUT_TVSHOWS = 'TV SHOWS'
+MEDIA_SHORTCUTS = {MEDIA_SHORTCUT_TVSHOWS, MEDIA_SHORTCUT_RECENT, MEDIA_SHORTCUT_MOVIE}
 
 ZITEM_TYPE_FILTER = {
     MEDIA_TYPE_FILE: 0,
-    MEDIA_TYPE_MOVIE: 3,
-    MEDIA_TYPE_TVSHOW: 4,
+    MEDIA_SHORTCUT_RECENT: 2,
+    MEDIA_SHORTCUT_MOVIE: 3,
+    MEDIA_SHORTCUT_TVSHOWS: 4,
 }
 
 ZTITLE = "Zidoo Media"
 
 ZFAVORITES = [
     # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
-    {"name": "MOVIES", "path": MEDIA_TYPE_MOVIE, "type": MEDIA_TYPE_MOVIE},
-    {"name": "TV SHOW", "path": MEDIA_TYPE_TVSHOW, "type": MEDIA_TYPE_TVSHOW},
+    {"name": "RECENT", "path": MEDIA_SHORTCUT_RECENT, "type": MEDIA_TYPE_MOVIE},
+    {"name": "MOVIES", "path": MEDIA_SHORTCUT_MOVIE, "type": MEDIA_TYPE_MOVIE},
+    {"name": "TV SHOW", "path": MEDIA_SHORTCUT_TVSHOWS, "type": MEDIA_TYPE_TVSHOW},
 ]
 
 def browse_media(  # noqa: C901
@@ -71,12 +77,9 @@ def browse_media(  # noqa: C901
 
         if media_class == MEDIA_CLASS_MOVIE or media_class == MEDIA_CLASS_TV_SHOW:
             result = None
-            if search_id == MEDIA_TYPE_MOVIE:
-                title = "MOVIES"
+            if search_id in MEDIA_SHORTCUTS:
+                title = search_id
                 result = player.get_movie_list(BROWSE_LIMIT, ZITEM_TYPE_FILTER[search_id])
-            elif search_id == MEDIA_TYPE_TVSHOW:
-                title = "TV SHOW"
-                result = player.get_movie_list(BROWSE_LIMIT,  ZITEM_TYPE_FILTER[search_id])
             else:
                 result = player.get_collection_list(search_id)
 
@@ -97,6 +100,8 @@ def browse_media(  # noqa: C901
                 for item in data:
                     child_type = item["type"]
                     item_id = item["id"]
+                    if child_type == 0:
+                        item_id = item["aggregationId"]
                     item_type = search_type
                     # item_thumbnail = None
                     item_thumbnail = entity.get_browse_image_url(item_type, item_id)
@@ -108,7 +113,7 @@ def browse_media(  # noqa: C901
                             media_content_id=str(item_id),
                             media_content_type=item_type,
                             can_play=child_type in {1, 5, 6},
-                            can_expand=child_type in {2, 3, 4},
+                            can_expand=child_type in {2, 3, 4, 6},
                             thumbnail=item_thumbnail,
                         )
                     )

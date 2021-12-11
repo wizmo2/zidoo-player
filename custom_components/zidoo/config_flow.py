@@ -18,6 +18,9 @@ from .const import (
     CONF_SHORTCUT,
 )
 
+SUPPORTED_MANUFACTURERS = ["Zidoo", "ZIDOO", "Plutinosoft LLCL"]
+IGNORED_MODELS = []
+
 DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_HOST): str,
@@ -73,7 +76,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Return flow options."""
         return ZidooOptionsFlowHandler(config_entry)
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input=None, confirm=False):
         """
         Manage device specific parameters.
         """
@@ -108,10 +111,10 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, user_input):
         """Handle import."""
         return await self.async_step_user(user_input)
-    
+
     async def async_step_ssdp(self, discovery_info):
         """Handle a discovered Harmony device."""
-        #_LOGGER.debug("SSDP discovery_info: %s", discovery_info)
+        _LOGGER.debug("SSDP discovery_info: %s", discovery_info)
 
         parsed_url = urlparse(discovery_info[ssdp.ATTR_SSDP_LOCATION])
         friendly_name = discovery_info[ssdp.ATTR_UPNP_FRIENDLY_NAME]
@@ -124,11 +127,50 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_HOST: parsed_url.hostname,
             CONF_NAME: friendly_name,
         }
+
         _LOGGER.debug("SSDP discovery_info: %s", user_input)
-        
+
+        errors = {}
+        if user_input is not None:
+            try:
+                validated = await validate_input(self.hass, user_input)
+            except InvalidAuth:
+                errors["base"] = "auth_failure"
+            except CannotConnect:
+                errors["base"] = "timeout_error"
+            except UnknownError:
+                _LOGGER.exception("Unexpected exception")
+                errors["base"] = "unknown"
+
+            if "base" not in errors:
+                await self.async_set_unique_id(validated["unique_id"])
+                self._abort_if_unique_id_configured()
+
+                self._set_confirm_only()
+                # Add hub name to config
+                user_input[CONF_NAME] = validated["title"]
+                return self.async_create_entry(
+                    title=validated["title"], data=user_input
+                )
+
+            return self.async_step_link(user_input)
+
+    async def async_step_link( self, user_input: None):
+        """Allow the user to confirm adding the device."""
+        if user_input is not None:
+            return await self.async_step_connect()
+
         self._set_confirm_only()
-        return await self.async_step_user(user_input)
-        
+        return self.async_show_form(
+            step_id="link",
+            description_placeholders={
+                CONF_HOST: user_input[CONF_NAME],
+                CONF_NAME: user_input[CONF_HOST],
+                CONF_PASS: None,
+            },
+        )
+        return self.async_show_form(step_id="confirm")
+
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
 
