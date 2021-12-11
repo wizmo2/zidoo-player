@@ -366,6 +366,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._playing = False
         self._player.media_pause()
 
+    def media_stop(self):
+        """Send media stop command."""
+        self._playing = False
+        self._player.media_stop()
+
     def media_next_track(self):
         """Send next track command."""
         self._player.media_next_track()
