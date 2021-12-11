@@ -1,15 +1,15 @@
 # Home-assistant component for Zidoo media players
 
-This is a functioning solution for controlling my Z9S Zidoo media player on Home-Assistant.  Based on the Zidoo rest api, it should work on other devices (feedback/PRs welcome)
+This is a functioning solution for controlling my Z9S Zidoo media player on Home-Assistant.  Based on the Zidoo REST API, it should work on all Zidoo devices (feedback/PRs welcome)
 
-ZidooRC API will eventually need to be released as a python library per HA requirements.  
+## Features
 
-Includes Media Browse support with favorites (although the latter is work-in-progress - currently hard-coded into media_player)
+- Control Zidoo devices as media players through HA
+- Album art and movie backdrops
+- Browse movies, file system, and share mounts through HA Media Browser 
 
-![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
-
-1.2 is tested up to HA version 2021.10 and uses config-flow.   
-Release 1.1 is tested from HA versions 2021.1 up to 2021.10, requires manual integration, and is limited to basic player control.
+![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
+![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
 
 ## Installation
 
@@ -27,8 +27,9 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, requires manual int
 ### Configuration
 
 1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu
-2. Add the IP address of player
+2. Enter the IP address of player
 3. Enter the Password if you have authentication enabled
+4. Add standard Media Control card for newly added media_player device 
 
 ## FAQs
 > If you installed versions prior to 1.2.5 using HACS and the integration is not availble in ADD INTEGRATIONS
@@ -38,15 +39,20 @@ Release 1.1 is tested from HA versions 2021.1 up to 2021.10, requires manual int
 > If you have issues connecting with the device, it may be an authorization issue.  
 >  1. Try opening the 'Control Center' app on the media player and retry. 
 >  2. Try turning off validation using the button in the app.   
+>
+> Release 1.2 was tested up to HA version 2021.10 and uses config-flow.   
+> Release 1.1 can be used on older HA versions, requires manual integration and is limited to basic player control.
 
 ## ToDo
 
 - Testing on other devices
-  - WOL (does not work on Z9S due to hardware limitations - current code uses ethernet mac address)
+  - WOL (does not work on Z9S due to hardware limitations - reportedly works on Z9X)
   - Authentication ( not sure if newer devices are more secure)
   - Possible device specific options.   
 - Add Coverflow options for Shortcuts in Media Browse
 - Add Discovery?
+- ZidooRC API will eventually need to be released as a python library per HA requirements.  
+
 
 
 
