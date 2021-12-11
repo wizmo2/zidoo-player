@@ -390,7 +390,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def media_seek(self, position):
         """Send media_seek command to media player."""
-        self._player.set_media_position(position, self._duration)
+        self._player.set_media_position(position, self.media_duration)
 
     @property
     def media_image_url(self):
