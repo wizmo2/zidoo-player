@@ -7,6 +7,8 @@ from .zidoorc import ZidooRC
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import callback
+from homeassistant.components import ssdp
+from urllib.parse import urlparse
 
 from .const import (
     _LOGGER,
@@ -16,8 +18,14 @@ from .const import (
     CONF_SHORTCUT,
 )
 
+SUPPORTED_MANUFACTURERS = ["Zidoo", "ZIDOO", "Plutinosoft LLCL"]
+IGNORED_MODELS = []
+
 DATA_SCHEMA = vol.Schema(
-    {vol.Required(CONF_HOST): str, vol.Optional(CONF_PASSWORD): str}
+    {
+        vol.Required(CONF_HOST): str,
+        vol.Optional(CONF_PASSWORD): str
+    }
 )
 
 
@@ -26,7 +34,6 @@ async def validate_input(hass, data):
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
-
     try:
         player = ZidooRC(data[CONF_HOST])
         response = await hass.async_add_executor_job(
@@ -69,7 +76,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Return flow options."""
         return ZidooOptionsFlowHandler(config_entry)
 
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(self, user_input=None, confirmOnly=False):
         """
         Manage device specific parameters.
         """
@@ -95,6 +102,15 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     title=validated["title"], data=user_input
                 )
 
+        if confirmOnly:
+            name = self.context.get(CONF_NAME)
+            return self.async_show_form(
+                step_id="user",
+                description_placeholders={"name": name},
+                data_schema=vol.Schema({vol.Optional(CONF_PASSWORD): str}),
+                errors=errors,
+            )
+
         return self.async_show_form(
             step_id="user",
             data_schema=self.discovery_schema or DATA_SCHEMA,
@@ -104,6 +120,26 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, user_input):
         """Handle import."""
         return await self.async_step_user(user_input)
+
+    async def async_step_ssdp(self, discovery_info):
+        """Handle a discovered Harmony device."""
+        _LOGGER.debug("SSDP discovery_info: %s", discovery_info)
+
+        parsed_url = urlparse(discovery_info[ssdp.ATTR_SSDP_LOCATION])
+        friendly_name = discovery_info[ssdp.ATTR_UPNP_FRIENDLY_NAME]
+
+        self._async_abort_entries_match({CONF_HOST: parsed_url.hostname})
+
+        self.context["title_placeholders"] = {"name": friendly_name}
+
+        user_input = {
+            CONF_HOST: parsed_url.hostname,
+            CONF_NAME: friendly_name,
+        }
+
+        _LOGGER.debug("SSDP discovery_info: %s", user_input)
+
+        return self.async_user_setup(user_input, True)
 
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
@@ -132,10 +168,8 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
 
-
 class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
-
 
 class UnknownError(exceptions.HomeAssistantError):
     """Error to indicate there is an unknown error."""
