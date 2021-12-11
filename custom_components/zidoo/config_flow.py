@@ -139,7 +139,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         _LOGGER.debug("SSDP discovery_info: %s", user_input)
 
-        return self.async_user_setup(user_input, True)
+        return self.async_step_user(user_input, True)
 
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
