@@ -5,7 +5,7 @@ import voluptuous as vol
 from .zidoorc import ZidooRC
 
 from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_UNIQUE_ID
 from homeassistant.core import callback
 from homeassistant.components import ssdp
 from urllib.parse import urlparse
@@ -68,7 +68,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self):
         """Initialize the zidoo flow."""
-        self.discovery_schema = None
+        self.discovery_config = {}
 
     @staticmethod
     @callback
@@ -80,6 +80,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """
         Manage device specific parameters.
         """
+        # _LOGGER.debug("User user_info: %s", user_input)
         errors = {}
         if user_input is not None:
             try:
@@ -98,78 +99,91 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
                 # Add hub name to config
                 user_input[CONF_NAME] = validated["title"]
+                _LOGGER.debug("User Create user_info: %s", user_input)
                 return self.async_create_entry(
                     title=validated["title"], data=user_input
                 )
 
         return self.async_show_form(
             step_id="user",
-            data_schema=self.discovery_schema or DATA_SCHEMA,
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_HOST): str,
+                    vol.Optional(CONF_PASSWORD): str
+                }
+            ),
             errors=errors,
         )
 
     async def async_step_import(self, user_input):
         """Handle import."""
+        _LOGGER.debug("Import user_info: %s", user_input)
         return await self.async_step_user(user_input)
 
     async def async_step_ssdp(self, discovery_info):
         """Handle a discovered Harmony device."""
-        _LOGGER.debug("SSDP discovery_info: %s", discovery_info)
+        #_LOGGER.debug("SSDP discovery_info: %s", discovery_info)
 
-        parsed_url = urlparse(discovery_info[ssdp.ATTR_SSDP_LOCATION])
-        friendly_name = discovery_info[ssdp.ATTR_UPNP_FRIENDLY_NAME]
+        parsed_url = urlparse(discovery_info.ssdp_location)
+        friendly_name = discovery_info.upnp[ssdp.ATTR_UPNP_FRIENDLY_NAME]
 
         self._async_abort_entries_match({CONF_HOST: parsed_url.hostname})
 
         self.context["title_placeholders"] = {"name": friendly_name}
 
-        user_input = {
+        self.discovery_config = {
             CONF_HOST: parsed_url.hostname,
             CONF_NAME: friendly_name,
+            CONF_PASSWORD: None,
         }
+        _LOGGER.debug("SSDP config: %s", self.discovery_config)
 
-        _LOGGER.debug("SSDP discovery_info: %s", user_input)
-
+        # verify we can connect
         errors = {}
-        if user_input is not None:
-            try:
-                validated = await validate_input(self.hass, user_input)
-            except InvalidAuth:
-                errors["base"] = "auth_failure"
-            except CannotConnect:
-                errors["base"] = "timeout_error"
-            except UnknownError:
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
+        try:
+            validated = await validate_input(self.hass, self.discovery_config)
+        except InvalidAuth:
+            errors["base"] = "auth_failure"
+        except CannotConnect:
+            errors["base"] = "timeout_error"
+        except UnknownError:
+            _LOGGER.exception("Unexpected exception")
+            errors["base"] = "unknown"
 
-            if "base" not in errors:
-                await self.async_set_unique_id(validated["unique_id"])
-                self._abort_if_unique_id_configured()
+        if "base" not in errors:
+            await self.async_set_unique_id(validated["unique_id"])
+            self._abort_if_unique_id_configured()
+            
+            # self.discovery_config[CONF_NAME] = validated["title"]
+            return await self.async_step_link()
 
-                self._set_confirm_only()
-                # Add hub name to config
-                user_input[CONF_NAME] = validated["title"]
-                return self.async_create_entry(
-                    title=validated["title"], data=user_input
-                )
-
-            return self.async_step_link(user_input)
-
-    async def async_step_link( self, user_input: None):
+    async def async_step_link( self, user_input=None):
         """Allow the user to confirm adding the device."""
+        #_LOGGER.debug("Link user_info: %s", user_input)
         if user_input is not None:
-            return await self.async_step_connect()
+            # Add name and host to config
+            user_input[CONF_NAME] = self.discovery_config[CONF_NAME]
+            user_input[CONF_HOST] = self.discovery_config[CONF_HOST]
+            _LOGGER.debug("Link Create config: %s", user_input)
+            return self.async_create_entry(
+                title=user_input[CONF_NAME], data=user_input
+            )
 
         self._set_confirm_only()
+        
         return self.async_show_form(
             step_id="link",
             description_placeholders={
-                CONF_HOST: user_input[CONF_NAME],
-                CONF_NAME: user_input[CONF_HOST],
-                CONF_PASS: None,
+                CONF_HOST: self.discovery_config[CONF_HOST],
+                CONF_NAME: self.discovery_config[CONF_NAME],
             },
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(CONF_PASSWORD): str
+                }
+            ),
         )
-        return self.async_show_form(step_id="confirm")
+
 
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
