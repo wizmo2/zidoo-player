@@ -20,6 +20,13 @@
         },
         "description": "Please enter the ip address.",
         "title": "Zidoo Player Setup"
+      },
+      "link": {
+        "data": {
+          "password": "Password"
+        },
+        "title": "Zidoo Player Setup",
+        "description": "Do you want to setup {name} ({host})?"
       }
     }
   },
