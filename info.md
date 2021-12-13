@@ -17,4 +17,4 @@ _**NOTE: Release 1.2.5 fixes a version download issues with HACS.**  If you have
 ## Useful links
 
 - [Repository](https://github.com/wizmo2/zidoo-player)
-- [Install/Configration Help](README.md)
+- [Help](README.md)
