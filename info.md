@@ -1,7 +1,4 @@
-![GitHub all releases](https://img.shields.io/github/downloads/wizmo2/zidoo-player/total)
-![GitHub release (main by Wizmo2)](https://img.shields.io/github/downloads/wizmo2/zidoo-player/latest/total)
-
-[Zidoo Media Player Custom Component](https://github.com/wizmo2/zidoo-player) for homeassistant
+# Zidoo Media Player Custom Component for Homeassistant
 
 ![Zidoo Logo](https://github.com/wizmo2/zidoo-player/raw/dev/images/logo.png)
 
@@ -20,3 +17,4 @@ _**NOTE: Release 1.2.5 fixes a version download issues with HACS.**  If you have
 ## Useful links
 
 - [Repository](https://github.com/wizmo2/zidoo-player)
+- [Help](README.md)
