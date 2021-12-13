@@ -162,16 +162,15 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                 playing_info = self._player.get_playing_info()
                 self._media_info = {}
                 if playing_info is None or not playing_info:
-                    self._channel_name = "Standby"
                     self._media_type = MEDIA_TYPE_APP
                     self._state = STATE_IDLE
                 else:
                     self._media_info = playing_info
-                    mediatype = playing_info.get("source")
                     status = playing_info.get("status")
                     if status and status is not None:
                         if status == 1 or status is True:
                             self._state = STATE_PLAYING
+                    mediatype = playing_info.get("source")
                     if mediatype and mediatype is not None:
                         if mediatype == "video":
                             item_type = self._media_info.get("type")

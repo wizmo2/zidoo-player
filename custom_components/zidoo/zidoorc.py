@@ -12,9 +12,10 @@ from datetime import datetime
 import time
 import urllib.parse
 
-TIMEOUT = 2
-
 _LOGGER = logging.getLogger(__name__)
+
+TIMEOUT = 2
+CONF_PORT = 9529
 
 ZKEY_BACK = "Key.Back"
 ZKEY_CANCEL = "Key.Cancel"
@@ -83,8 +84,15 @@ ZTYPE_TV_SHOW = 3
 ZTYPE_TV_SEASON = 4
 ZTYPE_TV_EPISODE = 5
 ZTYPE_OTHER = 6
-
-CONF_PORT = 9529
+ZTYPE_NAMES = {
+    ZTYPE_VIDEO: "video",
+    ZTYPE_MOVIE: "movie",
+    ZTYPE_COLLECTION: "collection",
+    ZTYPE_TV_SHOW: "tvshow",
+    ZTYPE_TV_SEASON: "tvseason",
+    ZTYPE_TV_EPISODE: "tvepisode",
+    ZTYPE_OTHER: "other"
+}
 
 ZCONTENT_VIDEO = 'Video Player'
 ZCONTENT_MUSIC = 'Music Player'
@@ -105,7 +113,6 @@ ZVIDEO_FILTER_TYPES = {
     "unwatched": 11,
     "unmatched": 12,
 }
-
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
         """Initialize the Zidoo RC class.
