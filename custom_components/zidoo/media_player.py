@@ -362,13 +362,13 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def media_pause(self):
         """Send media pause command."""
-        self._playing = False
-        self._player.media_pause()
+        if self._player.media_pause():
+            self._playing = False
 
     def media_stop(self):
         """Send media stop command."""
-        self._playing = False
-        self._player.media_stop()
+        if self._player.media_stop():
+            self._playing = False
 
     def media_next_track(self):
         """Send next track command."""

@@ -158,9 +158,9 @@ def browse_media(  # noqa: C901
 
         result = player.get_device_list()
 
-        if result is not None and result.get("devices"):
+        if result is not None:
 
-            for item in result["devices"]:
+            for item in result:
                 content_type = item["type"]
                 item_type = None
                 if content_type is not None and content_type in ZCONTENT_ITEM_TYPE:

@@ -219,7 +219,7 @@ class ZidooRC(object):
         cookies = requests.cookies.RequestsCookieJar()
         cookies.set("auth", self._cookies.get("auth"))
         return cookies
-        
+
     def is_connected(self):
         """Basic check for connection status.
         Returns
@@ -256,15 +256,19 @@ class ZidooRC(object):
             key: str
                 remote control key command (see ZKEY list)
             log_error: bool
-                suppesses error logging if False 
+                suppesses error logging if False
         Returns
-            json
-                raw API response
+            True if sucessful
         """
         url = "ZidooControlCenter/RemoteControl/sendkey"
         params = {"key": key}
 
-        return self._req_json(url, params)
+        response = self._req_json(url, params)
+
+        if response and response.get("status") == 200:
+            return True
+        return False
+
 
     def _req_json(self, url, params={}, log_errors=True):
         """Send request command via HTTP json to player.
@@ -274,7 +278,7 @@ class ZidooRC(object):
             params: str
                 api parameters.
             log_error: bool
-                suppesses error logging if False       
+                suppesses error logging if False
         Returns
             json
                 raw API response
@@ -321,15 +325,15 @@ class ZidooRC(object):
             uri: str
                 path of file to play.
         Returns
-            json
-                raw API response if successful
+            True if sucessful
         """
         url = "ZidooFileControl/openFile?path={}&videoplaymode={}".format(uri, 0)
 
         response = self._req_json(url)
 
         if response and response.get("status") == 200:
-            return response
+            return True
+        return False
 
     def get_source(self, source):
         """Returns list of Sources"""
@@ -357,7 +361,7 @@ class ZidooRC(object):
                 date: release date (movie only)
                 episode: episode number (tv only)
                 episode_name: episode title (tv only)
-                season: season number (tv only) 
+                season: season number (tv only)
                 season_name: season title (tv only)
                 series_name: series title (tv only)
         """
@@ -378,7 +382,7 @@ class ZidooRC(object):
             if return_value["status"] == True:
                 self._current_source = ZCONTENT_MUSIC
                 return return_value
-        
+
         return return_value
 
     def _get_video_playing_info(self):
@@ -495,6 +499,24 @@ class ZidooRC(object):
             return response
 
     def get_system_info(self):
+        """Get system information
+        Returns
+            json is successful
+                'status': 200
+                'model':model name
+                'ip': ip address
+                'net_mac':lan mac address
+                'wif_mac': wifi mac address
+                'language': 'en'
+                'firmware': firmwate version
+                'androidversion': os version
+                'flash': flash memory size
+                'ram':' ram memory size
+                'ableRemoteSleep':True (buggy on Z9S)
+                'ableRemoteReboot':True
+                'ableRemoteShutdown':True
+                'ableRemoteBoot':False
+        """
         response = self._req_json("ZidooControlCenter/getModel")
 
         if response is not None and response.get("status") == 200:
@@ -530,7 +552,14 @@ class ZidooRC(object):
         return 0
 
     def get_app_list(self, log_errors=True):
-        """Get the list of installed apps"""
+        """Get the list of installed apps
+        Parameters
+            log_errors
+                set to "False" to disbale errors
+        Results
+            list
+                <app name>: <app_id>
+        """
         return_values = {}
 
         response = self._req_json("ZidooControlCenter/Apps/getApps")
@@ -548,9 +577,8 @@ class ZidooRC(object):
         Parameters
             app_name: str
                 app list reference
-        Returns
-            json
-                raw API response if successful
+        Return
+            True if sucessful
         """
         if len(self._app_list) == 0:
             self._app_list = self.get_app_list(log_errors)
@@ -559,20 +587,26 @@ class ZidooRC(object):
 
     def _start_app(self, app_id, log_errors=True):
         """Start an app by package name"""
-        self._req_json(
+        response = self._req_json(
             "ZidooControlCenter/Apps/openApp?packageName={}".format(app_id)
         )
+
+        if response is not None and response.get("status") == 200:
+            return True
+        return False
 
     def get_device_list(self):
         """Return list of root file system devices.
         Returns
-            json
-                raw API response if successful
+            json device list
+                'name': device name
+                'path': device path
+                'type': device type (see ZDECIVE_TYPE)
         """
         response = self._req_json("ZidooFileControl/getDevices")
 
         if response is not None and response.get("status") == 200:
-            return response
+            return response["devices"]
 
     def get_movie_list(self, page_limit=250, video_type=-1):
         """Return list of movies
@@ -618,7 +652,7 @@ class ZidooRC(object):
                 database movie_id
         Returns
             json
-                raw API response if successful
+                raw API response (no status)
         """
         #response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
         response = self._req_json("Poster/v2/getDetail?id={}".format(movie_id))
@@ -632,8 +666,8 @@ class ZidooRC(object):
             movie_id: int
                 database movie_id
         Returns
-            json
-                raw API response if successful
+            json:
+                raw API episode list if successful
         """
 
         def byEpisode(e):
@@ -661,7 +695,13 @@ class ZidooRC(object):
                 return result["aggregationId"]
 
     def play_movie(self, movie_id, video_type=0):
-        """Play video content by Movie id."""
+        """Play video content by Movie id.
+        Parameters
+            movie_id
+                database id
+        Returns
+            True if sucessfuL
+        """
         # uses the agreggateid to find the first video to play
         video_id = self._collection_video_id(movie_id)
         # print("Video id : {}".format(video_id))
@@ -671,10 +711,21 @@ class ZidooRC(object):
         )
 
         if response and response.get("status") == 200:
-            return response
+            return True
+        return False
 
     def generate_movie_image_url(self, movie_id, width=100, height=150):
-        """Get link to thumbnail"""
+        """Get link to thumbnail
+        Parameters
+            movie_id: int
+                dtanabase id
+            width: int
+                image width in pixels
+            height: int
+                image height in pixels
+        Returns
+            url for image
+        """
         url = "http://{}/ZidooPoster/getFile/getPoster?id={}&w={}&h={}".format(
             self._host, movie_id, width, height
         )
@@ -682,7 +733,17 @@ class ZidooRC(object):
         return url
 
     def generate_current_image_url(self, width=1080, height=720):
-        """Gets link to artwork"""
+        """Gets link to artwork
+        Parameters
+            movie_id: int
+                dtanabase id
+            width: int
+                image width in pixels
+            height: int
+                image height in pixels
+        Returns
+            url for image
+            """
         url = None
 
         if self._current_source == ZCONTENT_VIDEO and self._video_id > 0:
@@ -701,8 +762,18 @@ class ZidooRC(object):
     def get_file_list(self, uri, file_type=0):
         """get file list in hass format
         Returns
-            json
-                raw API response if successful.
+            json if sucessful
+                'status':200
+                'isExists':True
+                'perentPath':'/storage/356d9775-8a40-4d4e-8ef9-9eea931fc5ae'
+                'filelist': list
+                    'name': file name
+                    'type': file type
+                    'path': full file path
+                    'isBDMV': True is high definition
+                    'isBluray': True is blue ray resolution
+                    'length': length in ms
+                    'modifyDate': linux date code
         """
         response = self._req_json(
             "ZidooFileControl/getFileList?path={}&type={}".format(uri, file_type)
@@ -783,7 +854,7 @@ class ZidooRC(object):
 
     def playing_time(self, startdatetime, durationsec):
         """Calculates playing time
-        Parameters 
+        Parameters
             Give starttime, endtime and percentage played.
             Start time format: 2017-03-24T00:00:00+0100
             Using that, we calculate number of seconds to end time.
@@ -819,14 +890,14 @@ class ZidooRC(object):
 
         return return_value
 
-    def set_media_position(self, setdatetime, durationsec=1):
+    def set_media_position(self, position, durationsec=1):
         """Set the current playing position.
         Parameters
-            setdatetime
+            position
                 position in ms
         """
-        if self._set_movie_position(setdatetime) is None:
-            self._set_audio_position(setdatetime)
+        if self._set_movie_position(position) is None:
+            self._set_audio_position(position)
 
     def _set_movie_position(self, position):
         """Set current posotion for video player"""
@@ -835,7 +906,8 @@ class ZidooRC(object):
         )
 
         if response is not None and response.get("status") == 200:
-            return response
+            return True
+        return False
 
     def _set_audio_position(self, position):
         """Set current position for music player"""
@@ -844,4 +916,5 @@ class ZidooRC(object):
         )
 
         if response is not None and response.get("status") == 200:
-            return response
+            return True
+        return False
