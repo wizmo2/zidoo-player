@@ -250,7 +250,7 @@ class ZidooRC(object):
             socket_instance.sendto(msg, ("<broadcast>", 9))
             socket_instance.close()
 
-    def _send_key(self, key, log_error=True):
+    def _send_key(self, key, log_error=False):
         """Sends Remote Control button command to device.
         Parameters
             key: str
@@ -263,7 +263,7 @@ class ZidooRC(object):
         url = "ZidooControlCenter/RemoteControl/sendkey"
         params = {"key": key}
 
-        response = self._req_json(url, params)
+        response = self._req_json(url, params, log_error)
 
         if response and response.get("status") == 200:
             return True
@@ -336,11 +336,11 @@ class ZidooRC(object):
         return False
 
     def get_source(self, source):
-        """Returns list of Sources"""
+        """Returns last known app"""
         return self._current_source
 
     def load_source_list(self):
-        """Load App list from Zidoo device."""
+        """Returns app list."""
         return self.get_app_list()
 
     def get_playing_info(self):
@@ -584,6 +584,7 @@ class ZidooRC(object):
             self._app_list = self.get_app_list(log_errors)
         if app_name in self._app_list:
             return self._start_app(self._app_list[app_name], log_errors=log_errors)
+        return False
 
     def _start_app(self, app_id, log_errors=True):
         """Start an app by package name"""
@@ -598,7 +599,7 @@ class ZidooRC(object):
     def get_device_list(self):
         """Return list of root file system devices.
         Returns
-            json device list
+            json device list if sucessful
                 'name': device name
                 'path': device path
                 'type': device type (see ZDECIVE_TYPE)
@@ -783,13 +784,19 @@ class ZidooRC(object):
             return response
 
     def select_source(self, source):
-        """Set the input source."""
+        """Set the input source.
+        Parameters
+            source:  content
+        Return
+            True if sucessful
+        """
         if len(self._content_mapping) == 0:
             self._content_mapping = self.load_source_list()
 
         if source in self._content_mapping:
             uri = self._content_mapping[source]
-            self.play_content(uri)
+            return self.play_content(uri)
+        return False
 
     def turn_on(self):
         """Turn the media player on."""
@@ -895,9 +902,16 @@ class ZidooRC(object):
         Parameters
             position
                 position in ms
+        Return
+            True if sucessful
         """
-        if self._set_movie_position(position) is None:
-            self._set_audio_position(position)
+        response = self._set_movie_position(position)
+        if response is None:
+            response = self._set_audio_position(position)
+
+        if response is not None:
+            return True
+        return False
 
     def _set_movie_position(self, position):
         """Set current posotion for video player"""
@@ -906,8 +920,7 @@ class ZidooRC(object):
         )
 
         if response is not None and response.get("status") == 200:
-            return True
-        return False
+            return response
 
     def _set_audio_position(self, position):
         """Set current position for music player"""
@@ -916,5 +929,4 @@ class ZidooRC(object):
         )
 
         if response is not None and response.get("status") == 200:
-            return True
-        return False
+            return response
