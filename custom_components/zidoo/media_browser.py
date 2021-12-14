@@ -73,10 +73,10 @@ def browse_media(  # noqa: C901
             result = None
             if search_id == MEDIA_TYPE_MOVIE:
                 title = "MOVIES"
-                result = player.get_movie_list(BROWSE_LIMIT, ZITEM_TYPE_FILTER[search_id])
+                result = player.get_movie_list(ZITEM_TYPE_FILTER[search_id], BROWSE_LIMIT)
             elif search_id == MEDIA_TYPE_TVSHOW:
                 title = "TV SHOW"
-                result = player.get_movie_list(BROWSE_LIMIT,  ZITEM_TYPE_FILTER[search_id])
+                result = player.get_movie_list(ZITEM_TYPE_FILTER[search_id], BROWSE_LIMIT)
             else:
                 result = player.get_collection_list(search_id)
 
