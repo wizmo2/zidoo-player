@@ -162,16 +162,15 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                 playing_info = self._player.get_playing_info()
                 self._media_info = {}
                 if playing_info is None or not playing_info:
-                    self._channel_name = "Standby"
                     self._media_type = MEDIA_TYPE_APP
                     self._state = STATE_IDLE
                 else:
                     self._media_info = playing_info
-                    mediatype = playing_info.get("source")
                     status = playing_info.get("status")
                     if status and status is not None:
                         if status == 1 or status is True:
                             self._state = STATE_PLAYING
+                    mediatype = playing_info.get("source")
                     if mediatype and mediatype is not None:
                         if mediatype == "video":
                             item_type = self._media_info.get("type")
@@ -363,8 +362,13 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def media_pause(self):
         """Send media pause command."""
-        self._playing = False
-        self._player.media_pause()
+        if self._player.media_pause():
+            self._playing = False
+
+    def media_stop(self):
+        """Send media stop command."""
+        if self._player.media_stop():
+            self._playing = False
 
     def media_next_track(self):
         """Send next track command."""
@@ -378,10 +382,12 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and media_type == "file":
-            self._player.play_content(media_id)
-        else:
+        if media_type and (media_type == "movie" or media_type == "tvshow"):
+            self._player.play_movie(media_id, -1)
+        if media_type and media_type == "video":
             self._player.play_movie(media_id)
+        else:
+            self._player.play_file(media_id)
 
     def media_seek(self, position):
         """Send media_seek command to media player."""

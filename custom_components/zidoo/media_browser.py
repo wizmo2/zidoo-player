@@ -3,32 +3,39 @@ from homeassistant.components.media_player import BrowseError, BrowseMedia
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
-    MEDIA_CLASS_TV_SHOW,
+    MEDIA_TYPE_ARTIST,
     MEDIA_TYPE_MOVIE,
+    MEDIA_TYPE_MUSIC,
+    MEDIA_TYPE_PODCAST,
     MEDIA_TYPE_TVSHOW,
+    MEDIA_TYPE_VIDEO,
+    MEDIA_TYPE_GENRE,
+    MEDIA_TYPE_URL,
+    MEDIA_TYPE_MUSIC,
+    MEDIA_TYPE_IMAGE,
 )
 from .const import MEDIA_TYPE_FILE, ZTYPE_MEDIA_TYPE, ZTYPE_MEDIA_CLASS, ZCONTENT_ITEM_TYPE, ITEM_TYPE_MEDIA_CLASS
+from .zidoorc import ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
-MEDIA_SHORTCUT_RECENT = 'RECENT'
-MEDIA_SHORTCUT_MOVIE = 'MOVIES'
-MEDIA_SHORTCUT_TVSHOWS = 'TV SHOWS'
-MEDIA_SHORTCUTS = {MEDIA_SHORTCUT_TVSHOWS, MEDIA_SHORTCUT_RECENT, MEDIA_SHORTCUT_MOVIE}
-
-ZITEM_TYPE_FILTER = {
-    MEDIA_TYPE_FILE: 0,
-    MEDIA_SHORTCUT_RECENT: 2,
-    MEDIA_SHORTCUT_MOVIE: 3,
-    MEDIA_SHORTCUT_TVSHOWS: 4,
-}
 
 ZTITLE = "Zidoo Media"
 
 ZFAVORITES = [
     # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
-    {"name": "RECENT", "path": MEDIA_SHORTCUT_RECENT, "type": MEDIA_TYPE_MOVIE},
-    {"name": "MOVIES", "path": MEDIA_SHORTCUT_MOVIE, "type": MEDIA_TYPE_MOVIE},
-    {"name": "TV SHOW", "path": MEDIA_SHORTCUT_TVSHOWS, "type": MEDIA_TYPE_TVSHOW},
+    {"name": "FAVORITES", "path": 'favorite', "type": MEDIA_TYPE_VIDEO},
+    #{"name": "RECENT", "path": 'recent', "type": MEDIA_TYPE_VIDEO},
+    {"name": "WATCHING", "path": 'watching', "type": MEDIA_TYPE_VIDEO},
+    #{"name": "sD", "path": 'sd', "type": MEDIA_TYPE_VIDEO},
+    {"name": "HD", "path": 'bluray', "type": MEDIA_TYPE_VIDEO},
+    {"name": "UHD", "path": '4k', "type": MEDIA_TYPE_VIDEO},
+    {"name": "KIDS", "path": 'children', "type": MEDIA_TYPE_GENRE},
+    {"name": "UNLOCKED", "path": 'unlocked', "type": MEDIA_TYPE_GENRE},
+    {"name": "NOT WATCHED", "path": 'unwatched', "type": MEDIA_TYPE_VIDEO},
+    #{"name": "UNKNOWN", "path": 'unmatched', "type": MEDIA_TYPE_VIDEO},
+    #{"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
+    {"name": "MOVIES", "path": 'movie', "type": MEDIA_TYPE_MOVIE},
+    {"name": "TV SHOW", "path": 'tvshow', "type": MEDIA_TYPE_TVSHOW},
 ]
 
 def browse_media(  # noqa: C901
@@ -75,11 +82,11 @@ def browse_media(  # noqa: C901
                             )
                         )
 
-        if media_class == MEDIA_CLASS_MOVIE or media_class == MEDIA_CLASS_TV_SHOW:
+        else:
             result = None
-            if search_id in MEDIA_SHORTCUTS:
-                title = search_id
-                result = player.get_movie_list(BROWSE_LIMIT, ZITEM_TYPE_FILTER[search_id])
+            if search_id in ZVIDEO_FILTER_TYPES:
+                # title = "MOVIES"
+                result = player.get_movie_list(ZVIDEO_FILTER_TYPES[search_id], BROWSE_LIMIT)
             else:
                 result = player.get_collection_list(search_id)
 
@@ -100,9 +107,10 @@ def browse_media(  # noqa: C901
                 for item in data:
                     child_type = item["type"]
                     item_id = item["id"]
-                    if child_type == 0:
-                        item_id = item["aggregationId"]
                     item_type = search_type
+                    if child_type == 0:
+                        item_type = MEDIA_TYPE_VIDEO
+                        item_id = item["aggregationId"]
                     # item_thumbnail = None
                     item_thumbnail = entity.get_browse_image_url(item_type, item_id)
 
@@ -120,9 +128,6 @@ def browse_media(  # noqa: C901
 
                 if result.get("name"):
                     title = result.get("name")
-
-        # if children is None:
-        #    raise BrowseError(f"Media not found: {search_type} / {search_id}")
 
         return BrowseMedia(
             title=title,
@@ -163,9 +168,9 @@ def browse_media(  # noqa: C901
 
         result = player.get_device_list()
 
-        if result is not None and result.get("devices"):
+        if result is not None:
 
-            for item in result["devices"]:
+            for item in result:
                 content_type = item["type"]
                 item_type = None
                 if content_type is not None and content_type in ZCONTENT_ITEM_TYPE:

@@ -1,7 +1,9 @@
 """
 Zidoo Remote Control API
 By Wizmo
-  Based on the Sony BraviaRC BY Antonio Parraga Navarro
+References
+    oem v1: https://www.zidoo.tv/Support/developer/
+    oem v2: http://apidoc.zidoo.tv/s/98365225
 """
 import logging
 import json
@@ -12,10 +14,13 @@ from datetime import datetime
 import time
 import urllib.parse
 
-TIMEOUT = 2
-
 _LOGGER = logging.getLogger(__name__)
 
+TIMEOUT = 2             # default timeout
+CONF_PORT = 9529        # default api port
+DEFAULT_COUNT = 250     # default list limit
+
+"""Remote Control Button keys"""
 ZKEY_BACK = "Key.Back"
 ZKEY_CANCEL = "Key.Cancel"
 ZKEY_HOME = "Key.Home"
@@ -76,6 +81,7 @@ ZKEY_PICTURE_IN_PICTURE = "Key.Pip"
 ZKEY_SCREENSHOT = "Key.Screenshot"
 ZKEY_APP_SWITCH = "Key.APP.Switch"
 
+"""Movie Player entry types"""
 ZTYPE_VIDEO = 0
 ZTYPE_MOVIE = 1
 ZTYPE_COLLECTION = 2
@@ -83,34 +89,85 @@ ZTYPE_TV_SHOW = 3
 ZTYPE_TV_SEASON = 4
 ZTYPE_TV_EPISODE = 5
 ZTYPE_OTHER = 6
-
-CONF_PORT = 9529
+ZTYPE_NAMES = {
+    ZTYPE_VIDEO: "video",
+    ZTYPE_MOVIE: "movie",
+    ZTYPE_COLLECTION: "collection",
+    ZTYPE_TV_SHOW: "tvshow",
+    ZTYPE_TV_SEASON: "tvseason",
+    ZTYPE_TV_EPISODE: "tvepisode",
+    ZTYPE_OTHER: "other"
+}
 
 ZCONTENT_VIDEO = 'Video Player'
 ZCONTENT_MUSIC = 'Music Player'
 ZCONTENT_NONE = ''
 
+"""Movie Player search keys"""
 ZVIDEO_FILTER_TYPES = {
     "all": 0,
     "favorite": 1,
-    "recent": 2,
+    "watching": 2,
     "movie": 3,
     "tvshow": 4,
     "sd": 5,
     "bluray": 6,
     "4k": 7,
-    "filter8": 8,
+    "children": 8,
     "unlocked": 9,
-    "filter10": 10,
+    "recent": 10,
     "unwatched": 11,
     "unmatched": 12,
 }
 
+ZVIDEO_SEARCH_TYPES = {
+    "all": 0,
+    "movies": 1,
+    "tvs": 2,
+    "collections": 3
+}
+
+ZMUSIC_SEARCH_TYPES = {
+    "song": 0,
+    "artist": 1,
+    "album": 2
+}
+
+"""File System devicce type names"""
+ZDEVICE_FOLDER = 1000
+ZDEVICE_NAMES = {
+    1000: "hhd",
+    1001: "usb",
+    1002: "usb",
+    1003: "tf",
+    1004: "nfs",
+    1005: "smb"
+}
+
+ZFILETYPE_NAMES = {
+    0: "folder",
+    1: "music",
+    2: "movie",
+    3: "Image",
+    4: "txt",
+    5: "apk",
+    6: "pdf",
+    7: "doc",
+    8: "xls",
+    9: "ppt",
+    10: "web",
+    11: "zip",
+    #default: "other",
+}
+
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
-        """Initialize the Zidoo RC class.
-        MAC address is optional but necessary if we want to turn on the TV.
-        If PSK is not passed then standard basic auth is used.
+        """Initialize the Zidoo class.
+        Parameters
+            mac:
+                address is optional and can be used to manually assign the WOL address.
+            psk:
+                authorization passwortd key.  If not assigned, standard basic auth is used.
         """
 
         self._host = "{}:{}".format(host, CONF_PORT)
@@ -138,18 +195,16 @@ class ZidooRC(object):
             )
         return ret
 
-    def connect(self, clientid="client", nickname="Client"):
-        """Connect to TV and get authentication cookie.
+    def connect(self, clientid="guest", nickname="Client"):
+        """Connect to player and get authentication cookie.
         Parameters
-        ---------
-        clientid: str
-            Client ID.
-        nickname: str
-            Client human friendly name.
+            clientid: str
+                id assigned to connection.
+            nickname: str
+                name assigned to connection.
         Returns
-        -------
-        bool
-            True if connected.
+            json
+                raw api response if sucessful.
         """
         authorization = json.dumps(
             {
@@ -204,13 +259,24 @@ class ZidooRC(object):
                 self._power_status = True
                 return resp
 
+    def _recreate_auth_cookie(self):
+        cookies = requests.cookies.RequestsCookieJar()
+        cookies.set("auth", self._cookies.get("auth"))
+        return cookies
+
     def is_connected(self):
+        """Basic check for connection status.
+        Returns
+            bool
+                True if connected.
+        """
         if self._cookies is None:
             return False
         else:
             return True
 
     def _wakeonlan(self):
+        """Sends WOL command to known mac addresses."""
         if self._mac is not None:
             addr_byte = self._mac.split(":")
             hw_addr = struct.pack(
@@ -228,15 +294,39 @@ class ZidooRC(object):
             socket_instance.sendto(msg, ("<broadcast>", 9))
             socket_instance.close()
 
-    def _send_key(self, key, log_error=True):
-        """Sends Control Key to player"""
+    def _send_key(self, key, log_error=False):
+        """Sends Remote Control button command to device.
+        Parameters
+            key: str
+                remote control key command (see ZKEY list)
+            log_error: bool
+                suppesses error logging if False
+        Returns
+            True if sucessful
+        """
         url = "ZidooControlCenter/RemoteControl/sendkey"
         params = {"key": key}
 
-        return self._req_json(url, params)
+        response = self._req_json(url, params, log_error)
+
+        if response and response.get("status") == 200:
+            return True
+        return False
+
 
     def _req_json(self, url, params={}, log_errors=True):
-        """Send request command via HTTP json to player."""
+        """Send request command via HTTP json to player.
+        Parameters
+            url: str
+                api call.
+            params: str
+                api parameters.
+            log_error: bool
+                suppesses error logging if False
+        Returns
+            json
+                raw API response
+        """
         headers = {}
         if self._psk is not None:
             headers["X-Auth-PSK"] = self._psk
@@ -273,24 +363,61 @@ class ZidooRC(object):
             result = json.loads(response.content.decode("utf-8"))
             return result
 
-    def play_content(self, uri):
-        """Play content by URI."""
+    def play_file(self, uri):
+        """Play content by URI.
+        Parameters
+            uri: str
+                path of file to play.
+        Returns
+            True if sucessful
+        """
         url = "ZidooFileControl/openFile?path={}&videoplaymode={}".format(uri, 0)
 
         response = self._req_json(url)
 
         if response and response.get("status") == 200:
-            return response
+            return True
+        return False
 
     def get_source(self, source):
-        """Returns list of Sources"""
+        """Returns last known app"""
         return self._current_source
 
     def load_source_list(self):
-        """Load App list from Zidoo device."""
+        """Returns app list."""
         return self.get_app_list()
 
+    def select_source(self, source):
+        """Set the input source. Not currently used."""
+        if len(self._content_mapping) == 0:
+            self._content_mapping = self.load_source_list()
+
+        if source in self._content_mapping:
+            uri = self._content_mapping[source]
+            # return
+
     def get_playing_info(self):
+        """Gets playing information of active app.
+        Returns
+            json (if successful)
+                source: music = music player, video = vodeo player
+                status: True if playing
+                uri: path to current file
+                title: title (filename)
+                duration: length in ms
+                position: position in ms
+                artist: artist name(music only)
+                track: track title (music only)
+                type: ??
+                movie_name: movie title (movie only)
+                tag: tag line (movie only)
+                date: release date (movie only)
+                episode: episode number (tv only)
+                episode_name: episode title (tv only)
+                season: season number (tv only)
+                season_name: season title (tv only)
+                series_name: series title (tv only)
+        """
         return_value = {}
 
         response = self._get_video_playing_info()
@@ -299,7 +426,7 @@ class ZidooRC(object):
             return_value["source"] = "video"
             if return_value.get("status") == True:
                 self._current_source = ZCONTENT_VIDEO
-                return {**return_value, **self._movie_info}
+                return {**return_value,**self._movie_info}
 
         response = self._get_music_playing_info()
         if response is not None:
@@ -333,10 +460,6 @@ class ZidooRC(object):
 
     def _get_id_from_uri(self, uri):
         """returns the movie id from the path"""
-        """
-         NOTE: The api call returns movie or season/episode information
-          that could be used for future attributes
-        """
         movie_id = 0
         movie_info = {}
 
@@ -356,11 +479,13 @@ class ZidooRC(object):
                 movie_info["movie_name"] = result.get("name")
                 movie_info["tag"] = result["aggregation"].get("tagLine")
                 #movie_info["date"] = result["aggregation"].get("releaseDate").split('-')[0]
-                movie_info["date"] = datetime.strptime(result["aggregation"].get("releaseDate"), "%Y-%m-%d")
+                release = result["aggregation"].get("releaseDate")
+                if release and release is not "":
+                    movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
             result = response.get("episode")
             if result is not None:
-                movie_info["episode"] = result["aggregation"].get("episodeNumber")
-                movie_info["episode_name"] = result["aggregation"].get("name")
+                movie_info["episode"] =  result["aggregation"].get("episodeNumber")
+                movie_info["episode_name"] =  result["aggregation"].get("name")
             result = response.get("season")
             if result is not None:
                 movie_info["season"] = result["aggregation"].get("seasonNumber")
@@ -373,7 +498,7 @@ class ZidooRC(object):
         return movie_id
 
     def _get_music_playing_info(self):
-        """Get information from the Music Player"""
+        """Get information from built in Music Player"""
         return_value = {}
         response = self._req_json("ZidooMusicControl/getPlayStatus")
 
@@ -401,7 +526,7 @@ class ZidooRC(object):
         return None
 
     def _get_movie_playing_info(self):
-        """Get information."""
+        """Get information from built in Movie Player."""
         return_value = {}
 
         response = self._req_json("ZidooControlCenter/getPlayStatus")
@@ -418,20 +543,46 @@ class ZidooRC(object):
         return None
 
     def get_play_modes(self):
-        """Get the playmode list"""
+        """Get the playmode list
+        Returns
+            json
+                raw api response when successful
+        """
         response = self._req_json("ZidooVideoPlay/getPlayModeList")
 
         if response is not None and response.get("status") == 200:
             return response
 
     def get_system_info(self):
+        """Get system information
+        Returns
+            json is successful
+                'status': 200
+                'model': model name
+                'ip': ip address
+                'net_mac': wired mac address
+                'wif_mac': wifi mac address
+                'language': system language
+                'firmware': firmwate version
+                'androidversion': os version
+                'flash': flash/emmc memory size
+                'ram':' ram memory size
+                'ableRemoteSleep': network sleep compatible (buggy on Z9S)
+                'ableRemoteReboot': network reboot compatible
+                'ableRemoteShutdown': network shut down compatible
+                'ableRemoteBoot': network boot compatible (wol)
+        """
         response = self._req_json("ZidooControlCenter/getModel")
 
         if response is not None and response.get("status") == 200:
             return response
 
     def get_power_status(self):
-        """Get power status: off, active, standby. By default the TV is turned off."""
+        """Get power status
+        Returns
+            "on" when player is on
+            "off" when player is not availblessful
+        """
         self._power_status = False
         try:
             response = self.get_system_info()
@@ -447,27 +598,20 @@ class ZidooRC(object):
         return "off"
 
     def get_volume_info(self):
-        """Get volume info.
-        ? Not currently supported."""
+        """Get volume info. Not currently supported."""
         return None
 
     def set_volume_level(self, volume):
-        """Set volume level.
-        ? Not currently supported."""
+        """Set volume level. Not currently supported."""
         # api_volume = str(int(round(volume * 100)))
         return 0
 
-    def _recreate_auth_cookie(self):
+    def get_app_list(self):
+        """Get the list of installed apps
+        Results
+            list of openable apps
+                <app name>: <app_id>
         """
-        The default cookie is for URL/.
-        For some commands we need it for the root path
-        """
-        cookies = requests.cookies.RequestsCookieJar()
-        cookies.set("auth", self._cookies.get("auth"))
-        return cookies
-
-    def get_app_list(self, log_errors=True):
-        """Get the list of installed apps"""
         return_values = {}
 
         response = self._req_json("ZidooControlCenter/Apps/getApps")
@@ -481,35 +625,60 @@ class ZidooRC(object):
         return return_values
 
     def start_app(self, app_name, log_errors=True):
-        """Start an app by name"""
+        """Start an app by name
+        Parameters
+            app_name: str
+                app list reference
+        Return
+            True if sucessful
+        """
         if len(self._app_list) == 0:
             self._app_list = self.get_app_list(log_errors)
         if app_name in self._app_list:
             return self._start_app(self._app_list[app_name], log_errors=log_errors)
+        return False
 
     def _start_app(self, app_id, log_errors=True):
         """Start an app by package name"""
-        self._req_json(
+        response = self._req_json(
             "ZidooControlCenter/Apps/openApp?packageName={}".format(app_id)
         )
 
+        if response is not None and response.get("status") == 200:
+            return True
+        return False
+
     def get_device_list(self):
-        """Return list of root file system devices."""
+        """Return list of root file system devices.
+        Returns
+            json device list if sucessful
+                'name': device name
+                'path': device path
+                'type': device type (see ZDEVICE_TYPE)
+        """
         response = self._req_json("ZidooFileControl/getDevices")
 
         if response is not None and response.get("status") == 200:
-            return response
+            return response["devices"]
 
-    def get_movie_list(self, page_limit=1000, video_type=-1):
+    def get_movie_list(self, filterType=-1, maxCount=DEFAULT_COUNT):
         """Return list of movies
-            video_type: ZVIDEO_FILTER_TYPES or 0-All,1-Favs,2-Recent,3-Movies,4-TV Shows,5-SD,6-Bluraym,7-4k,8-,9-unlocked,11-unwatched12-unmatched
+        Parameters
+            maxCount: int
+                maxumum number of list items
+            filterType: int or str
+                see ZVIDEO_FILTER_TYPE
+        Returns
+            json
+                raw API response if successful
         """
-        if video_type in ZVIDEO_FILTER_TYPES:
-            video_type = ZVIDEO_FILTER_TYPES[video_type]
+        if filterType in ZVIDEO_FILTER_TYPES:
+            filterType = ZVIDEO_FILTER_TYPES[filterType]
 
+        # v2 http://{{host}}/Poster/v2/getAggregations?type=0&start=0&count=40
         response = self._req_json(
             "ZidooPoster/getVideoList?page=1&pagesize={}&type={}".format(
-                page_limit, video_type
+                maxCount, filterType
             )
         )
 
@@ -517,22 +686,44 @@ class ZidooRC(object):
             return response
 
     def get_collection_list(self, movie_id):
-        """Return video collection details"""
+        """Return video collection details
+        Parameters
+            movie_id: int
+                database movie_id
+        Returns
+            json
+                raw API response if successful
+        """
         response = self._req_json("ZidooPoster/getCollection?id={}".format(movie_id))
 
         if response is not None and response.get("status") == 200:
             return response
 
     def get_movie_details(self, movie_id):
-        """Return video details"""
-        # response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
+        """Return video details
+        Parameters
+            movie_id: int
+                database movie_id
+        Returns
+            json
+                raw API response (no status)
+        """
+        #v1 response = self._req_json("ZidooPoster/getDetail?id={}".format(movie_id))
         response = self._req_json("Poster/v2/getDetail?id={}".format(movie_id))
 
-        if response is not None:  # and response.get("status") == 200:
+        if response is not None:# and response.get("status") == 200:
             return response
 
     def get_episode_list(self, season_id):
-        """Returns list video list sorted by episodes"""
+        """Returns list video list sorted by episodes
+        Parameters
+            movie_id: int
+                database movie_id
+        Returns
+            json:
+                raw API episode list if successful
+        """
+
         def byEpisode(e):
             return e['aggregation']['episodeNumber']
 
@@ -556,24 +747,182 @@ class ZidooRC(object):
         if response is not None:
             for result in response["data"]:
                 return result["aggregationId"]
+        return movie_id
 
-    def play_movie(self, movie_id, video_type=0):
-        """Play content by Movie id."""
+    def search_movies(self, query, searchType=-1, maxCount=DEFAULT_COUNT):
+        """Return video details
+        Parameters
+            movie_id: int
+                database movie_id
+            searchType: int ot str
+                see ZVIDEO_SEARCH_TYPES
+        Returns
+            json
+                raw API response (no status)
+        """
+        if searchType in ZVIDEO_SEARCH_TYPES:
+            searchType = ZVIDEO_SEARCH_TYPES[searchType]
+
+        #v1 "ZidooPoster/search?q={}&type={}&page=1&pagesize={}".format(query, filterType, maxCount)
+        response = self._req_json("Poster/v2/searchAggregation?q={}&type={}&start=0&count={}".format(query, searchType, maxCount))
+
+        if response is not None:# and response.get("status") == 200:
+            return response
+
+    def search_music(self, query, searchType=0, maxCount=DEFAULT_COUNT):
+        """search music
+        Parameters
+            query: str
+                text to search
+            searchType: int or str
+                see ZMUSIC_SEARCH_TYPES
+            maxCount: int
+                max number of songs returned
+        Returns
+            json
+                raw API response (no status)
+        """
+        if searchType in ZMUSIC_SEARCH_TYPES:
+            searchType = ZMUSIC_SEARCH_TYPES[searchType]
+
+        if searchType == 1:
+            return self._search_artist(query, maxCount)
+        elif searchType == 2:
+            return self._search_album(query, maxCount)
+        return self._search_song(query, maxCount)
+
+    def _search_song(self, query, maxCount=DEFAULT_COUNT):
+        """get search list on song title
+        Parameters
+            query: str
+                text to search
+        Returns
+            json
+                raw API response (no status)
+        """
+        response = self._req_json("MusicControl/v2/searchMusic?key={}&start=0&count={}".format(query, maxCount))
+
+        if response is not None:# and response.get("status") == 200:
+            return response
+
+    def _search_album(self, query, maxCount=DEFAULT_COUNT):
+        """get search list on album name
+        Parameters
+            query: str
+                text to search
+        Returns
+            json
+                raw API response (no status)
+        """
+        response = self._req_json("MusicControl/v2/searchAlbum?key={}&start=0&count={}".format(query, maxCount))
+        print(response, query)
+        if response is not None:# and response.get("status") == 200:
+            return response
+
+    def _search_artist(self, query, maxCount=DEFAULT_COUNT):
+        """get serach list on artist name
+        Parameters
+            query: str
+                text to search
+        Returns
+            json
+                raw API response (no status)
+        """
+        response = self._req_json("MusicControl/v2/searchArtist?key={}&start=0&count={}".format(query, maxCount))
+
+        if response is not None:# and response.get("status") == 200:
+            return response
+
+
+    def play_movie(self, movie_id, videoType=0):
+        """Play video content by Movie id.
+        Parameters
+            movie_id
+                database id
+        Returns
+            True if sucessfuL
+        """
         # uses the agreggateid to find the first video to play
-        video_id = self._collection_video_id(movie_id)
+        if videoType != 0:
+            movie_id = self._collection_video_id(movie_id)
         # print("Video id : {}".format(video_id))
-        if video_id is None:
-            video_id = movie_id 
 
+        # v2 http://{}/VideoPlay/playVideo?index=0
         response = self._req_json(
-            "ZidooPoster/PlayVideo?id={}&type={}".format(video_id, video_type)
+            "ZidooPoster/PlayVideo?id={}&type={}".format(movie_id, videoType)
+        )
+
+        if response and response.get("status") == 200:
+            return True
+        return False
+
+    def get_video_playlist(self):
+        """get the current video playlist
+        Returns
+            json if successful
+                'status': 200
+                'size': count
+                'playList' : array
+                    'title': video name (file name)
+                    'index': int
+        """
+        response = self._req_json(
+            "VideoPlay/getPlaylist"
         )
 
         if response and response.get("status") == 200:
             return response
 
-    def generate_movie_image_url(self, movie_id, width=200, height=300):
-        """Return movie thumbnail link"""
+
+    def get_music_playlist(self, maxCount=DEFAULT_COUNT):
+        """Gets the current music player playlist
+        Parameters
+            maxCount: int
+                list size limit
+        Returns
+            raw api response if sucessful
+        """
+        response = self._req_json("MusicControl/v2/getPlayQueue?start=0&count={}".format(maxCount))
+
+        if response is not None and response.get("status") == 200:
+            return response
+
+    def get_file_list(self, uri, file_type=0):
+        """get file list in hass format
+        Returns
+            json if sucessful
+                'status':200
+                'isExists':True
+                'perentPath':'/storage/356d9775-8a40-4d4e-8ef9-9eea931fc5ae'
+                'filelist': list
+                    'name': file name
+                    'type': file type
+                    'path': full file path
+                    'isBDMV': True if ?high definition
+                    'isBluray': True if blue ray resolution
+                    'length': length in ms
+                    'modifyDate': linux date code
+        """
+        response = self._req_json(
+            "ZidooFileControl/getFileList?path={}&type={}".format(uri, file_type)
+        )
+
+        if response is not None and response.get("status") == 200:
+            return response
+
+    def generate_movie_image_url(self, movie_id, width=100, height=150):
+        """Get link to thumbnail
+        Parameters
+            movie_id: int
+                dtanabase id
+            width: int
+                image width in pixels
+            height: int
+                image height in pixels
+        Returns
+            url for image
+        """
+        # http://{}/Poster/v2/getPoster?id=66&w=60&h=30
         url = "http://{}/ZidooPoster/getFile/getPoster?id={}&w={}&h={}".format(
             self._host, movie_id, width, height
         )
@@ -581,6 +930,17 @@ class ZidooRC(object):
         return url
 
     def generate_current_image_url(self, width=1080, height=720):
+        """Gets link to artwork
+        Parameters
+            movie_id: int
+                dtanabase id
+            width: int
+                image width in pixels
+            height: int
+                image height in pixels
+        Returns
+            url for image
+            """
         url = None
 
         if self._current_source == ZCONTENT_VIDEO and self._video_id > 0:
@@ -595,24 +955,6 @@ class ZidooRC(object):
 
         #_LOGGER.debug("zidoo getting current image: url-{}".format(url))
         return url
-
-    def get_file_list(self, uri, file_type=0):
-        """Return file list in hass format"""
-        response = self._req_json(
-            "ZidooFileControl/getFileList?path={}&type={}".format(uri, file_type)
-        )
-
-        if response is not None and response.get("status") == 200:
-            return response
-
-    def select_source(self, source):
-        """Set the input source."""
-        if len(self._content_mapping) == 0:
-            self._content_mapping = self.load_source_list()
-
-        if source in self._content_mapping:
-            uri = self._content_mapping[source]
-            self.play_content(uri)
 
     def turn_on(self):
         """Turn the media player on."""
@@ -658,60 +1000,24 @@ class ZidooRC(object):
         """Send the previous track command."""
         self._send_key(ZKEY_MEDIA_PREVIOUS)
 
-    def calc_time(self, *times):
-        """Calculate the sum of times, value is returned in HH:MM."""
-        total_secs = 0
-        for tms in times:
-            time_parts = [int(s) for s in tms.split(":")]
-            total_secs += (time_parts[0] * 60 + time_parts[1]) * 60 + time_parts[2]
-        total_secs, sec = divmod(total_secs, 60)
-        hour, minute = divmod(total_secs, 60)
-        if hour >= 24:  # set 24:10 to 00:10
-            hour -= 24
-        return "%02d:%02d" % (hour, minute)
-
-    def playing_time(self, startdatetime, durationsec):
-        """Give starttime, endtime and percentage played.
-        Start time format: 2017-03-24T00:00:00+0100
-        Using that, we calculate number of seconds to end time.
+    def set_media_position(self, position, durationsec=1):
+        """Set the current playing position.
+        Parameters
+            position
+                position in ms
+        Return
+            True if sucessful
         """
+        response = self._set_movie_position(position)
+        if response is None:
+            response = self._set_audio_position(position)
 
-        date_format = "%Y-%m-%dT%H:%M:%S"
-        now = datetime.now()
-        stripped_tz = startdatetime[:-5]
-        start_date_time = datetime.strptime(stripped_tz, date_format)
-        start_time = time.strptime(stripped_tz, date_format)
-
-        try:
-            playingtime = now - start_date_time
-        except TypeError:
-            playingtime = now - datetime(*start_time[0:6])
-
-        try:
-            starttime = datetime.time(start_date_time)
-        except TypeError:
-            starttime = datetime.time(datetime(*start_time[0:6]))
-
-        duration = time.strftime("%H:%M:%S", time.gmtime(durationsec))
-        endtime = self.calc_time(str(starttime), str(duration))
-        starttime = starttime.strftime("%H:%M")
-        perc_playingtime = int(round(((playingtime.seconds / durationsec) * 100), 0))
-
-        return_value = {}
-
-        return_value["start_time"] = starttime
-        return_value["end_time"] = endtime
-        return_value["media_position"] = playingtime.seconds
-        return_value["media_position_perc"] = perc_playingtime
-
-        return return_value
-
-    def set_media_position(self, setdatetime, durationsec=1):
-        """Set the curent playing position."""
-        if self._set_movie_position(setdatetime) is None:
-            self._set_audio_position(setdatetime)
+        if response is not None:
+            return True
+        return False
 
     def _set_movie_position(self, position):
+        """Set current posotion for video player"""
         response = self._req_json(
             "ZidooVideoPlay/seekTo?positon={}".format(int(position))
         )
@@ -720,6 +1026,7 @@ class ZidooRC(object):
             return response
 
     def _set_audio_position(self, position):
+        """Set current position for music player"""
         response = self._req_json(
             "ZidooMusicControl/seekTo?time={}".format(int(position))
         )
