@@ -363,7 +363,7 @@ class ZidooRC(object):
             result = json.loads(response.content.decode("utf-8"))
             return result
 
-    def play_content(self, uri):
+    def play_file(self, uri):
         """Play content by URI.
         Parameters
             uri: str
@@ -388,19 +388,13 @@ class ZidooRC(object):
         return self.get_app_list()
 
     def select_source(self, source):
-        """Set the input source.
-        Parameters
-            source:  content
-        Return
-            True if sucessful
-        """
+        """Set the input source. Not currently used."""
         if len(self._content_mapping) == 0:
             self._content_mapping = self.load_source_list()
 
         if source in self._content_mapping:
             uri = self._content_mapping[source]
-            return self.play_content(uri)
-        return False
+            # return 
 
     def get_playing_info(self):
         """Gets playing information of active app.
@@ -763,17 +757,17 @@ class ZidooRC(object):
             json
                 raw API response (no status)
         """
-        if filterType in ZVIDEO_SEARCH_TYPES:
-            filterType = ZVIDEO_SEARCH_TYPES[filterType]
+        if searchType in ZVIDEO_SEARCH_TYPES:
+            searchType = ZVIDEO_SEARCH_TYPES[searchType]
 
         #v1 "ZidooPoster/search?q={}&type={}&page=1&pagesize={}".format(query, filterType, maxCount)
-        response = self._req_json("Poster/v2/searchAggregation?q={}&type={}&start=0&count={}".format(query, filterType, maxCount))
+        response = self._req_json("Poster/v2/searchAggregation?q={}&type={}&start=0&count={}".format(query, searchType, maxCount))
 
         if response is not None:# and response.get("status") == 200:
             return response
 
-    def play_music(self, query, searchType=0, maxCount=DEFAULT_COUNT):
-        """play music based on search query
+    def search_music(self, query, searchType=0, maxCount=DEFAULT_COUNT):
+        """search music
         Parameters
             query: str
                 text to search
@@ -794,16 +788,8 @@ class ZidooRC(object):
             return self._search_album(query, maxCount)
         return self._search_song(query, maxCount)
                                       
-
-    def _play_music_by_id(self, idList):
-        """play list of songe"""
-        response = self._req_json("MusicControl/v2/playMusics?ids={}&trackIndex=-1".format(idList))
-
-        if response is not None:# and response.get("status") == 200:
-            return response
-
     def _search_song(self, query, maxCount=DEFAULT_COUNT):
-        """get serach list on song title
+        """get search list on song title
         Parameters
             query: str
                 text to search
@@ -817,7 +803,7 @@ class ZidooRC(object):
             return response
 
     def _search_album(self, query, maxCount=DEFAULT_COUNT):
-        """get serach list on album name
+        """get search list on album name
         Parameters
             query: str
                 text to search
@@ -845,7 +831,7 @@ class ZidooRC(object):
             return response
 
 
-    def play_movie(self, movie_id, video_type=0):
+    def play_movie(self, movie_id, videoType=0):
         """Play video content by Movie id.
         Parameters
             movie_id
@@ -859,7 +845,7 @@ class ZidooRC(object):
 
         # v2 http://{}/VideoPlay/playVideo?index=0
         response = self._req_json(
-            "ZidooPoster/PlayVideo?id={}&type={}".format(video_id, video_type)
+            "ZidooPoster/PlayVideo?id={}&type={}".format(video_id, videoType)
         )
 
         if response and response.get("status") == 200:

@@ -385,7 +385,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         if media_type and (media_type == "movie" or media_type == "tvshow"):
             self._player.play_movie(media_id)
         else:
-            self._player.play_content(media_id)
+            self._player.play_file(media_id)
 
     def media_seek(self, position):
         """Send media_seek command to media player."""
