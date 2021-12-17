@@ -47,10 +47,10 @@ This is a functioning solution for controlling my Z9S Zidoo media player on Home
 
 - Testing on other devices
   - WOL (does not work on Z9S due to hardware limitations - reportedly works on Z9X)
-  - Authentication ( not sure if newer devices are more secure)
+  - Authentication (not sure if newer devices are more secure)
   - Possible device specific options.   
 - Add Coverflow options for Shortcuts in Media Browse
-- Add Discovery?
+- Add Discovery (dev version tested with z9s, need testing and/or DNLA header information for other device support)
 - ZidooRC API will eventually need to be released as a python library per HA requirements.  
 
 
