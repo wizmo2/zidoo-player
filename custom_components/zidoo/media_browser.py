@@ -4,6 +4,7 @@ from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
     MEDIA_CLASS_TV_SHOW,
+    MEDIA_CLASS_URL,
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_TVSHOW,
 )
@@ -42,11 +43,13 @@ def browse_media(  # noqa: C901
         title = ZTITLE
         thumbnail = None
 
-        if media_class == MEDIA_CLASS_DIRECTORY:
-            result = player.get_file_list(search_id)
+        if media_class == MEDIA_CLASS_DIRECTORY or media_class == MEDIA_CLASS_URL:
+            if media_class == MEDIA_CLASS_DIRECTORY:
+                result = player.get_file_list(search_id)
+            else:
+                result = player.get_host_list(search_id)
 
             if result is not None and result.get("filelist"):
-
                 children = []
                 for item in result["filelist"]:
                     content_type = item["type"]
@@ -176,7 +179,7 @@ def browse_media(  # noqa: C901
                             media_content_id=item["path"],
                             media_content_type=item_type,
                             can_play=False,
-                            can_expand=(child_media_class==MEDIA_CLASS_DIRECTORY),
+                            can_expand=True,
                             thumbnail=item_thumbnail,
                         )
                     )

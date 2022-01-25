@@ -906,6 +906,39 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             return response
 
+    def get_host_list(self, uri, host_type=1005):
+        """get host list of saved network shares
+        Returns
+            json if sucessful
+                'status':200
+                'filelist': list
+                    'name': host/share name
+                    'type': file type
+                    'path': full file path
+                    'isBDMV': True if ?high definition
+                    'isBluray': True if blue ray resolution
+                    'length': length in ms
+                    'modifyDate': linux date code
+        """
+        response = self._req_json(
+            "ZidooFileControl/getHost?path={}&type={}".format(uri, host_type)
+        )
+        _LOGGER.info("zidoo host list: {}".format(response))
+
+        return_value = {}
+        share_list = []
+        if response is not None and response.get("status") == 200:
+            return_value["status"] = 200
+            hosts = response["hosts"]
+            for item in hosts:
+                response = self.get_file_list(item.get("ip"),item.get('type'))
+                if response is not None and response.get("status") == 200:
+                    for share in response["filelist"]:
+                        share["name"] = item.get("name") + "/" + share.get("name")
+                        share_list.append(share)
+        return_value["filelist"] = share_list
+        return return_value
+
     def generate_movie_image_url(self, movie_id, width=100, height=150):
         """Get link to thumbnail
         Parameters
