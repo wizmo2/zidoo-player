@@ -14,6 +14,7 @@ from homeassistant.components.media_player.const import (
     MEDIA_CLASS_TV_SHOW,
     MEDIA_CLASS_VIDEO,
     MEDIA_CLASS_URL,
+    MEDIA_CLASS_IMAGE,
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_ALBUM,
     MEDIA_TYPE_ARTIST,
@@ -26,6 +27,7 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_EPISODE,
     MEDIA_TYPE_VIDEO,
     MEDIA_TYPE_URL,
+    MEDIA_TYPE_IMAGE,
 )
 _LOGGER = logging.getLogger(__package__)
 
@@ -58,13 +60,15 @@ ITEM_TYPE_MEDIA_CLASS = {
     MEDIA_TYPE_VIDEO: MEDIA_CLASS_VIDEO,
     MEDIA_TYPE_FILE: MEDIA_CLASS_DIRECTORY,
     MEDIA_TYPE_URL: MEDIA_CLASS_URL,
+    MEDIA_TYPE_IMAGE: MEDIA_CLASS_IMAGE,
 }
 
 ZCONTENT_ITEM_TYPE = {
-    0: MEDIA_TYPE_FILE,  # folder
+    0: MEDIA_TYPE_FILE,   # folder
     1: MEDIA_TYPE_TRACK,  # music
     2: MEDIA_TYPE_VIDEO,  # video
-    # 3: 'image', # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
+    3: MEDIA_TYPE_IMAGE,   # image
+    # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
     1000: MEDIA_TYPE_FILE,  # hhd
     1001: MEDIA_TYPE_FILE,  # usb
     1002: MEDIA_TYPE_FILE,  # usb
