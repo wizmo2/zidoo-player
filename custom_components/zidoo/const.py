@@ -76,16 +76,17 @@ ITEM_TYPE_MEDIA_CLASS = {
 }
 
 ZCONTENT_ITEM_TYPE = {
-    0: MEDIA_TYPE_FILE,  # folder
+    0: MEDIA_TYPE_FILE,   # folder
     1: MEDIA_TYPE_TRACK,  # music
     2: MEDIA_TYPE_VIDEO,  # video
-    # 3: 'image', # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
+    3: MEDIA_TYPE_IMAGE,   # image
+    # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
     1000: MEDIA_TYPE_FILE,  # hhd
     1001: MEDIA_TYPE_FILE,  # usb
     1002: MEDIA_TYPE_FILE,  # usb
     1003: MEDIA_TYPE_FILE,  # tf
-    1004: MEDIA_TYPE_FILE,  # nfs
-    1005: MEDIA_TYPE_FILE,  # smb
+    1004: MEDIA_TYPE_URL,  # nfs
+    1005: MEDIA_TYPE_URL,  # smb
     1006: MEDIA_TYPE_FILE,
     1007: MEDIA_TYPE_FILE,
     1008: MEDIA_TYPE_FILE,
