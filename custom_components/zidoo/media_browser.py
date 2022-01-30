@@ -104,6 +104,9 @@ def browse_media(  # noqa: C901
                     child_type = item["type"]
                     item_id = item["id"]
                     item_type = search_type
+                    if child_type == 0:
+                        item_type = MEDIA_TYPE_VIDEO
+                        item_id = item["aggregationId"]
                     # item_thumbnail = None
                     item_thumbnail = entity.get_browse_image_url(item_type, item_id)
 
@@ -114,7 +117,7 @@ def browse_media(  # noqa: C901
                             media_content_id=str(item_id),
                             media_content_type=item_type,
                             can_play=child_type in {1, 5, 6},
-                            can_expand=child_type in {2, 3, 4},
+                            can_expand=child_type in {2, 3, 4, 6},
                             thumbnail=item_thumbnail,
                         )
                     )

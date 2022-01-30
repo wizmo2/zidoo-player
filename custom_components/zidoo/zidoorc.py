@@ -107,15 +107,15 @@ ZCONTENT_NONE = ''
 ZVIDEO_FILTER_TYPES = {
     "all": 0,
     "favorite": 1,
-    "recent": 2,
+    "watching": 2,
     "movie": 3,
     "tvshow": 4,
     "sd": 5,
     "bluray": 6,
     "4k": 7,
-    "filter8": 8,
+    "children": 8,
     "unlocked": 9,
-    "filter10": 10,
+    "recent": 10,
     "unwatched": 11,
     "unmatched": 12,
 }
@@ -479,7 +479,9 @@ class ZidooRC(object):
                 movie_info["movie_name"] = result.get("name")
                 movie_info["tag"] = result["aggregation"].get("tagLine")
                 #movie_info["date"] = result["aggregation"].get("releaseDate").split('-')[0]
-                movie_info["date"] = datetime.strptime(result["aggregation"].get("releaseDate"), "%Y-%m-%d")
+                release = result["aggregation"].get("releaseDate")
+                if release and release is not "":
+                    movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
             result = response.get("episode")
             if result is not None:
                 movie_info["episode"] =  result["aggregation"].get("episodeNumber")
