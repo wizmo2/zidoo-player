@@ -394,7 +394,7 @@ class ZidooRC(object):
 
         if source in self._content_mapping:
             uri = self._content_mapping[source]
-            # return 
+            # return
 
     def get_playing_info(self):
         """Gets playing information of active app.
@@ -749,7 +749,7 @@ class ZidooRC(object):
     def search_movies(self, query, searchType=-1, maxCount=DEFAULT_COUNT):
         """Return video details
         Parameters
-            movie_id: int 
+            movie_id: int
                 database movie_id
             searchType: int ot str
                 see ZVIDEO_SEARCH_TYPES
@@ -787,7 +787,7 @@ class ZidooRC(object):
         elif searchType == 2:
             return self._search_album(query, maxCount)
         return self._search_song(query, maxCount)
-                                      
+
     def _search_song(self, query, maxCount=DEFAULT_COUNT):
         """get search list on song title
         Parameters
@@ -923,7 +923,7 @@ class ZidooRC(object):
         response = self._req_json(
             "ZidooFileControl/getHost?path={}&type={}".format(uri, host_type)
         )
-        _LOGGER.info("zidoo host list: {}".format(response))
+        _LOGGER.debug("zidoo host list: {}".format(response))
 
         return_value = {}
         share_list = []
@@ -932,9 +932,10 @@ class ZidooRC(object):
             hosts = response["hosts"]
             for item in hosts:
                 response = self.get_file_list(item.get("ip"),item.get('type'))
+                hostname = item.get("name").split('/')[-1]
                 if response is not None and response.get("status") == 200:
                     for share in response["filelist"]:
-                        share["name"] = item.get("name") + "/" + share.get("name")
+                        share["name"] = hostname + "/" + share.get("name")
                         share_list.append(share)
         return_value["filelist"] = share_list
         return return_value

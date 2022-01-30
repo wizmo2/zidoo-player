@@ -38,7 +38,7 @@ def browse_media(  # noqa: C901
         search_type = payload["search_type"]
 
         media_class = ITEM_TYPE_MEDIA_CLASS[search_type]
-        child_media_class = MEDIA_CLASS_DIRECTORY
+        child_media_class = None
         children = None
         title = ZTITLE
         thumbnail = None
@@ -57,20 +57,23 @@ def browse_media(  # noqa: C901
                     if content_type is not None and content_type in ZCONTENT_ITEM_TYPE:
                         item_type = ZCONTENT_ITEM_TYPE[content_type]
                     if item_type is not None:
-                        child_media_class = ITEM_TYPE_MEDIA_CLASS[item_type]
+                        item_class = ITEM_TYPE_MEDIA_CLASS[item_type]
                         item_thumbnail = None
 
                         children.append(
                             BrowseMedia(
                                 title=item["name"],
-                                media_class=child_media_class,
+                                media_class=item_class,
                                 media_content_id=item["path"],
                                 media_content_type=item_type,
                                 can_play=True,
-                                can_expand=child_media_class == MEDIA_CLASS_DIRECTORY,
+                                can_expand=item_class == MEDIA_CLASS_DIRECTORY,
                                 thumbnail=item_thumbnail,
                             )
                         )
+
+                        if child_media_class is None:
+                            child_media_class = item_class
 
         if media_class == MEDIA_CLASS_MOVIE or media_class == MEDIA_CLASS_TV_SHOW:
             result = None
