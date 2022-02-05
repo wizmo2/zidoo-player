@@ -44,9 +44,11 @@ from .const import (
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
     CONF_SHORTCUT,
+    SEARCH_SERVICE,
     ZTYPE_MEDIA_TYPE,
 )
 
+from homeassistant.helpers import entity_platform
 import homeassistant.helpers.config_validation as cv
 
 from homeassistant.util.dt import utcnow
@@ -67,6 +69,13 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_SHORTCUT): vol.All(cv.ensure_list, [SHORTCUT_SCHEMA]),
     }
+)
+
+QUERY_STRING = 'query_string'
+VIDEO_TYPE = 'video_type'
+
+SEARCH_SCHEMA = vol.Schema(
+    {vol.Optional(QUERY_STRING): str, vol.Optional(VIDEO_TYPE): str}
 )
 
 SUPPORT_ZIDOO = (
@@ -115,6 +124,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     player = ZidooRC(config_entry.data[CONF_HOST])
 
     async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
+
+    platform = entity_platform.async_get_current_platform()
+
+    platform.async_register_entity_service(
+        SEARCH_SERVICE,
+        SEARCH_SCHEMA,
+        "search_media",
+    )
+
 
 
 class ZidooPlayerDevice(MediaPlayerEntity):
@@ -397,6 +415,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def media_image_url(self):
         """Image url of current playing media."""
         return self._player.generate_current_image_url()
+
+    async def search_media(self, keyword):
+        """Emulate opening the search screen and entering the search keyword."""
+        await self.async_browse_media()
+
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
         """Implement the websocket media browsing helper"""
