@@ -3,6 +3,7 @@ from homeassistant.components.media_player import BrowseError, BrowseMedia
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
+    MEDIA_CLASS_URL,
     MEDIA_TYPE_ARTIST,
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_MUSIC,
@@ -14,7 +15,13 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_IMAGE,
 )
-from .const import MEDIA_TYPE_FILE, ZTYPE_MEDIA_TYPE, ZTYPE_MEDIA_CLASS, ZCONTENT_ITEM_TYPE, ITEM_TYPE_MEDIA_CLASS
+from .const import (
+    MEDIA_TYPE_FILE,
+    ZTYPE_MEDIA_TYPE,
+    ZTYPE_MEDIA_CLASS,
+    ZCONTENT_ITEM_TYPE,
+    ITEM_TYPE_MEDIA_CLASS,
+)
 from .zidoorc import ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
@@ -23,19 +30,19 @@ ZTITLE = "Zidoo Media"
 
 ZFAVORITES = [
     # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
-    {"name": "FAVORITES", "path": 'favorite', "type": MEDIA_TYPE_VIDEO},
-    #{"name": "RECENT", "path": 'recent', "type": MEDIA_TYPE_VIDEO},
-    {"name": "WATCHING", "path": 'watching', "type": MEDIA_TYPE_VIDEO},
-    #{"name": "sD", "path": 'sd', "type": MEDIA_TYPE_VIDEO},
-    {"name": "HD", "path": 'bluray', "type": MEDIA_TYPE_VIDEO},
-    {"name": "UHD", "path": '4k', "type": MEDIA_TYPE_VIDEO},
-    {"name": "KIDS", "path": 'children', "type": MEDIA_TYPE_GENRE},
-    {"name": "UNLOCKED", "path": 'unlocked', "type": MEDIA_TYPE_GENRE},
-    {"name": "NOT WATCHED", "path": 'unwatched', "type": MEDIA_TYPE_VIDEO},
-    #{"name": "UNKNOWN", "path": 'unmatched', "type": MEDIA_TYPE_VIDEO},
-    #{"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
-    {"name": "MOVIES", "path": 'movie', "type": MEDIA_TYPE_MOVIE},
-    {"name": "TV SHOW", "path": 'tvshow', "type": MEDIA_TYPE_TVSHOW},
+    {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
+    {"name": "RECENT", "path": "recent", "type": MEDIA_TYPE_VIDEO},
+    {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},
+    # {"name": "sD", "path": 'sd', "type": MEDIA_TYPE_VIDEO},
+    # {"name": "HD", "path": 'bluray', "type": MEDIA_TYPE_VIDEO},
+    # {"name": "UHD", "path": '4k', "type": MEDIA_TYPE_VIDEO},
+    {"name": "KIDS", "path": "children", "type": MEDIA_TYPE_GENRE},
+    {"name": "UNLOCKED", "path": "unlocked", "type": MEDIA_TYPE_GENRE},
+    {"name": "NOT WATCHED", "path": "unwatched", "type": MEDIA_TYPE_VIDEO},
+    {"name": "UNKNOWN", "path": "unmatched", "type": MEDIA_TYPE_VIDEO},
+    # {"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
+    {"name": "MOVIES", "path": "movie", "type": MEDIA_TYPE_MOVIE},
+    {"name": "TV SHOW", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW},
 ]
 
 def browse_media(  # noqa: C901
@@ -90,7 +97,9 @@ def browse_media(  # noqa: C901
             result = None
             if search_id in ZVIDEO_FILTER_TYPES:
                 # title = "MOVIES"
-                result = player.get_movie_list(ZVIDEO_FILTER_TYPES[search_id], BROWSE_LIMIT)
+                result = player.get_movie_list(
+                    ZVIDEO_FILTER_TYPES[search_id], BROWSE_LIMIT
+                )
             else:
                 result = player.get_collection_list(search_id)
 

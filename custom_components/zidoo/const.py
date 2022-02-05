@@ -53,6 +53,9 @@ CLIENTID_NICKNAME = "Home Assistant"
 # Default Values
 CONF_SHORTCUT = "shortcut_json"
 
+# Services
+SEARCH_SERVICE = "search"
+
 MEDIA_TYPE_FILE = "file"
 
 ITEM_TYPE_MEDIA_CLASS = {

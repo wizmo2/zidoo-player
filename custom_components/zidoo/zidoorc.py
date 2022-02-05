@@ -16,6 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
+VERSION = '1.3.0'
 TIMEOUT = 2             # default timeout
 CONF_PORT = 9529        # default api port
 DEFAULT_COUNT = 250     # default list limit
@@ -480,7 +481,7 @@ class ZidooRC(object):
                 movie_info["tag"] = result["aggregation"].get("tagLine")
                 #movie_info["date"] = result["aggregation"].get("releaseDate").split('-')[0]
                 release = result["aggregation"].get("releaseDate")
-                if release and release is not "":
+                if release:
                     movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
             result = response.get("episode")
             if result is not None:
@@ -571,10 +572,12 @@ class ZidooRC(object):
                 'ableRemoteReboot': network reboot compatible
                 'ableRemoteShutdown': network shut down compatible
                 'ableRemoteBoot': network boot compatible (wol)
+                'zidoorcversion': python api version
         """
         response = self._req_json("ZidooControlCenter/getModel")
 
         if response is not None and response.get("status") == 200:
+            response['zidoorcversion'] = VERSION
             return response
 
     def get_power_status(self):
@@ -672,6 +675,8 @@ class ZidooRC(object):
             json
                 raw API response if successful
         """
+        def byId(e):
+            return e['id']
         if filterType in ZVIDEO_FILTER_TYPES:
             filterType = ZVIDEO_FILTER_TYPES[filterType]
 
@@ -683,6 +688,8 @@ class ZidooRC(object):
         )
 
         if response is not None and response.get("status") == 200:
+            if filterType in {10,11}:
+                response["data"].sort(key=byId, reverse=True)
             return response
 
     def get_collection_list(self, movie_id):
@@ -927,7 +934,7 @@ class ZidooRC(object):
         response = self._req_json(
             "ZidooFileControl/getHost?path={}&type={}".format(uri, host_type)
         )
-        _LOGGER.debug("zidoo host list: {}".format(response))
+        _LOGGER.debug("zidoo host list: {0}".format(response))
 
         return_value = {}
         share_list = []
@@ -944,7 +951,7 @@ class ZidooRC(object):
         return_value["filelist"] = share_list
         return return_value
 
-    def generate_movie_image_url(self, movie_id, width=100, height=150):
+    def generate_movie_image_url(self, movie_id, width=200, height=300):
         """Get link to thumbnail
         Parameters
             movie_id: int
