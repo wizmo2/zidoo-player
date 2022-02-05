@@ -609,7 +609,7 @@ class ZidooRC(object):
         # api_volume = str(int(round(volume * 100)))
         return 0
 
-    def get_app_list(self):
+    def get_app_list(self, log_errors=True):
         """Get the list of installed apps
         Results
             list of openable apps
@@ -617,7 +617,7 @@ class ZidooRC(object):
         """
         return_values = {}
 
-        response = self._req_json("ZidooControlCenter/Apps/getApps")
+        response = self._req_json("ZidooControlCenter/Apps/getApps", log_errors=log_errors)
 
         if response is not None and response.get("status") == 200:
             for result in response["apps"]:
