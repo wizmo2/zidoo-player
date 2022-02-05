@@ -1,0 +1,17 @@
+search:
+  name: Search library
+  description: Search movie library and display browser.
+  fields:
+    query_string:
+      name: Search String
+      description: Keyword query string
+      required: true
+      example: "West Wing"
+      selector:
+        text:
+    video_type:
+      name: Video Type
+      description: Search Video Type ('movie','tvshow','other','hd','uhd','unlocked','kids')
+      example: "tvshow"
+      selector:
+        text:
