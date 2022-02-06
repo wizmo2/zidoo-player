@@ -1058,8 +1058,9 @@ class ZidooRC(object):
         Return
             True if sucessful
         """
-        response = self._set_movie_position(position)
-        if response is None:
+        if self._current_source == ZCONTENT_VIDEO:
+            response = self._set_movie_position(position)
+        elif self._current_source == ZCONTENT_MUSIC:
             response = self._set_audio_position(position)
 
         if response is not None:
