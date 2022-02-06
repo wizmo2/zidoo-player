@@ -31,8 +31,6 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
-    CONF_PATH,
-    CONF_PASSWORD,
     STATE_IDLE,
     STATE_OFF,
     STATE_PAUSED,
@@ -43,9 +41,7 @@ from .const import (
     _LOGGER,
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
-    CONF_SHORTCUT,
     SEARCH_SERVICE,
-    ZTYPE_MEDIA_TYPE,
 )
 
 from homeassistant.helpers import entity_platform
@@ -58,18 +54,6 @@ from homeassistant.helpers.network import is_internal_request
 from .media_browser import browse_media  # build_item_response, library_payload
 
 DEFAULT_NAME = "Zidoo Media Player"
-
-SHORTCUT_SCHEMA = vol.Schema(
-    {vol.Required(CONF_PATH): cv.string, vol.Optional(CONF_NAME): cv.string}
-)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_HOST): cv.string,
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_SHORTCUT): vol.All(cv.ensure_list, [SHORTCUT_SCHEMA]),
-    }
-)
 
 QUERY_STRING = 'query_string'
 VIDEO_TYPE = 'video_type'
@@ -157,6 +141,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._max_volume = None
         self._volume = None
         self._last_update = None
+        self._config_entry = config_entry
 
         # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
         # if response is not None:
@@ -400,12 +385,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        if media_type and (media_type == "movie" or media_type == "tvshow"):
-            self._player.play_movie(media_id, -1)
-        if media_type and media_type == "video":
-            self._player.play_movie(media_id)
-        else:
+        if media_type and media_type == "file":
             self._player.play_file(media_id)
+        else:
+            self._player.play_movie(media_id)
 
     def media_seek(self, position):
         """Send media_seek command to media player."""

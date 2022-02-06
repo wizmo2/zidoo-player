@@ -1,5 +1,6 @@
 """Support for media browsing."""
 from homeassistant.components.media_player import BrowseError, BrowseMedia
+from homeassistant.helpers.network import is_internal_request
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
@@ -21,29 +22,15 @@ from .const import (
     ZTYPE_MEDIA_CLASS,
     ZCONTENT_ITEM_TYPE,
     ITEM_TYPE_MEDIA_CLASS,
+    ZSHORTCUTS,
+    ZDEFAULT_SHORTCUTS,
+    CONF_SHORTCUT,
 )
 from .zidoorc import ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
 
 ZTITLE = "Zidoo Media"
-
-ZFAVORITES = [
-    # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
-    {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
-    {"name": "RECENT", "path": "recent", "type": MEDIA_TYPE_VIDEO},
-    {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},
-    # {"name": "sD", "path": 'sd', "type": MEDIA_TYPE_VIDEO},
-    # {"name": "HD", "path": 'bluray', "type": MEDIA_TYPE_VIDEO},
-    # {"name": "UHD", "path": '4k', "type": MEDIA_TYPE_VIDEO},
-    {"name": "KIDS", "path": "children", "type": MEDIA_TYPE_GENRE},
-    {"name": "UNLOCKED", "path": "unlocked", "type": MEDIA_TYPE_GENRE},
-    {"name": "NOT WATCHED", "path": "unwatched", "type": MEDIA_TYPE_VIDEO},
-    {"name": "UNKNOWN", "path": "unmatched", "type": MEDIA_TYPE_VIDEO},
-    # {"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
-    {"name": "MOVIES", "path": "movie", "type": MEDIA_TYPE_MOVIE},
-    {"name": "TV SHOW", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW},
-]
 
 def browse_media(  # noqa: C901
     entity, is_internal, media_content_type=None, media_content_id=None
@@ -52,7 +39,7 @@ def browse_media(  # noqa: C901
 
     def build_item_response(player, payload):
         """Create response payload for search described by payload."""
-
+        internal_request = is_internal_request(entity.hass)
         search_id = payload["search_id"]
         search_type = payload["search_type"]
 
@@ -84,7 +71,7 @@ def browse_media(  # noqa: C901
                                 title=item["name"],
                                 media_class=item_class,
                                 media_content_id=item["path"],
-                                media_content_type=item_type,
+                                media_content_type=MEDIA_TYPE_FILE,
                                 can_play=True,
                                 can_expand=item_class == MEDIA_CLASS_DIRECTORY,
                                 thumbnail=item_thumbnail,
@@ -115,7 +102,10 @@ def browse_media(  # noqa: C901
                         if episodes is not None:
                             data = episodes
                     if video_type == 4 and data[0].get("parentId") > 0:
-                        thumbnail = player.generate_movie_image_url(data[0]["parentId"])
+                        if internal_request:
+                            thumbnail = player.generate_movie_image_url(data[0]["parentId"])
+                        else:
+                            thumbnail = entity.get_browse_image_url(MEDIA_TYPE_VIDEO, data[0]["parentId"])
                 children = []
                 for item in data:
                     child_type = item["type"]
@@ -125,7 +115,10 @@ def browse_media(  # noqa: C901
                         item_type = MEDIA_TYPE_VIDEO
                         item_id = item["aggregationId"]
                     # item_thumbnail = None
-                    item_thumbnail = entity.get_browse_image_url(item_type, item_id)
+                    if internal_request:
+                        item_thumbnail = player.generate_movie_image_url(item_id)
+                    else:
+                        item_thumbnail = entity.get_browse_image_url(item_type, item_id)
 
                     children.append(
                         BrowseMedia(
@@ -151,7 +144,7 @@ def browse_media(  # noqa: C901
             can_play=False,
             children=children,
             can_expand=True,
-            thumbnail=thumbnail
+            thumbnail=thumbnail,
         )
 
     def library_payload(player):
@@ -167,17 +160,19 @@ def browse_media(  # noqa: C901
         }
 
         # Add favorite
-        for item in ZFAVORITES:
-            library_info["children"].append(
-                BrowseMedia(
-                    title=item["name"],
-                    media_class=ITEM_TYPE_MEDIA_CLASS[item["type"]],
-                    media_content_id=item["path"],
-                    media_content_type=item["type"],
-                    can_play=False,
-                    can_expand=True,
+        shortcuts = entity._config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS)
+        for item in ZSHORTCUTS:
+            if item["path"] in shortcuts:
+                library_info["children"].append(
+                    BrowseMedia(
+                        title=item["name"],
+                        media_class=ITEM_TYPE_MEDIA_CLASS[item["type"]],
+                        media_content_id=item["path"],
+                        media_content_type=item["type"],
+                        can_play=False,
+                        can_expand=True,
+                    )
                 )
-            )
 
         result = player.get_device_list()
 
