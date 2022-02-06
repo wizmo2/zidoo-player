@@ -676,6 +676,10 @@ class ZidooRC(object):
             json
                 raw API response if successful
         """
+
+        def byId(e):
+            return e["id"]
+
         if filterType in ZVIDEO_FILTER_TYPES:
             filterType = ZVIDEO_FILTER_TYPES[filterType]
 
@@ -687,6 +691,8 @@ class ZidooRC(object):
         )
 
         if response is not None and response.get("status") == 200:
+            if filterType in {10, 11}:
+                response["data"].sort(key=byId, reverse=True)
             return response
 
     def get_collection_list(self, movie_id):
