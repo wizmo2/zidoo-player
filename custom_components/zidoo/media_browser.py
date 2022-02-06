@@ -16,8 +16,6 @@ from .const import (
     ZTYPE_MEDIA_CLASS,
     ZCONTENT_ITEM_TYPE,
     ITEM_TYPE_MEDIA_CLASS,
-    ZSHORTCUTS,
-    ZDEFAULT_SHORTCUTS,
     CONF_SHORTCUT,
 )
 from .zidoorc import ZVIDEO_FILTER_TYPES
