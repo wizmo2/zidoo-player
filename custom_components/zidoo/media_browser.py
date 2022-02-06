@@ -8,7 +8,17 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_TVSHOW,
 )
-from .const import MEDIA_TYPE_FILE, ZTYPE_MEDIA_TYPE, ZTYPE_MEDIA_CLASS, ZCONTENT_ITEM_TYPE, ITEM_TYPE_MEDIA_CLASS
+from .const import (
+    MEDIA_TYPE_FILE,
+    ZTYPE_MEDIA_TYPE,
+    ZTYPE_MEDIA_CLASS,
+    ZCONTENT_ITEM_TYPE,
+    ITEM_TYPE_MEDIA_CLASS,
+    ZSHORTCUTS,
+    ZDEFAULT_SHORTCUTS,
+    CONF_SHORTCUT,
+)
+from .zidoorc import ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
 
@@ -65,7 +75,7 @@ def browse_media(  # noqa: C901
                                 title=item["name"],
                                 media_class=item_class,
                                 media_content_id=item["path"],
-                                media_content_type=item_type,
+                                media_content_type=MEDIA_TYPE_FILE,
                                 can_play=True,
                                 can_expand=item_class == MEDIA_CLASS_DIRECTORY,
                                 thumbnail=item_thumbnail,

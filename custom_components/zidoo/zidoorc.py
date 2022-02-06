@@ -850,8 +850,7 @@ class ZidooRC(object):
         if response is not None:  # and response.get("status") == 200:
             return response
 
-
-    def play_movie(self, movie_id, videoType=0):
+    def play_movie(self, movie_id, videoType=-1):
         """Play video content by Movie id.
         Parameters
             movie_id
@@ -860,12 +859,13 @@ class ZidooRC(object):
             True if sucessfuL
         """
         # uses the agreggateid to find the first video to play
-        video_id = self._collection_video_id(movie_id)
+        if videoType != 0:
+            movie_id = self._collection_video_id(movie_id)
         # print("Video id : {}".format(video_id))
 
         # v2 http://{}/VideoPlay/playVideo?index=0
         response = self._req_json(
-            "ZidooPoster/PlayVideo?id={}&type={}".format(video_id, videoType)
+            "ZidooPoster/PlayVideo?id={}&type={}".format(movie_id, videoType)
         )
 
         if response and response.get("status") == 200:
