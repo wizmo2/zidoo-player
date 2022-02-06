@@ -413,7 +413,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self, media_content_type, media_content_id, media_image_id=None
     ):
         """Get media image from server."""
-        image_url = self._player.generate_movie_image_url(media_content_id, 200, 300)
+        image_url = self._player.generate_movie_image_url(media_content_id)
         if image_url:
             result = await self._async_fetch_image(image_url)
             return result

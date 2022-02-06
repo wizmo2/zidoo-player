@@ -125,9 +125,6 @@ def browse_media(  # noqa: C901
                 if result.get("name"):
                     title = result.get("name")
 
-        # if children is None:
-        #    raise BrowseError(f"Media not found: {search_type} / {search_id}")
-
         return BrowseMedia(
             title=title,
             media_class=media_class,
@@ -137,7 +134,7 @@ def browse_media(  # noqa: C901
             can_play=False,
             children=children,
             can_expand=True,
-            thumbnail=thumbnail
+            thumbnail=thumbnail,
         )
 
     def library_payload(player):
