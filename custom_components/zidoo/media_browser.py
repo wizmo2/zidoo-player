@@ -4,10 +4,11 @@ from homeassistant.helpers.network import is_internal_request
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
-    MEDIA_CLASS_TV_SHOW,
     MEDIA_CLASS_URL,
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_TVSHOW,
+    MEDIA_TYPE_VIDEO,
+
 )
 from .const import (
     MEDIA_TYPE_FILE,
@@ -23,11 +24,6 @@ from .zidoorc import ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
 
-ZITEM_TYPE_FILTER = {
-    MEDIA_TYPE_FILE: 0,
-    MEDIA_TYPE_MOVIE: 3,
-    MEDIA_TYPE_TVSHOW: 4,
-}
 
 ZTITLE = "Zidoo Media"
 
@@ -85,15 +81,13 @@ def browse_media(  # noqa: C901
 
                         if child_media_class is None:
                             child_media_class = item_class
-
-        if media_class == MEDIA_CLASS_MOVIE or media_class == MEDIA_CLASS_TV_SHOW:
+        else:
             result = None
-            if search_id == MEDIA_TYPE_MOVIE:
-                title = "MOVIES"
-                result = player.get_movie_list(ZITEM_TYPE_FILTER[search_id], BROWSE_LIMIT)
-            elif search_id == MEDIA_TYPE_TVSHOW:
-                title = "TV SHOW"
-                result = player.get_movie_list(ZITEM_TYPE_FILTER[search_id], BROWSE_LIMIT)
+            if search_id in ZVIDEO_FILTER_TYPES:
+                # title = "MOVIES"
+                result = player.get_movie_list(
+                    ZVIDEO_FILTER_TYPES[search_id], BROWSE_LIMIT
+                )
             else:
                 result = player.get_collection_list(search_id)
 

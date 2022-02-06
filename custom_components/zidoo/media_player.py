@@ -57,18 +57,6 @@ from .media_browser import browse_media  # build_item_response, library_payload
 
 DEFAULT_NAME = "Zidoo Media Player"
 
-SHORTCUT_SCHEMA = vol.Schema(
-    {vol.Required(CONF_PATH): cv.string, vol.Optional(CONF_NAME): cv.string}
-)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {
-        vol.Required(CONF_HOST): cv.string,
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
-        vol.Optional(CONF_SHORTCUT): vol.All(cv.ensure_list, [SHORTCUT_SCHEMA]),
-    }
-)
-
 SUPPORT_ZIDOO = (
     SUPPORT_VOLUME_STEP
     | SUPPORT_VOLUME_MUTE
@@ -139,6 +127,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._max_volume = None
         self._volume = None
         self._last_update = None
+        self._config_entry = config_entry
 
         # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
         # if response is not None:

@@ -23,7 +23,6 @@ DATA_SCHEMA = vol.Schema(
     }
 )
 
-
 async def validate_input(hass, data):
     """Validate the user input allows us to connect.
 
