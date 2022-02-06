@@ -16,6 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
+VERSION = '1.2.8'
 TIMEOUT = 2             # default timeout
 CONF_PORT = 9529        # default api port
 DEFAULT_COUNT = 250     # default list limit
@@ -570,10 +571,12 @@ class ZidooRC(object):
                 'ableRemoteReboot': network reboot compatible
                 'ableRemoteShutdown': network shut down compatible
                 'ableRemoteBoot': network boot compatible (wol)
+                'pyapiversion': python api version
         """
         response = self._req_json("ZidooControlCenter/getModel")
 
         if response is not None and response.get("status") == 200:
+            response['pyapiversion'] = VERSION
             return response
 
     def get_power_status(self):
