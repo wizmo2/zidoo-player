@@ -29,7 +29,11 @@ This is a functioning solution for controlling my Z9S Zidoo media player on Home
 1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu
 2. Enter the IP address of player
 3. Enter the Password if you have authentication enabled
-4. Add standard Media Control card for newly added media_player device 
+4. Add standard Media Control card for newly added media_player device
+
+The Media browser allows access to the Movie Libary, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Addional search shortcuts can be added using the CONFIGURE button on the Integration card.
+
+![Configure Shortcuts](images/config.png)
 
 ## FAQs
 > If you installed versions prior to 1.2.5 using HACS and the integration is not availble in ADD INTEGRATIONS
@@ -49,8 +53,8 @@ This is a functioning solution for controlling my Z9S Zidoo media player on Home
   - WOL (does not work on Z9S due to hardware limitations - reportedly works on Z9X)
   - Authentication (not sure if newer devices are more secure)
   - Possible device specific options.   
-- Add Coverflow options for Shortcuts in Media Browse
-- Add Discovery (dev version tested with z9s, need testing and/or DNLA header information for other device support)
+- Add Coverflow options for additional file shortcuts in Media Browser
+- Add Discovery (dev branch tested with z9s, need testing and/or DNLA header information for other device support)
 - ZidooRC API will eventually need to be released as a python library per HA requirements.  
 
 

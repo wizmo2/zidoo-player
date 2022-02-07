@@ -5,31 +5,22 @@ from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
     MEDIA_CLASS_URL,
-    MEDIA_TYPE_MOVIE,
-    MEDIA_TYPE_TVSHOW,
     MEDIA_TYPE_VIDEO,
 
 )
 from .const import (
     MEDIA_TYPE_FILE,
-    ZTYPE_MEDIA_TYPE,
     ZTYPE_MEDIA_CLASS,
     ZCONTENT_ITEM_TYPE,
     ITEM_TYPE_MEDIA_CLASS,
+    ZSHORTCUTS,
+    ZDEFAULT_SHORTCUTS,
     CONF_SHORTCUT,
 )
 from .zidoorc import ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
-
-
 ZTITLE = "Zidoo Media"
-
-ZFAVORITES = [
-    # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
-    {"name": "MOVIES", "path": MEDIA_TYPE_MOVIE, "type": MEDIA_TYPE_MOVIE},
-    {"name": "TV SHOW", "path": MEDIA_TYPE_TVSHOW, "type": MEDIA_TYPE_TVSHOW},
-]
 
 def browse_media(  # noqa: C901
     entity, is_internal, media_content_type=None, media_content_id=None
@@ -159,17 +150,19 @@ def browse_media(  # noqa: C901
         }
 
         # Add favorite
-        for item in ZFAVORITES:
-            library_info["children"].append(
-                BrowseMedia(
-                    title=item["name"],
-                    media_class=ITEM_TYPE_MEDIA_CLASS[item["type"]],
-                    media_content_id=item["path"],
-                    media_content_type=item["type"],
-                    can_play=False,
-                    can_expand=True,
+        shortcuts = entity._config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS)
+        for item in ZSHORTCUTS:
+            if item["path"] in shortcuts:
+                library_info["children"].append(
+                    BrowseMedia(
+                        title=item["name"],
+                        media_class=ITEM_TYPE_MEDIA_CLASS[item["type"]],
+                        media_content_id=item["path"],
+                        media_content_type=item["type"],
+                        can_play=False,
+                        can_expand=True,
+                    )
                 )
-            )
 
         result = player.get_device_list()
 

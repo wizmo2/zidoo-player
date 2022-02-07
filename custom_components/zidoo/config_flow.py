@@ -7,6 +7,7 @@ from .zidoorc import ZidooRC
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import callback
+import homeassistant.helpers.config_validation as cv
 
 from .const import (
     _LOGGER,
@@ -14,6 +15,8 @@ from .const import (
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
     CONF_SHORTCUT,
+    ZSHORTCUTS,
+    ZDEFAULT_SHORTCUTS,
 )
 
 DATA_SCHEMA = vol.Schema(
@@ -111,19 +114,21 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
+        self.shortcut_list: dict[str, str] = {item["path"]: item["name"] for item in ZSHORTCUTS}
 
     async def async_step_init(self, user_input=None):
         """Handle options flow."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
+        shortcuts = [item for item in self.config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS) if item in self.shortcut_list]
+
         data_schema = vol.Schema(
             {
-                vol.Optional(CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD),): str,
+                vol.Optional(CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD,"")): str,
                 vol.Optional(
-                    CONF_SHORTCUT,
-                    default=self.config_entry.options.get(CONF_SHORTCUT,""),
-                ): str,
+                    CONF_SHORTCUT, default=shortcuts
+                ): cv.multi_select(self.shortcut_list)
             }
         )
         return self.async_show_form(step_id="init", data_schema=data_schema)

@@ -55,6 +55,24 @@ CONF_SHORTCUT = "shortcut_json"
 
 MEDIA_TYPE_FILE = "file"
 
+ZSHORTCUTS = [
+    # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
+    {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
+    {"name": "LATEST", "path": "recent", "type": MEDIA_TYPE_VIDEO, "default": True},
+    {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},
+    {"name": "SD", "path": 'sd', "type": MEDIA_TYPE_VIDEO},
+    {"name": "DISC", "path": 'bluray', "type": MEDIA_TYPE_VIDEO},
+    {"name": "UHD", "path": '4k', "type": MEDIA_TYPE_VIDEO},
+    {"name": "3D", "path": "3d", "type": MEDIA_TYPE_VIDEO},
+    {"name": "KIDS", "path": "children", "type": MEDIA_TYPE_GENRE},
+    {"name": "UNWATCHED", "path": "unwatched", "type": MEDIA_TYPE_VIDEO},
+    {"name": "OTHER", "path": "other", "type": MEDIA_TYPE_VIDEO},
+    {"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
+    {"name": "MOVIES", "path": "movie", "type": MEDIA_TYPE_MOVIE, "default": True},
+    {"name": "TV SHOW", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW, "default": True},
+]
+ZDEFAULT_SHORTCUTS = ['recent','movie','tvshow']
+
 ITEM_TYPE_MEDIA_CLASS = {
     MEDIA_TYPE_MUSIC:   MEDIA_CLASS_MUSIC,
     MEDIA_TYPE_ALBUM: MEDIA_CLASS_ALBUM,

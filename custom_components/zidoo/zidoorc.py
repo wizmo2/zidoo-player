@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = '1.2.8'
+VERSION = '0.1.0'
 TIMEOUT = 2             # default timeout
 CONF_PORT = 9529        # default api port
 DEFAULT_COUNT = 250     # default list limit

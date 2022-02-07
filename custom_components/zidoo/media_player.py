@@ -31,8 +31,6 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
-    CONF_PATH,
-    CONF_PASSWORD,
     STATE_IDLE,
     STATE_OFF,
     STATE_PAUSED,
@@ -43,8 +41,6 @@ from .const import (
     _LOGGER,
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
-    CONF_SHORTCUT,
-    ZTYPE_MEDIA_TYPE,
 )
 
 import homeassistant.helpers.config_validation as cv
