@@ -1,6 +1,6 @@
 # Home-assistant component for Zidoo media players
 
-This is a functioning solution for controlling my Z9S Zidoo media player on Home-Assistant.  Based on the Zidoo REST API, it should work on all Zidoo devices (feedback/PRs welcome)
+This is a functioning solution for controlling Zidoo media player on Home-Assistant.  Based on the Zidoo REST API, it is devloped using a Z9s, but should work on all Zidoo devices (feedback/PRs welcome)
 
 ## Features
 
