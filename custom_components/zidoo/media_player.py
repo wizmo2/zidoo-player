@@ -118,7 +118,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     )
 
 
-
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
 
