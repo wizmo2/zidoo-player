@@ -31,7 +31,7 @@ This is a functioning solution for controlling my Z9S Zidoo media player on Home
 3. Enter the Password if you have authentication enabled
 4. Add standard Media Control card for newly added media_player device
 
-The Media browser allows access to the Movie Libary, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Addional search shortcuts can be added using the CONFIGURE button on the Integration card.
+The Media browser allows access to the Movie Libary, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Additional search shortcuts can be added using the CONFIGURE button on the Integration card.
 
 ![Configure Shortcuts](images/config.png)
 
