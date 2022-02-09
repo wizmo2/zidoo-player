@@ -1,6 +1,5 @@
 """Support for media browsing."""
 from homeassistant.components.media_player import BrowseError, BrowseMedia
-from homeassistant.helpers.network import is_internal_request
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
@@ -29,7 +28,6 @@ def browse_media(  # noqa: C901
 
     def build_item_response(player, payload):
         """Create response payload for search described by payload."""
-        internal_request = is_internal_request(entity.hass)
         search_id = payload["search_id"]
         search_type = payload["search_type"]
 
@@ -92,10 +90,7 @@ def browse_media(  # noqa: C901
                         if episodes is not None:
                             data = episodes
                     if video_type == 4 and data[0].get("parentId") > 0:
-                        if internal_request:
-                            thumbnail = player.generate_movie_image_url(data[0]["parentId"])
-                        else:
-                            thumbnail = entity.get_browse_image_url(MEDIA_TYPE_VIDEO, data[0]["parentId"])
+                        thumbnail = get_thumbnail_url(MEDIA_TYPE_VIDEO, data[0]["parentId"])
                 children = []
                 for item in data:
                     child_type = item["type"]
@@ -105,10 +100,7 @@ def browse_media(  # noqa: C901
                         item_type = MEDIA_TYPE_VIDEO
                         item_id = item["aggregationId"]
                     # item_thumbnail = None
-                    if internal_request:
-                        item_thumbnail = player.generate_movie_image_url(item_id)
-                    else:
-                        item_thumbnail = entity.get_browse_image_url(item_type, item_id)
+                    item_thumbnail = get_thumbnail_url(item_type, item_id)
 
                     children.append(
                         BrowseMedia(
@@ -136,6 +128,17 @@ def browse_media(  # noqa: C901
             can_expand=True,
             thumbnail=thumbnail,
         )
+
+    def get_thumbnail_url(media_content_type, media_content_id):
+        if is_internal:
+            url_path = entity._player.generate_movie_image_url(media_content_id)
+        else:
+            url_path = (
+                f"/api/media_player_proxy/{entity.entity_id}/browse_media"
+                f"/{media_content_type}/{media_content_id}"
+            )
+
+        return str(url_path)
 
     def library_payload(player):
         """Create response payload to describe contents of library."""
