@@ -133,6 +133,7 @@ def browse_media(  # noqa: C901
         if is_internal:
             url_path = entity._player.generate_movie_image_url(media_content_id)
         else:
+            #url_path = entity.get_browse_image_url(media_content_type,media_content_id)
             url_path = (
                 f"/api/media_player_proxy/{entity.entity_id}/browse_media"
                 f"/{media_content_type}/{media_content_id}"
