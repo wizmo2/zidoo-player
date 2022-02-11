@@ -7,5 +7,6 @@
   "requirements": [],
   "codeowners": ["@wizmo2"],
   "iot_class": "local_polling",
+  "loggers":["custom_components.zidoo"],
   "version": "1.2.9"
 }
