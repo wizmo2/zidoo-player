@@ -756,10 +756,10 @@ class ZidooRC(object):
 
         if response is not None:
             for result in response["data"]:
-                return result["aggregationId"]
+                if result["type"] == 0: return result["aggregationId"]
         return movie_id
 
-    def search_movies(self, query, searchType=-1, maxCount=DEFAULT_COUNT):
+    def search_movies(self, query, searchType=0, maxCount=DEFAULT_COUNT):
         """Return video details
         Parameters
             movie_id: int

@@ -1,10 +1,12 @@
 """Support for interface with Zidoo Media Player."""
+from __future__ import annotations
+
 import logging
 
 from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO
 import voluptuous as vol
 
-from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
+from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity, BrowseMedia
 from homeassistant.components.media_player.const import (
     SUPPORT_BROWSE_MEDIA,
     SUPPORT_CLEAR_PLAYLIST,
@@ -394,7 +396,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._player.set_media_position(position, self.media_duration)
 
     @property
-    def media_image_url(self):
+    def media_image_url(self) -> str | None:
         """Image url of current playing media."""
         return self._player.generate_current_image_url()
 
@@ -402,8 +404,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         """Emulate opening the search screen and entering the search keyword."""
         await self.async_browse_media()
 
-
-    async def async_browse_media(self, media_content_type=None, media_content_id=None):
+    async def async_browse_media(
+        self,
+        media_content_type: str | None = None,
+        media_content_id: str | None = None,
+    ) -> BrowseMedia:
         """Implement the websocket media browsing helper"""
 
         is_internal = is_internal_request(self.hass)
@@ -417,8 +422,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         )
 
     async def async_get_browse_image(
-        self, media_content_type, media_content_id, media_image_id=None
-    ):
+        self,
+        media_content_type: str,
+        media_content_id: str,
+        media_image_id: str | None = None,
+    ) -> tuple[bytes | None, str | None]:
         """Get media image from server."""
         image_url = self._player.generate_movie_image_url(media_content_id)
         if image_url:
