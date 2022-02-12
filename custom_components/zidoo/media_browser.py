@@ -36,61 +36,60 @@ def browse_media(  # noqa: C901
         children = None
         title = ZTITLE
         thumbnail = None
+        result = None
 
-        if media_class == MEDIA_CLASS_DIRECTORY or media_class == MEDIA_CLASS_URL:
-            if media_class == MEDIA_CLASS_DIRECTORY:
-                result = player.get_file_list(search_id)
-            else:
-                result = player.get_host_list(search_id)
+        if media_class == MEDIA_CLASS_DIRECTORY: # file system list
+            result = player.get_file_list(search_id)
+        if media_class == MEDIA_CLASS_URL: # smb system list
+            result = player.get_host_list(search_id)
+        if result is not None and result.get("filelist"):
+            children = []
+            for item in result["filelist"]:
+                content_type = item["type"]
+                item_type = None
+                if content_type is not None and content_type in ZCONTENT_ITEM_TYPE:
+                    item_type = ZCONTENT_ITEM_TYPE[content_type]
+                if item_type is not None:
+                    item_class = ITEM_TYPE_MEDIA_CLASS[item_type]
+                    item_thumbnail = None
 
-            if result is not None and result.get("filelist"):
-                children = []
-                for item in result["filelist"]:
-                    content_type = item["type"]
-                    item_type = None
-                    if content_type is not None and content_type in ZCONTENT_ITEM_TYPE:
-                        item_type = ZCONTENT_ITEM_TYPE[content_type]
-                    if item_type is not None:
-                        item_class = ITEM_TYPE_MEDIA_CLASS[item_type]
-                        item_thumbnail = None
-
-                        children.append(
-                            BrowseMedia(
-                                title=item["name"],
-                                media_class=item_class,
-                                media_content_id=item["path"],
-                                media_content_type=MEDIA_TYPE_FILE,
-                                can_play=True,
-                                can_expand=item_class == MEDIA_CLASS_DIRECTORY,
-                                thumbnail=item_thumbnail,
-                            )
+                    children.append(
+                        BrowseMedia(
+                            title=item["name"],
+                            media_class=item_class,
+                            media_content_id=item["path"],
+                            media_content_type=MEDIA_TYPE_FILE,
+                            can_play=True,
+                            can_expand=item_class == MEDIA_CLASS_DIRECTORY,
+                            thumbnail=item_thumbnail,
                         )
+                    )
 
-                        if child_media_class is None:
-                            child_media_class = item_class
+                    if child_media_class is None:
+                        child_media_class = item_class
         else:
-            result = None
-            if search_id in ZVIDEO_FILTER_TYPES:
-                # title = "MOVIES"
-                result = player.get_movie_list(
-                    ZVIDEO_FILTER_TYPES[search_id], BROWSE_LIMIT
-                )
-            else:
+            if search_id in ZVIDEO_FILTER_TYPES: # movie library search list
+                result = player.get_movie_list(search_id, BROWSE_LIMIT)
+                shortcut = get_shortcut_name(search_id)
+                if shortcut: title = shortcut
+            elif search_id.startswith("search"):
+                keyword=search_id.split("=")[-1]
+                result = to_data_list(player.search_movies(keyword))
+            else: # movie library list
                 result = player.get_collection_list(search_id)
 
-            if result is not None and result.get("data"):
+            if result and result.get("data"):
                 child_media_class = MEDIA_CLASS_MOVIE
                 video_type = result.get("type")
                 data = result["data"]
                 if video_type:
                     child_media_class = ZTYPE_MEDIA_CLASS[int(video_type) + 1]
-                    if video_type == 4 and result.get("size") > 1:
-                        # get episodes in sorted order
+                    if video_type == 4: # tv show episodes
                         episodes = player.get_episode_list(search_id)
                         if episodes is not None:
                             data = episodes
-                    if video_type == 4 and data[0].get("parentId") > 0:
-                        thumbnail = get_thumbnail_url(MEDIA_TYPE_VIDEO, data[0]["parentId"])
+                            if data[0].get("parentId") > 0:
+                                thumbnail = get_thumbnail_url(MEDIA_TYPE_VIDEO, data[0]["parentId"])
                 children = []
                 for item in data:
                     child_type = item["type"]
@@ -113,9 +112,8 @@ def browse_media(  # noqa: C901
                             thumbnail=item_thumbnail,
                         )
                     )
-
                 if result.get("name"):
-                    title = result.get("name")
+                    title = result["name"]
 
         return BrowseMedia(
             title=title,
@@ -128,6 +126,22 @@ def browse_media(  # noqa: C901
             can_expand=True,
             thumbnail=thumbnail,
         )
+
+    def to_data_list(response):
+        """ converts the serach response to a data list"""
+        return_value = {}
+        data_list = []
+        for item in response["all"]:
+            data_list.append(item["aggregation"])
+
+        return_value["name"] = response["key"]
+        return_value["data"] = data_list
+
+        return return_value
+
+    def get_shortcut_name(path):
+        for item in ZSHORTCUTS:
+            if item["path"] == path: return item["name"]
 
     def get_thumbnail_url(media_content_type, media_content_id):
         if is_internal:
@@ -154,7 +168,7 @@ def browse_media(  # noqa: C901
             "children": [],
         }
 
-        # Add favorite
+        # add favorite
         shortcuts = entity._config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS)
         for item in ZSHORTCUTS:
             if item["path"] in shortcuts:
@@ -169,10 +183,9 @@ def browse_media(  # noqa: C901
                     )
                 )
 
+        # add zidoo file devices
         result = player.get_device_list()
-
         if result is not None:
-
             for item in result:
                 content_type = item["type"]
                 item_type = None
