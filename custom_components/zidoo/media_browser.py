@@ -123,7 +123,7 @@ def browse_media(  # noqa: C901
             children_media_class=child_media_class,
             media_content_id=search_id,
             media_content_type=search_type,
-            can_play=False,
+            can_play=(thumbnail is not None),
             children=children,
             can_expand=True,
             thumbnail=thumbnail,
