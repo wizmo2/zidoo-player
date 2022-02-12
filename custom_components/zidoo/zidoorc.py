@@ -780,7 +780,7 @@ class ZidooRC(object):
             )
         )
 
-        if response is not None:  # and response.get("status") == 200:
+        if response is not None and response.get("status") == 200:
             return response
 
     def search_music(self, query, searchType=0, maxCount=DEFAULT_COUNT):

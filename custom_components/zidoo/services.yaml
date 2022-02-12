@@ -1,6 +1,10 @@
 search:
-  name: Search library
+  name: Search Media
   description: Search movie library and display browser.
+  target:
+    entity:
+      integration: zidoo
+      domain: media_player
   fields:
     query_string:
       name: Search String

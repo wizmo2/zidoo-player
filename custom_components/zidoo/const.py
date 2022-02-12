@@ -50,16 +50,17 @@ MANUFACTURER = "Zidoo"
 CLIENTID_PREFIX = "home-assistant"
 CLIENTID_NICKNAME = "Home Assistant"
 
-# Default Values
 CONF_SHORTCUT = "shortcut_json"
 
 # Services
 SEARCH_SERVICE = "search"
 
 MEDIA_TYPE_FILE = "file"
+MEDIA_TYPE_SEARCH = "search"
 
 ZSHORTCUTS = [
     # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
+    {"name": "SEARCH", "path": "search", "type": MEDIA_TYPE_VIDEO},
     {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
     {"name": "LATEST", "path": "recent", "type": MEDIA_TYPE_VIDEO, "default": True},
     {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},

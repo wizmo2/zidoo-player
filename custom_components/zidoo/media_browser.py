@@ -74,6 +74,7 @@ def browse_media(  # noqa: C901
                 if shortcut: title = shortcut
             elif search_id.startswith("search"):
                 keyword=search_id.split("=")[-1]
+                if keyword is None or keyword == "search": keyword = entity._search_query
                 result = to_data_list(player.search_movies(keyword))
             else: # movie library list
                 result = player.get_collection_list(search_id)
@@ -129,15 +130,16 @@ def browse_media(  # noqa: C901
 
     def to_data_list(response):
         """ converts the serach response to a data list"""
-        return_value = {}
-        data_list = []
-        for item in response["all"]:
-            data_list.append(item["aggregation"])
+        if response and response.get("all"):
+            return_value = {}
+            data_list = []
+            for item in response["all"]:
+                data_list.append(item["aggregation"])
 
-        return_value["name"] = response["key"]
-        return_value["data"] = data_list
+            return_value["name"] = response["key"]
+            return_value["data"] = data_list
 
-        return return_value
+            return return_value
 
     def get_shortcut_name(path):
         for item in ZSHORTCUTS:

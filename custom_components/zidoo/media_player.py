@@ -6,7 +6,7 @@ import logging
 from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO
 import voluptuous as vol
 
-from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity, BrowseMedia
+from homeassistant.components.media_player import MediaPlayerEntity, BrowseMedia
 from homeassistant.components.media_player.const import (
     SUPPORT_BROWSE_MEDIA,
     SUPPORT_CLEAR_PLAYLIST,
@@ -47,7 +47,6 @@ from .const import (
 )
 
 from homeassistant.helpers import entity_platform
-import homeassistant.helpers.config_validation as cv
 
 from homeassistant.util.dt import utcnow
 from homeassistant.config_entries import SOURCE_IMPORT
@@ -60,9 +59,7 @@ DEFAULT_NAME = "Zidoo Media Player"
 QUERY_STRING = 'query_string'
 VIDEO_TYPE = 'video_type'
 
-SEARCH_SCHEMA = vol.Schema(
-    {vol.Optional(QUERY_STRING): str, vol.Optional(VIDEO_TYPE): str}
-)
+SEARCH_SCHEMA = {vol.Optional(QUERY_STRING): str, vol.Optional(VIDEO_TYPE): str}
 
 SUPPORT_ZIDOO = (
     SUPPORT_VOLUME_STEP
@@ -109,16 +106,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     player = ZidooRC(config_entry.data[CONF_HOST])
 
-    async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
-
     platform = entity_platform.async_get_current_platform()
-
     platform.async_register_entity_service(
         SEARCH_SERVICE,
         SEARCH_SCHEMA,
-        "search_media",
+        "async_search_media"
     )
 
+    async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
 
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
@@ -142,6 +137,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._max_volume = None
         self._volume = None
         self._last_update = None
+        self._search_query = None
         self._config_entry = config_entry
 
         # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
@@ -400,9 +396,9 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         """Image url of current playing media."""
         return self._player.generate_current_image_url()
 
-    async def search_media(self, keyword):
-        """Emulate opening the search screen and entering the search keyword."""
-        await self.async_browse_media()
+    async def async_search_media(self, query_string, video_type=None):
+        """sets search string for media browser."""
+        self._search_query = query_string
 
     async def async_browse_media(
         self,
