@@ -6,7 +6,8 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 
 - Control Zidoo devices as media players through HA
 - Album art and movie backdrops
-- Browse movies, file system, and share mounts through HA Media Browser 
+- Browse movies, file system, and share mounts through HA Media Browser
+- Keyword [Searches](services.md)
 
 ![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
 ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
@@ -58,6 +59,6 @@ The Media browser allows access to the Movie Libary, plus file access to local d
 
 [^1]: Release 1.1 - can be used on older HA versions, requires manual integration and is limited to basic player control.
 [^2]: Release 1.2 - adds config flow
-[^3]: Release 1.2.9 - Extended search shortcuts
+[^3]: Release 1.2.9 - Extended search shortcuts.  Requires HA 2022.2 or above
 
 
