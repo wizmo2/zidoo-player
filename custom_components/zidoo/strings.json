@@ -9,7 +9,7 @@
                   "host": "[%key:common::config_flow::data::host%]",
                   "password": "[%key:common::config_flow::data::password%]"
              }
-           },
+          }
       },
       "abort": {
           "already_in_progress": "Zidoo configuration is already in progress.",
