@@ -15,7 +15,7 @@ _**NOTE: Release 1.2.5 fixes a version download issues with HACS.**  If you have
 
 - Control Zidoo devices as media players through HA
 - Album art and movie backdrops
-- Browse movies, file system, and share mounts through HA Media Browser 
+- Browse movies, music, file system, and share mounts through HA Media Browser 
 
 ## Useful links
 
