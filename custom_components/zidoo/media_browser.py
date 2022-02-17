@@ -158,7 +158,7 @@ def browse_media(  # noqa: C901
 
     def get_thumbnail_url(media_content_type, media_content_id):
         if is_internal:
-            url_path = entity._player.generate_movie_image_url(media_content_id)
+            url_path = entity._player.generate_image_url(media_content_id, media_content_type)
         else:
             # url_path = entity.get_browse_image_url(media_content_type,media_content_id)
             """ 2022 fix """ 
