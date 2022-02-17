@@ -5,7 +5,6 @@ from homeassistant.components.media_player.const import (
     MEDIA_CLASS_MOVIE,
     MEDIA_CLASS_URL,
     MEDIA_TYPE_VIDEO,
-
 )
 from .const import (
     MEDIA_TYPE_FILE,
@@ -33,7 +32,7 @@ def browse_media(  # noqa: C901
 
         media_class = ITEM_TYPE_MEDIA_CLASS[search_type]
         child_media_class = None
-        children = None
+        children = []
         title = ZTITLE
         thumbnail = None
         result = None
@@ -42,8 +41,8 @@ def browse_media(  # noqa: C901
             result = player.get_file_list(search_id)
         if media_class == MEDIA_CLASS_URL: # smb system list
             result = player.get_host_list(search_id)
+
         if result is not None and result.get("filelist"):
-            children = []
             for item in result["filelist"]:
                 content_type = item["type"]
                 item_type = None
@@ -90,7 +89,6 @@ def browse_media(  # noqa: C901
                             data = episodes
                             if data[0].get("parentId") > 0:
                                 thumbnail = get_thumbnail_url(MEDIA_TYPE_VIDEO, data[0]["parentId"])
-                children = []
                 for item in data:
                     child_type = item["type"]
                     item_id = item["id"]
@@ -98,7 +96,6 @@ def browse_media(  # noqa: C901
                     if child_type == 0:
                         item_type = MEDIA_TYPE_VIDEO
                         item_id = item["aggregationId"]
-                    # item_thumbnail = None
                     item_thumbnail = get_thumbnail_url(item_type, item_id)
 
                     children.append(
@@ -129,14 +126,30 @@ def browse_media(  # noqa: C901
 
     def to_data_list(response):
         """ converts the serach response to a data list"""
-        return_value = {}
         data_list = []
-        for item in response["all"]:
-            data_list.append(item["aggregation"])
+        if response and response.get("all"):
+            for item in response["all"]:
+                data_list.append(item["aggregation"])
+        elif response and response.get("tvs"):
+            for item in response["tvs"]:
+                data_list.append(item["aggregation"])
+        elif response and response.get("movies"):
+            for item in response["movies"]:
+                data_list.append(item["aggregation"])
+        elif response and response.get("collections"):
+            for item in response["collections"]:
+                data_list.append(item["aggregation"])
 
-        return_value["name"] = response["key"]
-        return_value["data"] = data_list
+        if data_list:
+            return_value = {}
+            return_value["name"] = response["key"]
+            return_value["data"] = data_list
 
+            return return_value
+
+    def to_array(response):
+        return_value = {}
+        return_value["array"] = response
         return return_value
 
     def get_shortcut_name(path):

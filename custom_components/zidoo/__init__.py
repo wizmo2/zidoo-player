@@ -1,5 +1,4 @@
 """The Zidoo component."""
-
 from .zidoorc import ZidooRC
 
 from homeassistant.config_entries import ConfigEntry
@@ -10,7 +9,6 @@ from homeassistant.helpers.entity_registry import async_migrate_entries
 from .const import DOMAIN, _LOGGER
 PLATFORMS = ["media_player"]
 
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up zido from a config entry."""
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
@@ -19,7 +17,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = entry.data
 
     return True
-
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""

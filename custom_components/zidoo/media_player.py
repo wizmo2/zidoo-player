@@ -100,7 +100,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
 
-
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
 
@@ -398,7 +397,9 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self, media_content_type, media_content_id, media_image_id=None
     ):
         """Get media image from server."""
-        image_url = self._player.generate_movie_image_url(media_content_id)
+        image_url = self._player.generate_image_url(
+            media_content_id, media_content_type
+        )
         if image_url:
             result = await self._async_fetch_image(image_url)
             return result

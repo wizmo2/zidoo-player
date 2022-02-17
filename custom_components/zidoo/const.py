@@ -69,7 +69,7 @@ ZSHORTCUTS = [
     {"name": "OTHER", "path": "other", "type": MEDIA_TYPE_VIDEO},
     {"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
     {"name": "MOVIES", "path": "movie", "type": MEDIA_TYPE_MOVIE, "default": True},
-    {"name": "TV SHOW", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW, "default": True},
+    {"name": "TV SHOWS", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW, "default": True},
 ]
 ZDEFAULT_SHORTCUTS = ['recent','movie','tvshow']
 
