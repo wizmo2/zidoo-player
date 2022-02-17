@@ -5,5 +5,5 @@
     "media_player"
   ],
   "iot_class": "local_polling",
-  "homeassistant": "2021.9"
+  "homeassistant": "2022.1"
 }
