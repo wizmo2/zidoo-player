@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 TIMEOUT = 2             # default timeout
 CONF_PORT = 9529        # default api port
 DEFAULT_COUNT = 250     # default list limit
@@ -123,16 +123,18 @@ ZVIDEO_FILTER_TYPES = {
 }
 
 ZVIDEO_SEARCH_TYPES = {
-    "all": 0,
-    "movies": 1,
-    "tvs": 2,
-    "collections": 3
+    # "all": -1,    # combined results
+    "video": 0,     # all movies tvshows and collections
+    "movie": 1,
+    "tvshow": 2,
+    "collection": 3
 }
 
 ZMUSIC_SEARCH_TYPES = {
-    "song": 0,
-    "artist": 1,
-    "album": 2
+    "music": 0,
+    "album": 1,
+    "artist": 2,
+    "playlist": 3
 }
 
 """File System devicce type names"""
@@ -162,6 +164,14 @@ ZFILETYPE_NAMES = {
     # default: "other",
 }
 
+ZMEDIA_TYPE_ARTIST = 'artist'
+ZMEDIA_TYPE_ALBUM = 'album'
+ZMEDIA_TYPE_PLAYLIST = 'playlist'
+
+ZMUSIC_IMAGETYPE = {0:0, 1:1, 2:0, 3:0, 4:1}
+ZMUSIC_IMAGETARGET = {0:16,1:16, 2:32, 3:16, 4:32}
+ZMUSIC_PLAYLISTTYPE = {ZMEDIA_TYPE_ARTIST:3, ZMEDIA_TYPE_ALBUM:4, ZMEDIA_TYPE_PLAYLIST:5}
+
 class ZidooRC(object):
     def __init__(self, host, psk=None, mac=None):
         """Initialize the Zidoo class.
@@ -183,6 +193,7 @@ class ZidooRC(object):
         self._power_status = False
         self._video_id = -1
         self._music_id = -1
+        self._music_type = -1
         self._last_video_path = None
         self._movie_info = {}
 
@@ -252,10 +263,9 @@ class ZidooRC(object):
 
         else:
             resp = response.json()
-            _LOGGER.debug(json.dumps(resp, indent=4))
+            _LOGGER.debug(resp)
             if resp is not None or resp.get("status") == 200:
                 self._cookies = response.cookies
-                _LOGGER.debug("cookie: " + str(response.cookies))
                 if self._mac is None:
                     self._mac = resp.get("net_mac")
                 self._power_status = True
@@ -315,7 +325,7 @@ class ZidooRC(object):
             return True
         return False
 
-    def _req_json(self, url, params={}, log_errors=True):
+    def _req_json(self, url, params={}, log_errors=True, timeout=TIMEOUT):
         """Send request command via HTTP json to player.
         Parameters
             url: str
@@ -337,7 +347,7 @@ class ZidooRC(object):
         try:
             # self._cookies = self._recreate_auth_cookie()
             response = requests.get(
-                url, params, cookies=self._cookies, timeout=TIMEOUT, headers=headers
+                url, params, cookies=self._cookies, timeout=timeout, headers=headers
             )
 
         except requests.exceptions.Timeout as exception_instance:
@@ -363,22 +373,6 @@ class ZidooRC(object):
         else:
             result = json.loads(response.content.decode("utf-8"))
             return result
-
-    def play_file(self, uri):
-        """Play content by URI.
-        Parameters
-            uri: str
-                path of file to play.
-        Returns
-            True if sucessful
-        """
-        url = "ZidooFileControl/openFile?path={}&videoplaymode={}".format(uri, 0)
-
-        response = self._req_json(url)
-
-        if response and response.get("status") == 200:
-            return True
-        return False
 
     def get_source(self, source):
         """Returns last known app"""
@@ -511,7 +505,8 @@ class ZidooRC(object):
                 return_value["artist"] = result.get("artist")
                 return_value["track"] = result.get("number")
                 return_value["uri"] = result.get("uri")
-                self._music_id = result.get("databaseId")
+                self._music_id = result.get("id")
+                self._music_type = result.get("type")
 
                 result = response.get("state")
                 return_value["duration"] = result.get("duration")
@@ -759,6 +754,99 @@ class ZidooRC(object):
                 if result["type"] == 0: return result["aggregationId"]
         return movie_id
 
+    def get_music_list(self, musicType = 0, music_id=None, maxCount=DEFAULT_COUNT):
+        """Return list of movies
+        Parameters
+            maxCount: int
+                maxumum number of list items
+            filterType: int or str
+                see ZVIDEO_FILTER_TYPE
+        Returns
+            json
+                raw API response if successful
+        """
+        if musicType == ZMEDIA_TYPE_ARTIST:
+            return self._get_artist_list(music_id)
+        elif musicType == ZMEDIA_TYPE_ALBUM:
+            return self._get_album_list(music_id)
+        elif musicType == ZMEDIA_TYPE_PLAYLIST:
+            return self._get_playlist_list(music_id)
+
+    def _get_album_list(self, album_id=None, maxCount=DEFAULT_COUNT):
+        """Return list of albums or album music
+        Parameters
+            album_id: int or str
+                see ZVIDEO_FILTER_TYPE
+            maxCount: int
+                maxumum number of list items
+        Returns
+            json
+                raw API response if successful
+        """
+        if album_id:
+            response = self._req_json(
+                "MusicControl/v2/getAlbumMusics?id={}&start=0&count={}".format(album_id, maxCount)
+            )
+        else:
+            response = self._req_json(
+                "MusicControl/v2/getAlbums?start=0&count={}".format(maxCount)
+            )
+
+        if response is not None: # and response.get("status") == 200:
+            return response
+
+    def _get_artist_list(self, artist_id=None, maxCount=DEFAULT_COUNT):
+        """Return list of artists or artist music
+        Parameters
+            maxCount: int
+                maxumum number of list items
+            filterType: int or str
+                see ZVIDEO_FILTER_TYPE
+        Returns
+            json
+                raw API response if successful
+        """
+        if artist_id:
+            response = self._req_json(
+                "MusicControl/v2/getArtistMusics?id={}&start=0&count={}".format(artist_id, maxCount)
+            )
+        else:
+            response = self._req_json(
+                "MusicControl/v2/getArtists?start=0&count={}".format(maxCount)
+            )
+
+        if response is not None: # and response.get("status") == 200:
+            return response
+
+    def _get_playlist_list(self, playlist_id=None, maxCount=DEFAULT_COUNT):
+        """Return list of playlists
+        Parameters
+            maxCount: int
+                maxumum number of list items
+            filterType: int or str
+                see ZVIDEO_FILTER_TYPE
+        Returns
+            json
+                raw API response if successful
+        """
+        if playlist_id:
+            if playlist_id == 'playing':
+                response = self._req_json(
+                    "MusicControl/v2/getPlayQueue?start=0&count={}".format(maxCount)
+                )
+            else:
+                response = self._req_json(
+                    "MusicControl/v2/getSongListMusics?id={}&start=0&count={}".format(playlist_id, maxCount)
+                )
+        else:
+            response = self._req_json(
+                # "MusicControl/v2/getSongList?start=0&count={}".format(maxCount)
+                "MusicControl/v2/getSongLists"
+            )
+
+        if response is not None: # and response.get("status") == 200:
+            return response
+
     def search_movies(self, query, searchType=0, maxCount=DEFAULT_COUNT):
         """Return video details
         Parameters
@@ -800,9 +888,9 @@ class ZidooRC(object):
             searchType = ZMUSIC_SEARCH_TYPES[searchType]
 
         if searchType == 1:
-            return self._search_artist(query, maxCount)
-        elif searchType == 2:
             return self._search_album(query, maxCount)
+        elif searchType == 2:
+            return self._search_artist(query, maxCount)
         return self._search_song(query, maxCount)
 
     def _search_song(self, query, maxCount=DEFAULT_COUNT):
@@ -835,9 +923,9 @@ class ZidooRC(object):
         response = self._req_json(
             "MusicControl/v2/searchAlbum?key={}&start=0&count={}".format(
                 query, maxCount
-            )
+            ), timeout=10
         )
-        print(response, query)
+
         if response is not None:  # and response.get("status") == 200:
             return response
 
@@ -859,7 +947,23 @@ class ZidooRC(object):
         if response is not None:  # and response.get("status") == 200:
             return response
 
-    def play_movie(self, movie_id, videoType=-1):
+    def play_file(self, uri):
+        """Play content by URI.
+        Parameters
+            uri: str
+                path of file to play.
+        Returns
+            True if sucessful
+        """
+        url = "ZidooFileControl/openFile?path={}&videoplaymode={}".format(uri, 0)
+
+        response = self._req_json(url)
+
+        if response and response.get("status") == 200:
+            return True
+        return False
+
+    def play_movie(self, movie_id, video_type=-1):
         """Play video content by Movie id.
         Parameters
             movie_id
@@ -868,14 +972,39 @@ class ZidooRC(object):
             True if sucessfuL
         """
         # uses the agreggateid to find the first video to play
-        if videoType != 0:
+        if video_type != 0:
             movie_id = self._collection_video_id(movie_id)
         # print("Video id : {}".format(video_id))
 
         # v2 http://{}/VideoPlay/playVideo?index=0
         response = self._req_json(
-            "ZidooPoster/PlayVideo?id={}&type={}".format(movie_id, videoType)
+            "ZidooPoster/PlayVideo?id={}&type={}".format(movie_id, video_type)
         )
+
+        if response and response.get("status") == 200:
+            return True
+        return False
+
+    def play_music(self, media_id, media_type="music", music_id=None):
+        """Play video content by id.
+        Parameters
+            media_id
+                database id for media type (or ids for music type)
+            media_type
+                see ZMUSIC_SEARCH_TYPE
+            music_id
+                database id for track to play (use None or -1 for first)
+        Returns
+            True if sucessfuL
+        """
+        if media_type in ZMUSIC_PLAYLISTTYPE:
+            response = self._req_json(
+                "MusicControl/v2/playMusic?type={}&id={}&musicId={}&musicType=0&trackIndex=1&sort=0".format(ZMUSIC_PLAYLISTTYPE[media_type], media_id, music_id)
+            )
+        else: # music
+            response = self._req_json(
+                "MusicControl/v2/playMusics?ids={}&musicId={}&trackIndex=-1".format(media_id, music_id)
+            )
 
         if response and response.get("status") == 200:
             return True
@@ -966,7 +1095,14 @@ class ZidooRC(object):
         return_value["filelist"] = share_list
         return return_value
 
-    def generate_movie_image_url(self, movie_id, width=200, height=300):
+    def generate_image_url(self, media_id, media_type, width=200, height=300):
+        """Get link to thumbnail"""
+        if media_type in ZVIDEO_SEARCH_TYPES:
+            return self._generate_movie_image_url(media_id, width, height)
+        if media_type in ZMUSIC_SEARCH_TYPES:
+            return self._generate_music_image_url(media_id, ZMUSIC_SEARCH_TYPES[media_type], width, height)
+
+    def _generate_movie_image_url(self, movie_id, width=200, height=300):
         """Get link to thumbnail
         Parameters
             movie_id: int
@@ -985,6 +1121,25 @@ class ZidooRC(object):
 
         return url
 
+    def _generate_music_image_url(self, music_id, music_type=0, width=200, height=200):
+        """Get link to thumbnail
+        Parameters
+            music_id: int
+                dtanabase id
+            width: int
+                image width in pixels
+            height: int
+                image height in pixels
+        Returns
+            url for image
+        """
+        url = "http://{}/ZidooMusicControl/v2/getImage?id={}&musicType={}&type={}&target={}".format(
+            self._host, music_id, ZMUSIC_IMAGETYPE[music_type], music_type, ZMUSIC_IMAGETARGET[music_type]
+        )
+
+        return url
+
+
     def generate_current_image_url(self, width=1080, height=720):
         """Gets link to artwork
         Parameters
@@ -999,14 +1154,14 @@ class ZidooRC(object):
         """
         url = None
 
-        if self._current_source == ZCONTENT_VIDEO and self._video_id > 0:
+        if self._current_source == ZCONTENT_VIDEO and self._video_id != -1:
             url = "http://{}/ZidooPoster/getFile/getBackdrop?id={}&w={}&h={}".format(
                 self._host, self._video_id, width, height
             )
 
-        if self._current_source == ZCONTENT_MUSIC and self._music_id > 0:
-            url = "http://{}/ZidooMusicControl/v2/getImage?id={}&musicType=1&type=4&target=16".format(
-                self._host, self._music_id
+        if self._current_source == ZCONTENT_MUSIC and self._music_id != -1:
+            url = "http://{}/ZidooMusicControl/v2/getImage?id={}&musicType={}&type=4&target=16".format(
+                self._host, self._music_id, self._music_type
             )
 
         #_LOGGER.debug("zidoo getting current image: url-{}".format(url))

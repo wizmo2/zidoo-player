@@ -60,7 +60,6 @@ MEDIA_TYPE_SEARCH = "search"
 
 ZSHORTCUTS = [
     # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
-    {"name": "SEARCH", "path": "search", "type": MEDIA_TYPE_VIDEO},
     {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
     {"name": "LATEST", "path": "recent", "type": MEDIA_TYPE_VIDEO, "default": True},
     {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},
@@ -73,7 +72,10 @@ ZSHORTCUTS = [
     {"name": "OTHER", "path": "other", "type": MEDIA_TYPE_VIDEO},
     {"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
     {"name": "MOVIES", "path": "movie", "type": MEDIA_TYPE_MOVIE, "default": True},
-    {"name": "TV SHOW", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW, "default": True},
+    {"name": "TV SHOWS", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW, "default": True},
+    {"name": "ALBUMS", "path": "album", "type": MEDIA_TYPE_ALBUM},
+    {"name": "ARTISTS", "path": "artist", "type": MEDIA_TYPE_ARTIST},
+    {"name": "PLAYLISTS", "path": "playlist", "type": MEDIA_TYPE_PLAYLIST},
 ]
 ZDEFAULT_SHORTCUTS = ['recent','movie','tvshow']
 

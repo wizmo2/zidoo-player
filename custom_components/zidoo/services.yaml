@@ -8,14 +8,14 @@ search:
   fields:
     query_string:
       name: Search String
-      description: Keyword query string
+      description: Enter the keyword query string
       required: true
       example: "West Wing"
       selector:
         text:
-    video_type:
-      name: Video Type
-      description: Search Video Type ('movie','tvshow','other','hd','uhd','unlocked','kids')
+    search_type:
+      name: Search Type
+      description: Set the media type ('video','movie','tvshow','music','artist','album')
       example: "tvshow"
       selector:
         text:

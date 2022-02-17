@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 
-from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO
+from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZMUSIC_SEARCH_TYPES
 import voluptuous as vol
 
 from homeassistant.components.media_player import MediaPlayerEntity, BrowseMedia
@@ -56,8 +56,8 @@ from .media_browser import browse_media  # build_item_response, library_payload
 
 DEFAULT_NAME = "Zidoo Media Player"
 
-QUERY_STRING = 'query_string'
-VIDEO_TYPE = 'video_type'
+QUERY_STRING = "query_string"
+VIDEO_TYPE = "search_type"
 
 SEARCH_SCHEMA = {vol.Optional(QUERY_STRING): str, vol.Optional(VIDEO_TYPE): str}
 
@@ -108,9 +108,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
-        SEARCH_SERVICE,
-        SEARCH_SCHEMA,
-        "async_search_media"
+        SEARCH_SERVICE, SEARCH_SCHEMA, "async_search_media"
     )
 
     async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
@@ -138,6 +136,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
         self._search_query = None
+        self._search_type = None
         self._config_entry = config_entry
 
         # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
@@ -384,6 +383,9 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         """Play a piece of media."""
         if media_type and media_type == "file":
             self._player.play_file(media_id)
+        elif media_type in ZMUSIC_SEARCH_TYPES:
+            media_ids = media_id.split(",")
+            self._player.play_music(media_ids[0], media_type, media_ids[-1])
         else:
             self._player.play_movie(media_id)
 
@@ -396,9 +398,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         """Image url of current playing media."""
         return self._player.generate_current_image_url()
 
-    async def async_search_media(self, query_string, video_type=None):
+    async def async_search_media(self, query_string, search_type=None):
         """sets search string for media browser."""
         self._search_query = query_string
+        self._search_type = search_type
 
     async def async_browse_media(
         self,
@@ -424,7 +427,9 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         media_image_id: str | None = None,
     ) -> tuple[bytes | None, str | None]:
         """Get media image from server."""
-        image_url = self._player.generate_movie_image_url(media_content_id)
+        image_url = self._player.generate_image_url(
+            media_content_id, media_content_type
+        )
         if image_url:
             result = await self._async_fetch_image(image_url)
             return result
