@@ -2,14 +2,14 @@
 
 ### Search
 
-The Search Media service can be used in conjunction with the SEARCH shortcut to display filtered results in the Media Browser based on a keyword.
+The Search Media service can be used in conjunction with the HA Media Browser to display filtered results.
 
-* Set the query_string keyword search string for a Zidoo-Player entity using a Service call.
-* Navigate to the Media Browser SEARCH shortcut to display the results. (enable the SEARCH shortcut in the Integration configuration card to access). 
+* Set the keyword search (and optionally the media type override) string for a Zidoo-Player entity using a Service call.
+* Navigate to `/media-browser/media_player.zidoo_z9s/video,*` to display the results. 
 
 The url `http://<ip_address>:<port>/media-browser/media_player.zidoo_z9s/video,*<keyword>` can be used to display results of the search directly.
 
-NOTE:  this is essentially a development project for when a search function is incoperated into the Media Browser standard functions although it is possible to use the current lovalace version with a combination of helpers, scripts, and button control actions (or [browser-mod navigate](https://github.com/thomasloven/hass-browser_mod)). 
+_NOTE:  this feature is essentially a development project for when a search function is incorperated into the Media Browser standard functions, although it is possible to use the current lovelace version with a combination of helpers, scripts, and button control actions (or [browser-mod navigate](https://github.com/thomasloven/hass-browser_mod))._ 
 
 Lovelace card example:
 ```

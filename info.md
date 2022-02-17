@@ -9,8 +9,6 @@ This is a custom component to allow control of [Zidoo Media Player](https://www.
 
 **This is a Beta version!**.  Feedback and PRs welcome.
 
-_**NOTE: Release 1.2.5 fixes a version download issues with HACS.**  If you have a previous version installed with HACS, you need to delete any existing Integrations from the Configuration/Integration page, then it must be removed from the HACS/integration page and then re-downloaded. See [Add / Remove HACS Integration](add_remove.md)_
-
 ## Features
 
 - Control Zidoo devices as media players through HA
@@ -20,3 +18,4 @@ _**NOTE: Release 1.2.5 fixes a version download issues with HACS.**  If you have
 ## Useful links
 
 - [Repository](https://github.com/wizmo2/zidoo-player)
+

@@ -15,7 +15,7 @@ search:
         text:
     search_type:
       name: Search Type
-      description: Set the media type ('video','movie','tvshow','music','artist','album')
+      description: Override the media type ('video','movie','tvshow','music','artist','album')
       example: "tvshow"
       selector:
         text:
