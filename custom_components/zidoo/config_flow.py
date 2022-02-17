@@ -82,7 +82,6 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """
         Manage device specific parameters.
         """
-        # _LOGGER.debug("User user_info: %s", user_input)
         errors = {}
         if user_input is not None:
             try:
@@ -101,7 +100,6 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
                 # Add hub name to config
                 user_input[CONF_NAME] = validated["title"]
-                _LOGGER.debug("User Create user_info: %s", user_input)
                 return self.async_create_entry(
                     title=validated["title"], data=user_input
                 )

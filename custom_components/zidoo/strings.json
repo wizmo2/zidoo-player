@@ -2,22 +2,22 @@
   "config": {
       "flow_title": "Zidoo Player: {name}",
       "step": {
-            "user": {
-                "title": "Zidoo Player Setup",
-                "description": "Please enter the ip address for the player.",
-                "data": {
-                    "host": "[%key:common::config_flow::data::host%]",
-                    "password": "[%key:common::config_flow::data::password%]"
-                }
-            },
-            "link": {
-                "title": "Zidoo Player Setup",
-                "description": "Do you want to setup {name} ({host})?",
-                "data": {
-                    "password": "Password"
-                }
-            }
-    },
+          "user": {
+              "title": "Zidoo Player Setup",
+              "description": "Please enter the ip address for the player.",
+              "data": {
+                  "host": "[%key:common::config_flow::data::host%]",
+                  "password": "[%key:common::config_flow::data::password%]"
+             }
+           },
+           "link": {
+             "title": "Zidoo Player Setup",
+             "description": "Do you want to setup {name} ({host})?",
+             "data": {
+                 "password": "Password"
+             }
+           }
+      },
       "abort": {
           "already_in_progress": "Zidoo configuration is already in progress.",
           "already_configured": "This device is already configured.",
@@ -26,16 +26,16 @@
           "not_successful": "Unable to connect to device.",
           "not_wiser_device": "This device is currently not supported.",
           "one_instance_only": "Only 1 instance of the wiser hub is supported.  Check in ignored devices."
-    }
+      }
   },
   "options": {
-        "step": {
-            "user": {
-                "data": {
-                    "shortcut_json" : "Shortcut List"
-                },
-                "title": "Zidoo Media Player Options"
-            }
-        }
-    }
+      "step": {
+          "user": {
+              "data": {
+                  "shortcut_json" : "Shortcut List"
+              },
+              "title": "Zidoo Media Player Options"
+          }
+      }
+  }
 }
