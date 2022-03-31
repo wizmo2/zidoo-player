@@ -47,7 +47,7 @@ The Media browser allows access to the Movie Libary, plus file access to local d
 ## ToDo
 
 - Testing on other devices
-  - WOL (does not work on Z9S due to hardware limitations - reportedly works on Z9X)
+  - WOL (LAN only - does not work on Z9S due to hardware limitations)
   - Authentication (not sure if newer devices are more secure)
   - Possible device specific options.   
 - Add Coverflow options for additional file shortcuts in Media Browser
