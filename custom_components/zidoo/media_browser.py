@@ -132,7 +132,10 @@ def browse_media(  # noqa: C901
                             thumbnail=item_thumbnail,
                         )
                     )
-
+                if child_media_class == MEDIA_CLASS_MUSIC and item:
+                    if search_type == MEDIA_TYPE_ARTIST: title = item["artist"]
+                    if search_type == MEDIA_TYPE_ALBUM: title = item["album"]
+                    
         # Movie/Poster Library Lists
         else:
             child_media_class = MEDIA_CLASS_MOVIE
