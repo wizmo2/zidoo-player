@@ -1095,7 +1095,7 @@ class ZidooRC(object):
         return_value["filelist"] = share_list
         return return_value
 
-    def generate_image_url(self, media_id, media_type, width=350, height=None):
+    def generate_image_url(self, media_id, media_type, width=400, height=None):
         """Get link to thumbnail"""
         if media_type in ZVIDEO_SEARCH_TYPES:
             if height is None: height = width * 3 / 2
@@ -1104,9 +1104,9 @@ class ZidooRC(object):
             if height is None: height = width
             return self._generate_music_image_url(media_id, ZMUSIC_SEARCH_TYPES[media_type], width, height)
 
-    def _generate_movie_image_url(self, movie_id, width=350, height=525):
+    def _generate_movie_image_url(self, movie_id, width=400, height=600):
         """Get link to thumbnail
-        Parameters
+        Parametersz
             movie_id: int
                 dtanabase id
             width: int
