@@ -158,6 +158,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
             power_status = self._player.get_power_status()
             if power_status == "on":
                 self._state = STATE_PAUSED
+                self._source = self._player.get_source()
                 playing_info = self._player.get_playing_info()
                 self._media_info = {}
                 if playing_info is None or not playing_info:

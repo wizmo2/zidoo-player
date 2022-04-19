@@ -132,10 +132,11 @@ def browse_media(  # noqa: C901
                             thumbnail=item_thumbnail,
                         )
                     )
+
                 if child_media_class == MEDIA_CLASS_MUSIC and item:
                     if search_type == MEDIA_TYPE_ARTIST: title = item["artist"]
                     if search_type == MEDIA_TYPE_ALBUM: title = item["album"]
-                    
+
         # Movie/Poster Library Lists
         else:
             child_media_class = MEDIA_CLASS_MOVIE
@@ -233,12 +234,12 @@ def browse_media(  # noqa: C901
         if is_internal:
             url_path = entity._player.generate_image_url(media_content_id, media_content_type)
         else:
-            url_path = entity.get_browse_image_url(media_content_type,media_content_id)
-            """ 2022.2 fix
+            #url_path = entity.get_browse_image_url(media_content_type,media_content_id)
+            """ 2022.2 fix """
             url_path = (
                 f"/api/media_player_proxy/{entity.entity_id}/browse_media"
                 f"/{media_content_type}/{media_content_id}"
-            ) """
+            )
 
         return str(url_path)
 
