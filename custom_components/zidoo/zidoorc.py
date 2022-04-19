@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 TIMEOUT = 2             # default timeout
 CONF_PORT = 9529        # default api port
 DEFAULT_COUNT = 250     # default list limit
@@ -1095,14 +1095,16 @@ class ZidooRC(object):
         return_value["filelist"] = share_list
         return return_value
 
-    def generate_image_url(self, media_id, media_type, width=200, height=300):
+    def generate_image_url(self, media_id, media_type, width=350, height=None):
         """Get link to thumbnail"""
         if media_type in ZVIDEO_SEARCH_TYPES:
+            if height is None: height = width * 3 / 2
             return self._generate_movie_image_url(media_id, width, height)
         if media_type in ZMUSIC_SEARCH_TYPES:
+            if height is None: height = width
             return self._generate_music_image_url(media_id, ZMUSIC_SEARCH_TYPES[media_type], width, height)
 
-    def _generate_movie_image_url(self, movie_id, width=200, height=300):
+    def _generate_movie_image_url(self, movie_id, width=350, height=525):
         """Get link to thumbnail
         Parameters
             movie_id: int

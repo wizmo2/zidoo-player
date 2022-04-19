@@ -160,8 +160,8 @@ def browse_media(  # noqa: C901
         if is_internal:
             url_path = entity._player.generate_image_url(media_content_id, media_content_type)
         else:
-            # url_path = entity.get_browse_image_url(media_content_type,media_content_id)
-            """ 2022 fix """ 
+            #url_path = entity.get_browse_image_url(media_content_type,media_content_id)
+            """ 2022.2 fix """
             url_path = (
                 f"/api/media_player_proxy/{entity.entity_id}/browse_media"
                 f"/{media_content_type}/{media_content_id}"
