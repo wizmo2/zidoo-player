@@ -41,6 +41,7 @@ from .const import (
     _LOGGER,
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
+    CONF_POWERMODE,
 )
 
 import homeassistant.helpers.config_validation as cv
@@ -313,8 +314,10 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def turn_off(self):
         """Turn off media player."""
-        self._player.turn_off()
-
+        if self._config_entry.options.get(CONF_POWERMODE, False):
+            self._player.turn_off(True)
+        else:
+            self._player.turn_off()
     def volume_up(self):
         """Volume up the media player."""
         self._player.volume_up()

@@ -27,7 +27,9 @@
     "step": {
       "init": {
         "data": {
-          "shortcut_json": "Shortcut List"
+          "shortcut_json": "Shortcut List",
+          "password": "Password",
+          "powermode": "Power Off Standby"
         },
         "title": "Zidoo Player Options"
       }
