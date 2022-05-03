@@ -374,7 +374,7 @@ class ZidooRC(object):
             result = json.loads(response.content.decode("utf-8"))
             return result
 
-    def get_source(self, source):
+    def get_source(self):
         """Returns last known app"""
         return self._current_source
 
@@ -1171,14 +1171,15 @@ class ZidooRC(object):
 
     def turn_on(self):
         """Turn the media player on."""
-        self._wakeonlan()
         # Try using the power on command incase the WOL doesn't work
-        if self.get_power_status() != "active":
-            self._send_key(ZKEY_POWER_ON)
+        self._send_key(ZKEY_POWER_ON, False)
+        self._wakeonlan()
 
-    def turn_off(self):
+    def turn_off(self, standby=False):
         """Turn off media player."""
-        self._send_key(ZKEY_POWER_OFF)
+        key = ZKEY_POWER_OFF
+        if standby: key = ZKEY_POWER_STANDBY
+        self._send_key(key)
 
     def volume_up(self):
         """Volume up the media player."""

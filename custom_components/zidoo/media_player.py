@@ -314,10 +314,8 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     def turn_off(self):
         """Turn off media player."""
-        if self._config_entry.options.get(CONF_POWERMODE, False):
-            self._player.turn_off(True)
-        else:
-            self._player.turn_off()
+        self._player.turn_off(self._config_entry.options.get(CONF_POWERMODE, False))
+
     def volume_up(self):
         """Volume up the media player."""
         self._player.volume_up()
