@@ -51,6 +51,7 @@ CLIENTID_PREFIX = "home-assistant"
 CLIENTID_NICKNAME = "Home Assistant"
 
 CONF_SHORTCUT = "shortcut_json"
+CONF_POWERMODE = "powermode"
 
 # Services
 SEARCH_SERVICE = "search"

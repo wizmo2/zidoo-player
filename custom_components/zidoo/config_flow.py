@@ -16,6 +16,7 @@ from .const import (
     DOMAIN,
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
+    CONF_POWERMODE,
     CONF_SHORTCUT,
     ZSHORTCUTS,
     ZDEFAULT_SHORTCUTS,
@@ -205,7 +206,8 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Optional(CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD,"")): str,
                 vol.Optional(
                     CONF_SHORTCUT, default=shortcuts
-                ): cv.multi_select(self.shortcut_list)
+                ): cv.multi_select(self.shortcut_list),
+                vol.Optional(CONF_POWERMODE, default=self.config_entry.options.get(CONF_POWERMODE, False)): bool,
             }
         )
         return self.async_show_form(step_id="init", data_schema=data_schema)

@@ -25,14 +25,16 @@
           "timeout_error": "Timed out trying to connect to the device.  Check the IP address and try again.",
           "not_successful": "Unable to connect to device.",
           "not_wiser_device": "This device is currently not supported.",
-          "one_instance_only": "Only 1 instance of the wiser hub is supported.  Check in ignored devices."
+          "one_instance_only": "Only 1 instance is supported.  Check in ignored devices."
       }
   },
   "options": {
       "step": {
           "user": {
               "data": {
-                  "shortcut_json" : "Shortcut List"
+                  "shortcut_json" : "Shortcut List",
+                  "password": "Password",
+                  "powermode" : "Power Off Standby"
               },
               "title": "Zidoo Media Player Options"
           }
