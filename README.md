@@ -34,13 +34,13 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 
 ### Options
 
-Access the Options menu from 'Settings-Devices-Integration' and press 'Configure' in the Zidoo entry.
+Access the Options menu by pressing the CONFIGURE button on the Integration card
 
 ![Configure Shortcuts](images/config.png)
 
-The Media browser allows access to the Movie Libary, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Additional search shortcuts can be added using the CONFIGURE button on the Integration card[^3]. 
+The Media browser allows access to the Movie Libary, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Additional search shortcuts can be added.[^3]. 
 
-Use Power Off control to enable tandby instead of a full power down. ( _NOTE: Z9S syandby is know to be unstable_  )
+Use Power Off control to enable Standby instead of a full power down.[^4]
 
 ## FAQs
 > Q: Power-on does not work
