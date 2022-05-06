@@ -5,7 +5,7 @@ import voluptuous as vol
 from .zidoorc import ZidooRC
 
 from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 
@@ -43,10 +43,10 @@ async def validate_input(hass, data):
         raise UnknownError
 
     if response is not None:
-        unique_id = str(f"{DOMAIN}-{response.get('net_mac')}")
+        mac_id = response.get('net_mac')
         name = response.get("model")
 
-        return {"title": name, "unique_id": unique_id}
+        return {"title": name, "mac": mac_id}
 
     raise CannotConnect
 
@@ -91,11 +91,13 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if "base" not in errors:
-                await self.async_set_unique_id(validated["unique_id"])
+                unique_id = str(f"{DOMAIN}-{validated('mac')}")
+                await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
                 # Add hub name to config
                 user_input[CONF_NAME] = validated["title"]
+                user_input[CONF_MAC] = validated["mac"]
                 return self.async_create_entry(
                     title=validated["title"], data=user_input
                 )

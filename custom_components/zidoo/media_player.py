@@ -31,6 +31,7 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
+	CONF_MAC,
     STATE_IDLE,
     STATE_OFF,
     STATE_PAUSED,
@@ -97,7 +98,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add Media Player from a config entry."""
 
-    player = ZidooRC(config_entry.data[CONF_HOST])
+    player = ZidooRC(config_entry.data[CONF_HOST], config_entry.data.get(CONF_MAC, None))
 
     async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
 
