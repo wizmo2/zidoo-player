@@ -91,7 +91,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if "base" not in errors:
-                unique_id = str(f"{DOMAIN}-{validated('mac')}")
+                unique_id = str(f"{DOMAIN}-{validated['mac']}")
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
