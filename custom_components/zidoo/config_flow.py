@@ -5,7 +5,7 @@ import voluptuous as vol
 from .zidoorc import ZidooRC
 
 from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_UNIQUE_ID
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC,  CONF_UNIQUE_ID
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components import ssdp
@@ -25,17 +25,8 @@ from .const import (
 SUPPORTED_MANUFACTURERS = ["Zidoo", "ZIDOO", "Plutinosoft LLCL"]
 IGNORED_MODELS = []
 
-DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_HOST): str,
-        vol.Optional(CONF_PASSWORD): str
-    }
-)
-
 async def validate_input(hass, data):
     """Validate the user input allows us to connect.
-
-    Data has the keys from DATA_SCHEMA with values provided by the user.
     """
     try:
         player = ZidooRC(data[CONF_HOST])
@@ -48,10 +39,10 @@ async def validate_input(hass, data):
         raise UnknownError
 
     if response is not None:
-        unique_id = str(f"{DOMAIN}-{response.get('net_mac')}")
+        mac_id = response.get('net_mac')
         name = response.get("model")
 
-        return {"title": name, "unique_id": unique_id}
+        return {"title": name, "mac": mac_id}
 
     raise CannotConnect
 
@@ -79,7 +70,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Return flow options."""
         return ZidooOptionsFlowHandler(config_entry)
 
-    async def async_step_user(self, user_input=None, confirm=False):
+    async def async_step_user(self, user_input=None):
         """
         Manage device specific parameters.
         """
@@ -96,11 +87,13 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
 
             if "base" not in errors:
-                await self.async_set_unique_id(validated["unique_id"])
+                unique_id = str(f"{DOMAIN}-{validated['mac']}")
+                await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
                 # Add hub name to config
                 user_input[CONF_NAME] = validated["title"]
+                user_input[CONF_MAC] = validated["mac"]
                 return self.async_create_entry(
                     title=validated["title"], data=user_input
                 )
@@ -124,7 +117,6 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_ssdp(self, discovery_info):
         """Handle a discovered Harmony device."""
         #_LOGGER.debug("SSDP discovery_info: %s", discovery_info)
-
         parsed_url = urlparse(discovery_info.ssdp_location)
         friendly_name = discovery_info.upnp[ssdp.ATTR_UPNP_FRIENDLY_NAME]
 
@@ -152,19 +144,22 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "unknown"
 
         if "base" not in errors:
-            await self.async_set_unique_id(validated["unique_id"])
+            unique_id = str(f"{DOMAIN}-{validated['mac']}")
+            await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
             # self.discovery_config[CONF_NAME] = validated["title"]
+            self.discovery_config[CONF_MAC] = validated["mac"]
             return await self.async_step_link()
 
-    async def async_step_link( self, user_input=None):
+    async def async_step_link( self, user_input=None, confirm_only=False):
         """Allow the user to confirm adding the device."""
         #_LOGGER.debug("Link user_info: %s", user_input)
         if user_input is not None:
             # Add name and host to config
             user_input[CONF_NAME] = self.discovery_config[CONF_NAME]
             user_input[CONF_HOST] = self.discovery_config[CONF_HOST]
+            user_input[CONF_MAC] = self.discovery_config[CONF_MAC]
             _LOGGER.debug("Link Create config: %s", user_input)
             return self.async_create_entry(
                 title=user_input[CONF_NAME], data=user_input
