@@ -42,6 +42,14 @@ The Media browser allows access to the Movie Libary, plus file access to local d
 
 Use Power Off control to enable Standby instead of a full power down.[^4]
 
+### Services
+
+Set Subtitle - switch through video player subtitle list
+
+Set Audio - switch through video audio tracks
+
+Search - sets the search parmeters for custom browser view (experimental).  'query_string' = search string; 'video_type' = type filter 
+
 ## FAQs
 > Q: Power-on does not work
 >
