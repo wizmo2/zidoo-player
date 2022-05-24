@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = '0.1.2'
+VERSION = '0.1.3'
 TIMEOUT = 2             # default timeout
 CONF_PORT = 9529        # default api port
 DEFAULT_COUNT = 250     # default list limit
@@ -196,6 +196,8 @@ class ZidooRC(object):
         self._music_type = -1
         self._last_video_path = None
         self._movie_info = {}
+        self._current_subtitle = 0
+        self._current_audio = 0
 
     def _jdata_build(self, method, params=None):
         if params:
@@ -440,6 +442,10 @@ class ZidooRC(object):
 
         # _LOGGER.debug(json.dumps(response, indent=4))
         if response is not None and response.get("status") == 200:
+            if response.get("subtitle"):
+                self._current_subtitle = response["subtitle"].get("index")
+            if response.get("audio"):
+                self._current_audio = response["audio"].get("index")
             if response.get("video"):
                 result = response.get("video")
                 return_value["status"] = (result.get("status")==1)
@@ -547,6 +553,82 @@ class ZidooRC(object):
 
         if response is not None and response.get("status") == 200:
             return response
+
+    def _next_data(self,data,index):
+        """Toggle list"""
+        temp = iter(data)
+        for key in temp:
+            if key == index:
+                index = next(temp, 0)
+                return index
+        return 0
+
+    def get_subtitle_list(self, log_errors=True):
+        """Get the subtitle list
+        Returns
+            dictionary list
+        """
+        return_values = {}
+        response = self._req_json('ZidooVideoPlay/getSubtitleList', log_errors=log_errors)
+
+        if response is not None and response.get("status") == 200:
+            for result in response["subtitles"]:
+                index = result.get("index")
+                return_values[index] = result.get("title")
+
+        return return_values
+
+    def set_subtitle(self, index=None):
+        """Start an subtitle
+        Parameters
+            index: int
+                subtitle list reference
+        Return
+            True if sucessful
+        """
+        if index is None:
+            index = self._next_data(self.get_subtitle_list(), self._current_subtitle)
+
+        response = self._req_json('ZidooVideoPlay/setSubtitle?index={}'.format(index), log_errors = False)
+
+        if response is not None and response.get("status") == 200:
+            self._current_subtitle = index
+            return True
+        return False
+
+    def get_audio_list(self):
+        """Get the audio track list
+        Returns
+            dictionary
+				list of audio tracks
+        """
+        return_values = {}
+        response = self._req_json('ZidooVideoPlay/getAudioList')
+
+        if response is not None and response.get("status") == 200:
+            for result in response["subtitles"]:
+                index = result.get("index")
+                return_values[index] = result.get("title")
+
+        return return_values
+
+    def set_audio(self, index=None):
+        """Select the audio track
+        Parameters
+            index: int
+                audio track list reference
+        Return
+            True if sucessful
+        """
+        if index is None:
+            index = self._next_data(self.get_audio_list(), self._current_audio)
+
+        response = self._req_json('ZidooVideoPlay/setAudio?index={}'.format(index), log_errors = False)
+
+        if response is not None and response.get("status") == 200:
+            self._current_audio = index
+            return True
+        return False
 
     def get_system_info(self):
         """Get system information
