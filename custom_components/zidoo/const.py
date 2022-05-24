@@ -55,6 +55,8 @@ CONF_POWERMODE = "powermode"
 
 # Services
 SEARCH_SERVICE = "search"
+SUBTITLE_SERVICE = "set_subtitle"
+AUDIO_SERVICE = "set_audio"
 
 MEDIA_TYPE_FILE = "file"
 MEDIA_TYPE_SEARCH = "search"

@@ -33,7 +33,7 @@ from homeassistant.components.media_player.const import (
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
-	CONF_MAC,
+    CONF_MAC,
     STATE_IDLE,
     STATE_OFF,
     STATE_PAUSED,
@@ -45,6 +45,8 @@ from .const import (
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
     CONF_POWERMODE,
+    SUBTITLE_SERVICE,
+    AUDIO_SERVICE,
     SEARCH_SERVICE,
 )
 
@@ -106,12 +108,16 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add Media Player from a config entry."""
 
-    player = ZidooRC(config_entry.data[CONF_HOST], mac=config_entry.data.get(CONF_MAC, None))
+    player = ZidooRC(
+        config_entry.data[CONF_HOST], mac=config_entry.data.get(CONF_MAC, None)
+    )
 
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
         SEARCH_SERVICE, SEARCH_SCHEMA, "async_search_media"
     )
+    platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
+    platform.async_register_entity_service(AUDIO_SERVICE, {}, "async_set_audio")
 
     async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
 
@@ -405,6 +411,14 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         """sets search string for media browser."""
         self._search_query = query_string
         self._search_type = search_type
+
+    async def async_set_subtitle(self):
+        """sets or toggles the video subtitle"""
+        await self.hass.async_add_executor_job(self._player.set_subtitle)
+
+    async def async_set_audio(self):
+        """sets or toggles the audio_track subtitle"""
+        await self.hass.async_add_executor_job(self._player.set_audio)
 
     async def async_browse_media(
         self,

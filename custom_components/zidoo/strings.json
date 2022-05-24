@@ -24,7 +24,6 @@
           "auth_failure": "Unable to authenticate with the device.  Check the secret key and try again.",
           "timeout_error": "Timed out trying to connect to the device.  Check the IP address and try again.",
           "not_successful": "Unable to connect to device.",
-          "not_wiser_device": "This device is currently not supported.",
           "one_instance_only": "Only 1 instance is supported.  Check in ignored devices."
       }
   },
