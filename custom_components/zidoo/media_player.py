@@ -48,6 +48,7 @@ from .const import (
 )
 
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import entity_platform
 
 from homeassistant.util.dt import utcnow
 from homeassistant.config_entries import SOURCE_IMPORT
