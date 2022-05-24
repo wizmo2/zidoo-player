@@ -1188,7 +1188,7 @@ class ZidooRC(object):
 
     def _generate_movie_image_url(self, movie_id, width=400, height=600):
         """Get link to thumbnail
-        Parametersz
+        Parameters
             movie_id: int
                 dtanabase id
             width: int

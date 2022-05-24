@@ -1,0 +1,14 @@
+set_subtitle:
+  name: Set Subtitle
+  description: Set the subtitle index.
+  target:
+    entity:
+      integration: zidoo
+      domain: media_player
+set_audio:
+  name: Set Audio Track
+  description: Set the audio track index.
+  target:
+    entity:
+      integration: zidoo
+      domain: media_player

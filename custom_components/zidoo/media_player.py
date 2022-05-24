@@ -43,6 +43,8 @@ from .const import (
     CLIENTID_PREFIX,
     CLIENTID_NICKNAME,
     CONF_POWERMODE,
+    SUBTITLE_SERVICE,
+    AUDIO_SERVICE,
 )
 
 import homeassistant.helpers.config_validation as cv
@@ -98,7 +100,13 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add Media Player from a config entry."""
 
-    player = ZidooRC(config_entry.data[CONF_HOST], mac=config_entry.data.get(CONF_MAC, None))
+    player = ZidooRC(
+        config_entry.data[CONF_HOST], mac=config_entry.data.get(CONF_MAC, None)
+    )
+
+    platform = entity_platform.async_get_current_platform()
+    platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
+    platform.async_register_entity_service(AUDIO_SERVICE, {}, "async_set_audio")
 
     async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
 
@@ -381,6 +389,14 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def media_image_url(self):
         """Image url of current playing media."""
         return self._player.generate_current_image_url()
+
+    async def async_set_subtitle(self):
+        """sets or toggles the video subtitle"""
+        await self.hass.async_add_executor_job(self._player.set_subtitle)
+
+    async def async_set_audio(self):
+        """sets or toggles the audio_track subtitle"""
+        await self.hass.async_add_executor_job(self._player.set_audio)
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
         """Implement the websocket media browsing helper"""

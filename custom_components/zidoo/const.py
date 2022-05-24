@@ -53,6 +53,9 @@ CLIENTID_NICKNAME = "Home Assistant"
 CONF_SHORTCUT = "shortcut_json"
 CONF_POWERMODE = "powermode"
 
+SUBTITLE_SERVICE = "set_subtitle"
+AUDIO_SERVICE = "set_audio"
+
 MEDIA_TYPE_FILE = "file"
 
 ZSHORTCUTS = [
