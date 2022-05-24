@@ -44,9 +44,9 @@ Use Power Off control to enable Standby instead of a full power down.[^4]
 
 ### Services
 
-Set Subtitle - switch through video player subtitle list
+Set Subtitle - switch through video player subtitle list[^5]
 
-Set Audio - switch through video audio tracks
+Set Audio - switch through video audio tracks[^5]
 
 Search - sets the search parmeters for custom browser view (experimental).  'query_string' = search string; 'video_type' = type filter 
 
@@ -81,5 +81,6 @@ Search - sets the search parmeters for custom browser view (experimental).  'que
 [^2]: Release 1.2 - adds config flow
 [^3]: Release 1.2.9 - Extended search shortcuts.  Requires HA 2022.2 or above
 [^4]: Release 1.2.10 - Standby option.  Not recommended on Z9S
+[^5]: Release 1.2.11 - Subtitle and Audio services
 
 
