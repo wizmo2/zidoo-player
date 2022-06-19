@@ -1,13 +1,14 @@
 """The Zidoo component."""
-from .zidoorc import ZidooRC
+from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_registry import async_migrate_entries
 
 from .const import DOMAIN, _LOGGER
-PLATFORMS = ["media_player"]
+
+PLATFORMS = [Platform.MEDIA_PLAYER]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up zido from a config entry."""

@@ -31,5 +31,11 @@
               "title": "Zidoo Media Player Options"
           }
       }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "turn_on": "{entity_name} was requested to turn on",
+      "turn_off": "{entity_name} was requested to turn off"
+    }
   }
 }

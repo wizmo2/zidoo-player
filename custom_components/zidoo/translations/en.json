@@ -34,5 +34,11 @@
         "title": "Zidoo Player Options"
       }
     }
+  },
+  "device_automation": {
+    "trigger_type": {
+        "turn_off": "{entity_name} was requested to turn off",
+        "turn_on": "{entity_name} was requested to turn on"
+    }
   }
 }

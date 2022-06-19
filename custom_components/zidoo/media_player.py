@@ -1,10 +1,9 @@
 """Support for interface with Zidoo Media Player."""
-import logging
+from __future__ import annotations
 
 from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO
-import voluptuous as vol
 
-from homeassistant.components.media_player import PLATFORM_SCHEMA, MediaPlayerEntity
+from homeassistant.components.media_player import MediaPlayerEntity
 from homeassistant.components.media_player.const import (
     SUPPORT_BROWSE_MEDIA,
     SUPPORT_CLEAR_PLAYLIST,
@@ -28,6 +27,14 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_APP,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.helpers import entity_platform
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.util.dt import utcnow
+
 from homeassistant.const import (
     CONF_HOST,
     CONF_NAME,
@@ -36,6 +43,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_PAUSED,
     STATE_PLAYING,
+    ATTR_ENTITY_ID,
 )
 from .const import (
     DOMAIN,
@@ -45,14 +53,8 @@ from .const import (
     CONF_POWERMODE,
     SUBTITLE_SERVICE,
     AUDIO_SERVICE,
+    EVENT_TURN_ON,
 )
-
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers import entity_platform
-
-from homeassistant.util.dt import utcnow
-from homeassistant.config_entries import SOURCE_IMPORT
-from homeassistant.helpers.network import is_internal_request
 
 from .media_browser import browse_media  # build_item_response, library_payload
 
@@ -78,8 +80,12 @@ SUPPORT_MEDIA_MODES = (
     | SUPPORT_PLAY_MEDIA
 )
 
-
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+async def async_setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    async_add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
+) -> None:
     """Add Media Player form configuration."""
 
     _LOGGER.warning(
@@ -98,9 +104,12 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     )
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Add Media Player from a config entry."""
-
     player = ZidooRC(
         config_entry.data[CONF_HOST], mac=config_entry.data.get(CONF_MAC, None)
     )
@@ -109,7 +118,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
     platform.async_register_entity_service(AUDIO_SERVICE, {}, "async_set_audio")
 
-    async_add_entities([ZidooPlayerDevice(hass, player, config_entry)])
+    entity = ZidooPlayerDevice(hass, player, config_entry)
+    async_add_entities([entity])
 
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
@@ -208,6 +218,15 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def unique_id(self):
         """Return the unique id of the device."""
         return self._unique_id
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info for this device."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.unique_id)},
+            manufacturer="Zidoo",
+            name=self.name,
+        )
 
     @property
     def name(self):
@@ -309,7 +328,6 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def app_name(self):
         """Return the current running application."""
-        """NOTE: Shows as small print for movies too"""
         date = self._media_info.get("date")
         if date is not None:
             return "({})".format(date.year)
@@ -318,13 +336,19 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     #    """Set volume level, range 0..1."""
     #    self._player.set_volume_level(volume)
 
-    def turn_on(self):
+    async def async_turn_on(self):
         """Turn the media player on."""
+        # Fire events for automations
+        self.hass.bus.async_fire(EVENT_TURN_ON, {ATTR_ENTITY_ID: self.entity_id})
+        # Try API and WOL
         self._player.turn_on()
 
-    def turn_off(self):
+    async def async_turn_off(self):
         """Turn off media player."""
-        self._player.turn_off(self._config_entry.options.get(CONF_POWERMODE, False))
+        await self.hass.async_add_executor_job(
+            self._player.turn_off,
+            self._config_entry.options.get(CONF_POWERMODE, False)
+        )
 
     def volume_up(self):
         """Volume up the media player."""
