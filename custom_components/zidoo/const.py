@@ -57,6 +57,9 @@ CONF_POWERMODE = "powermode"
 SEARCH_SERVICE = "search"
 SUBTITLE_SERVICE = "set_subtitle"
 AUDIO_SERVICE = "set_audio"
+# Triggers
+EVENT_TURN_ON = "zidoo.turn_on"
+EVENT_TURN_OFF = "zidoo.turn_off"
 
 MEDIA_TYPE_FILE = "file"
 MEDIA_TYPE_SEARCH = "search"
