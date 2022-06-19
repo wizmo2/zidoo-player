@@ -11,8 +11,8 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_APP,
 )
-from homeassistant.components import media_source
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.network import is_internal_request
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import DeviceInfo
