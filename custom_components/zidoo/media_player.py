@@ -4,25 +4,8 @@ from __future__ import annotations
 from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZMUSIC_SEARCH_TYPES
 import voluptuous as vol
 
-from homeassistant.components.media_player import MediaPlayerEntity, BrowseMedia
+from homeassistant.components.media_player import MediaPlayerEntity, BrowseMedia, MediaPlayerEntityFeature
 from homeassistant.components.media_player.const import (
-    SUPPORT_BROWSE_MEDIA,
-    SUPPORT_CLEAR_PLAYLIST,
-    SUPPORT_NEXT_TRACK,
-    SUPPORT_PAUSE,
-    SUPPORT_PLAY,
-    SUPPORT_PLAY_MEDIA,
-    SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_SEEK,
-    SUPPORT_SELECT_SOURCE,
-    SUPPORT_SELECT_SOUND_MODE,
-    SUPPORT_SHUFFLE_SET,
-    SUPPORT_STOP,
-    SUPPORT_TURN_OFF,
-    SUPPORT_TURN_ON,
-    SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_SET,
-    SUPPORT_VOLUME_STEP,
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_TVSHOW,
     MEDIA_TYPE_MOVIE,
@@ -69,23 +52,23 @@ VIDEO_TYPE = "search_type"
 SEARCH_SCHEMA = {vol.Optional(QUERY_STRING): str, vol.Optional(VIDEO_TYPE): str}
 
 SUPPORT_ZIDOO = (
-    SUPPORT_VOLUME_STEP
-    | SUPPORT_VOLUME_MUTE
-    | SUPPORT_TURN_ON
-    | SUPPORT_TURN_OFF
-    | SUPPORT_SELECT_SOURCE
-    | SUPPORT_BROWSE_MEDIA
-    | SUPPORT_SEEK
+    MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.BROWSE_MEDIA
+    | MediaPlayerEntityFeature.SEEK
 )
-# SUPPORT_CLEAR_PLAYLIST # SUPPORT_SEEK # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
+# SUPPORT_CLEAR_PLAYLIST # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
 
 SUPPORT_MEDIA_MODES = (
-    SUPPORT_PAUSE
-    | SUPPORT_STOP
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_PLAY
-    | SUPPORT_PLAY_MEDIA
+    MediaPlayerEntityFeature.PAUSE
+    | MediaPlayerEntityFeature.STOP
+    | MediaPlayerEntityFeature.PREVIOUS_TRACK
+    | MediaPlayerEntityFeature.NEXT_TRACK
+    | MediaPlayerEntityFeature.PLAY
+    | MediaPlayerEntityFeature.PLAY_MEDIA
 )
 
 async def async_setup_platform(
