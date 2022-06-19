@@ -1,4 +1,4 @@
-# Zidoo Power On
+# Power-On Info
 
 ## Wake-on-Lan
 The Zidoo-Player integration supports power on natively when the device supports it.  The Home-Assistant server sends a magic packet to the device using it's mac address.  

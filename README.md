@@ -49,10 +49,9 @@ Set Audio - switch through video audio tracks[^5]
 
 ## FAQs
 > Q: Power-on does not work
->  
-> 1. _WOL does not work on Z9S due to hardware limitiations._
-> 2. _To send the WOL message from a Docker container, you either need to reconfigure the container with the '--net=host', or have some type of WOL gateway setup_
 >
+>  A. _See [Power-On Info](power.md)._
+> 
 > Q: What else?
 >
 > A. If you installed versions prior to 1.2.5 using HACS and the integration is not availble in ADD INTEGRATIONS
