@@ -7,7 +7,7 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 - Control Zidoo devices as media players through HA
 - Album art and movie backdrops
 - Browse movies, music, file system, and share mounts through HA Media Browser
-- Keyword [Searches](services.md)
+- Keyword [Searches](develop.md#search)
 
 ![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
 ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
@@ -48,7 +48,7 @@ Set Subtitle - switch through video player subtitle list[^5]
 
 Set Audio - switch through video audio tracks[^5]
 
-Search - sets the search parmeters for custom browser view (experimental).  'query_string' = search string; 'video_type' = type filter 
+Search - sets the search parmeters for custom browser view.(See experimental [Searches](develop.md#search))
 
 ## FAQs
 > Q: Power-on does not work

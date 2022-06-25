@@ -27,8 +27,23 @@ zidoo_turn_on:
       command: b64:JgB4AAABI5MTEhMSEhITEhMSExITNhMSExITERMSExITEhMSEjcTEhM2ExITNxM2ExITEhM2ExITEhM3EhITEhM2FDYTEhM2EwAGCAABJksTAAxWAAEoSRMADFYAASdJEwAMVgABKEgTAAxaAAEkSRMADFYAASdJEwANBQ==
 ```
 
-This can be integrated into the media player controls using an automation (when working with devices, it's easier to use the automation editor to get the right device_id)
+This can be integrated into the media player controls using an automation 
 
+Automation example (events):
+```
+alias: media_zidoo_turn_on
+trigger:
+  - platform: event
+    event_type: zidoo.turn_on
+condition: []
+action:
+  - service: script.zidoo_turn_on
+    data: {}
+mode: single
+```
+
+Automation example (device):
+NOTE:when working with devices, it's easier to use the automation editor to get the right device_id
 ```
 alias: media_zidoo_turn_on
 trigger:
