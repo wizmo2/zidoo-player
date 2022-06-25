@@ -20,7 +20,21 @@ entities:
       action: navigate
       navigation_path: /media-browser/media_player.zidoo_z9s/video%2C*
 ```
-Automation example:
+
+Automation example (events):
+```
+alias: media_zidoo_turn_on
+trigger:
+  - platform: event
+    event_type: zidoo.turn_on
+condition: []
+action:
+  - service: script.zidoo_turn_on
+    data: {}
+mode: single
+```
+
+Automation example (devices):
 ```
 - id: set_zidoo_search
   alias: set_zidoo_search
