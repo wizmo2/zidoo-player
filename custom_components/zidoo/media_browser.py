@@ -6,7 +6,13 @@ from homeassistant.components.media_player import BrowseError, BrowseMedia
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
+    MEDIA_CLASS_MUSIC,
     MEDIA_CLASS_URL,
+    MEDIA_TYPE_ALBUM,
+    MEDIA_TYPE_ARTIST,
+    MEDIA_TYPE_MUSIC,
+    MEDIA_TYPE_PLAYLIST,
+    MEDIA_TYPE_TRACK,
     MEDIA_TYPE_VIDEO,
 )
 from homeassistant.helpers.network import is_internal_request
@@ -20,7 +26,7 @@ from .const import (
     ZDEFAULT_SHORTCUTS,
     CONF_SHORTCUT,
 )
-from .zidoorc import ZVIDEO_FILTER_TYPES
+from .zidoorc import ZVIDEO_FILTER_TYPES, ZMUSIC_SEARCH_TYPES
 
 BROWSE_LIMIT = 1000
 ZTITLE = "Zidoo Media"
