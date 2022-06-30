@@ -5,7 +5,7 @@ import voluptuous as vol
 from .zidoorc import ZidooRC
 
 from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC,  CONF_UNIQUE_ID
+from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.components import ssdp
@@ -115,8 +115,8 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return await self.async_step_user(user_input)
 
     async def async_step_ssdp(self, discovery_info):
-        """Handle a discovered Harmony device."""
-        #_LOGGER.debug("SSDP discovery_info: %s", discovery_info)
+        """Handle a discovered Zidoo device."""
+        # _LOGGER.debug("SSDP discovery_info: %s", discovery_info)
         parsed_url = urlparse(discovery_info.ssdp_location)
         friendly_name = discovery_info.upnp[ssdp.ATTR_UPNP_FRIENDLY_NAME]
 
@@ -184,7 +184,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry):
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
         self.shortcut_list: dict[str, str] = {item["path"]: item["name"] for item in ZSHORTCUTS}

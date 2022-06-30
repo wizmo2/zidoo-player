@@ -14,7 +14,6 @@ from homeassistant.components.media_player.const import (
 from homeassistant.components.media_player.browse_media import async_process_play_media_url
 from homeassistant.components import media_source
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.network import is_internal_request
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import DeviceInfo
@@ -44,7 +43,7 @@ from .const import (
     EVENT_TURN_ON,
 )
 
-from .media_browser import browse_media  # build_item_response, library_payload
+from .media_browser import build_item_response, library_payload, media_source_content_filter
 
 DEFAULT_NAME = "Zidoo Media Player"
 
@@ -457,16 +456,20 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         media_content_id: str | None = None,
     ) -> BrowseMedia:
         """Implement the websocket media browsing helper"""
+        if media_content_type in [None, "library"]:
+            return await library_payload(self)
 
-        is_internal = is_internal_request(self.hass)
+        if media_source.is_media_source_id(media_content_id):
+            return await media_source.async_browse_media(
+                self.hass, media_content_id, content_filter=media_source_content_filter
+            )
 
-        return await self.hass.async_add_executor_job(
-            browse_media,
-            self,
-            is_internal,
-            media_content_type,
-            media_content_id,
-        )
+        payload = {
+            "search_type": media_content_type,
+            "search_id": media_content_id,
+        }
+
+        return await build_item_response(self, payload)
 
     async def async_get_browse_image(
         self,
