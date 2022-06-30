@@ -1,7 +1,7 @@
 """Support for interface with Zidoo Media Player."""
 from __future__ import annotations
 
-from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO
+from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZMUSIC_SEARCH_TYPES, ZTYPE_MIMETYPE
 
 from homeassistant.components.media_player import MediaPlayerEntity
 from homeassistant.components.media_player.const import (
@@ -27,7 +27,9 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_APP,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.components.media_player.browse_media import async_process_play_media_url
+from homeassistant.components import media_source
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.network import is_internal_request
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.helpers import entity_platform
@@ -400,10 +402,34 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._player.media_previous_track()
         self.schedule_update_ha_state()
 
+    async def async_play_media(self, media_type, media_id, **kwargs):
+        """Play a piece of media."""
+        _LOGGER.debug("play request: media_id:{} media_type:{}".format(media_id, media_type))
+        if media_source.is_media_source_id(media_id):
+            play_item = await media_source.async_resolve_media(
+                self.hass, media_id, self.entity_id
+            )
+            media_id = async_process_play_media_url(self.hass,  play_item.url)
+            media_type = play_item.mime_type
+
+        _LOGGER.debug("play: media_id:{} media_type:{}".format(media_id, media_type))
+
+        await self.hass.async_add_executor_job(
+            self.play_media,
+            media_type,
+            media_id
+        )
+
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
         if media_type and media_type == "file":
             self._player.play_file(media_id)
+        elif media_type in ZMUSIC_SEARCH_TYPES:
+            media_ids = media_id.split(",")
+            self._player.play_music(media_ids[0], media_type, media_ids[-1])
+        elif "/" in media_type:
+            mime_major = media_type.split("/")[0]
+            self._player.play_stream(media_id, ZTYPE_MIMETYPE[mime_major])
         else:
             self._player.play_movie(media_id)
 

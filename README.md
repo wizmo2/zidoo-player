@@ -11,6 +11,8 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 ![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
 ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
 
+Streaming content currently uses a hack with the players uPNP functions.  There are limitations with content, including issues with the Media Player 6.0 (audio files are streamed to the Video Player for now).  Playlists can be handled using Kodi or ZDMC (this includes support for camera stream, although it is a little buggy). 
+
 ## Installation
 
 ### HACS Install 
