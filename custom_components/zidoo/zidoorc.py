@@ -102,7 +102,7 @@ ZTYPE_NAMES = {
 
 ZCONTENT_VIDEO = "Video Player"
 ZCONTENT_MUSIC = "Music Player"
-ZCONTENT_NONE = ""
+ZCONTENT_NONE = None
 
 """Movie Player search keys"""
 ZVIDEO_FILTER_TYPES = {
@@ -448,6 +448,7 @@ class ZidooRC(object):
                 self._current_source = ZCONTENT_MUSIC
                 return return_value
 
+        self._current_source = ZCONTENT_NONE
         return return_value
 
     def _get_video_playing_info(self):
@@ -1367,7 +1368,10 @@ class ZidooRC(object):
     def media_play(self):
         """Send play command."""
         # self._send_key(ZKEY_OK)
-        self._send_key(ZKEY_MEDIA_PLAY)
+        if self._current_source == ZCONTENT_NONE and self._last_video_path:
+            self.play_file(self._last_video_path)
+        else:
+            self._send_key(ZKEY_MEDIA_PLAY)
 
     def media_pause(self):
         """Send media pause command to media player."""
