@@ -78,7 +78,7 @@ Set Audio - switch through video audio tracks[^5]
 [^1]: Release 1.1 - can be used on older HA versions, requires manual integration and is limited to basic player control.
 [^2]: Release 1.2 - adds config flow
 [^3]: Release 1.2.9 - Extended search shortcuts.  Requires HA 2022.2 or above
-[^4]: Release 1.2.10 - Standby option.  Not recommended on Z9S
+[^4]: Release 1.2.10 - Standby option.  Not recommended on Z9S or UHD3000
 [^5]: Release 1.2.11 - Subtitle and Audio services
 
 
