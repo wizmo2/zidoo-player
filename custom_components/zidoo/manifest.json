@@ -7,5 +7,5 @@
   "requirements": [],
   "codeowners": ["@wizmo2"],
   "iot_class": "local_polling",
-  "version": "1.2.10"
+  "version": "1.2.12"
 }
