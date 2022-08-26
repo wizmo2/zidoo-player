@@ -158,21 +158,22 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
         # Retrieve the latest data.
         try:
+            state = STATE_OFF
             power_status = self._player.get_power_status()
             if power_status == "on":
-                self._state = STATE_PAUSED
+                state = STATE_PAUSED
                 self._source = self._player.get_source()
                 playing_info = self._player.get_playing_info()
                 self._media_info = {}
                 if playing_info is None or not playing_info:
                     self._media_type = MEDIA_TYPE_APP
-                    self._state = STATE_IDLE
+                    state = STATE_IDLE
                 else:
                     self._media_info = playing_info
                     status = playing_info.get("status")
                     if status and status is not None:
                         if status == 1 or status is True:
-                            self._state = STATE_PLAYING
+                            state = STATE_PLAYING
                     mediatype = playing_info.get("source")
                     if mediatype and mediatype is not None:
                         if mediatype == "video":
@@ -189,8 +190,8 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                         self._media_type = MEDIA_TYPE_APP
                     self._last_update = utcnow()
                 self._refresh_channels()
-            else:
-                self._state = STATE_OFF
+
+            self._state = state
 
         except Exception as exception_instance:  # pylint: disable=broad-except
             _LOGGER.error(exception_instance)
