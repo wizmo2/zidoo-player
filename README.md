@@ -49,6 +49,8 @@ Set Subtitle - switch through video player subtitle list[^5]
 
 Set Audio - switch through video audio tracks[^5]
 
+Send Button Key = send remote control button key (see [Key Commands](key_commands.md))
+
 ## FAQs
 > Q: Power-on does not work
 >
