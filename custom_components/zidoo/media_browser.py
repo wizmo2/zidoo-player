@@ -19,7 +19,6 @@ from homeassistant.helpers.network import is_internal_request
 
 from .const import (
     MEDIA_TYPE_FILE,
-    ZTYPE_MEDIA_CLASS,
     ZCONTENT_ITEM_TYPE,
     ITEM_TYPE_MEDIA_CLASS,
     ZSHORTCUTS,

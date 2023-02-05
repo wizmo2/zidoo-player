@@ -55,6 +55,8 @@ CONF_POWERMODE = "powermode"
 
 SUBTITLE_SERVICE = "set_subtitle"
 AUDIO_SERVICE = "set_audio"
+BUTTON_SERVICE = "send_key"
+
 # Triggers
 EVENT_TURN_ON = "zidoo.turn_on"
 EVENT_TURN_OFF = "zidoo.turn_off"

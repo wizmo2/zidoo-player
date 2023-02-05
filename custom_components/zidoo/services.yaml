@@ -12,3 +12,18 @@ set_audio:
     entity:
       integration: zidoo
       domain: media_player
+send_key:
+  name: Send Button Key
+  description: "Send a button key event to the player."
+  target:
+    entity:
+      integration: zidoo
+      domain: media_player
+  fields:
+    key:
+      name: Key Command
+      description: "Enter button key command (see documentation for supported commands)"
+      example: "Key.Back"
+      required: true
+      selector:
+        text:
