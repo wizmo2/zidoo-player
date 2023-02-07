@@ -339,6 +339,18 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         return self._last_update
 
     @property
+    def extra_state_attributes(self):
+        """Return the device specific state attributes."""
+        extras = {"height","width","tag"}
+        attributes = {}
+        for item in extras:
+            value = self._media_info.get(item)
+            if value:
+                attributes["media_"+ item] = value
+
+        return attributes
+
+    @property
     def app_name(self):
         """Return the current running application."""
         date = self._media_info.get("date")

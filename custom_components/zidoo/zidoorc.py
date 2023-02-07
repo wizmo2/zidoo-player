@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 TIMEOUT = 2  # default timeout
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
@@ -536,6 +536,8 @@ class ZidooRC(object):
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("currentPosition")
+                return_value["width"] = result.get("width")
+                return_value["height"] = result.get("height")
                 if (
                     return_value["status"] is True
                     and return_value["uri"]
