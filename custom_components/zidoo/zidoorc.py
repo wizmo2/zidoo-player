@@ -545,6 +545,8 @@ class ZidooRC(object):
                 ):
                     self._last_video_path = return_value["uri"]
                     self._video_id = self._get_id_from_uri(self._last_video_path)
+                result = response.get("zoom")
+                return_value["zoom"] = result.get("information")
                 return return_value
         #_LOGGER.debug("video play info: %s", str(response))
 

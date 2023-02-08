@@ -341,7 +341,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def extra_state_attributes(self):
         """Return the device specific state attributes."""
-        extras = {"height","width","tag"}
+        extras = {"height","width","zoom","tag"}
         attributes = {}
         for item in extras:
             value = self._media_info.get(item)
