@@ -11,11 +11,11 @@ from .const import DOMAIN, _LOGGER
 PLATFORMS = [Platform.MEDIA_PLAYER]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up zido from a config entry."""
+    """Set up zidoo from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
 
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 

@@ -18,4 +18,4 @@ This is a custom component to allow control of [Zidoo Media Player](https://www.
 ## Useful links
 
 - [Repository](https://github.com/wizmo2/zidoo-player)
-
+- [Help](README.md)

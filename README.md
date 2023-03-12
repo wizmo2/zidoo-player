@@ -50,6 +50,8 @@ Set Subtitle - switch through video player subtitle list[^5]
 
 Set Audio - switch through video audio tracks[^5]
 
+Send Button Key = send remote control button key (see [Key Commands](key_commands.md))[^6]
+
 Search - sets the search parmeters for custom browser view.(See experimental [Searches](develop.md#search))
 
 ## FAQs
@@ -81,7 +83,6 @@ Search - sets the search parmeters for custom browser view.(See experimental [Se
 [^1]: Release 1.1 - can be used on older HA versions, requires manual integration and is limited to basic player control.
 [^2]: Release 1.2 - adds config flow
 [^3]: Release 1.2.9 - Extended search shortcuts.  Requires HA 2022.2 or above
-[^4]: Release 1.2.10 - Standby option.  Not recommended on Z9S
+[^4]: Release 1.2.10 - Standby option.  Not recommended on Z9S or UHD3000
 [^5]: Release 1.2.11 - Subtitle and Audio services
-
-
+[^6]: Release 1.3.0 - bump zidoorc .  Add Send Key service

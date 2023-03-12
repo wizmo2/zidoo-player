@@ -7,14 +7,14 @@ from homeassistant.components.media_player.const import (
     MEDIA_CLASS_ALBUM,
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
-    MEDIA_CLASS_URL,
     MEDIA_CLASS_MUSIC,
+    MEDIA_CLASS_URL,
+    MEDIA_TYPE_ALBUM,
+    MEDIA_TYPE_ARTIST,
+    MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_PLAYLIST,
     MEDIA_TYPE_TRACK,
     MEDIA_TYPE_VIDEO,
-    MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_ALBUM,
-    MEDIA_TYPE_ARTIST,
 )
 from homeassistant.helpers.network import is_internal_request
 
