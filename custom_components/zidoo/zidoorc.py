@@ -604,9 +604,10 @@ class ZidooRC(object):
                 return_value["title"] = result.get("title")
                 return_value["artist"] = result.get("artist")
                 return_value["track"] = result.get("number")
+                return_value["date"] = result.get("date")
                 return_value["uri"] = result.get("uri")
                 return_value["bitrate"] = result.get("bitrate")
-                return_value["audio"] = "{} channels {} bits {} Hz".format(result.get("channels"), result.get("bits"), result.get("SampleRate"))
+                return_value["audio"] = "{}: {} channels {} bits {} Hz".format(result.get("extension"), result.get("channels"), result.get("bits"), result.get("SampleRate"))
                 self._music_id = result.get("id")
                 self._music_type = result.get("type")
 

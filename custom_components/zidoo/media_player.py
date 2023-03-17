@@ -341,7 +341,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def extra_state_attributes(self):
         """Return the device specific state attributes."""
-        extras = {"uri","height","width","zoom","tag","bitrate","fps","audio","video"}
+        extras = {"uri","height","width","zoom","tag","date","bitrate","fps","audio","video"}
         attributes = {}
         for item in extras:
             value = self._media_info.get(item)
@@ -354,7 +354,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def app_name(self):
         """Return the current running application."""
         date = self._media_info.get("date")
-        if date is not None:
+        if self._media_type == MEDIA_TYPE_MOVIE and date is not None:
             return "({})".format(date.year)
 
     # def set_volume_level(self, volume):
