@@ -1,24 +1,3 @@
-search:
-  name: Search Media
-  description: Search movie library and display browser.
-  target:
-    entity:
-      integration: zidoo
-      domain: media_player
-  fields:
-    query_string:
-      name: Search String
-      description: Enter the keyword query string
-      required: true
-      example: "West Wing"
-      selector:
-        text:
-    search_type:
-      name: Search Type
-      description: Override the media type ('video','movie','tvshow','music','artist','album')
-      example: "tvshow"
-      selector:
-        text:
 set_subtitle:
   name: Set Subtitle
   description: Set the subtitle index.

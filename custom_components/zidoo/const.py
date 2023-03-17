@@ -54,7 +54,6 @@ CONF_SHORTCUT = "shortcut_json"
 CONF_POWERMODE = "powermode"
 
 # Services
-SEARCH_SERVICE = "search"
 SUBTITLE_SERVICE = "set_subtitle"
 AUDIO_SERVICE = "set_audio"
 BUTTON_SERVICE = "send_key"

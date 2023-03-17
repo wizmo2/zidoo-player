@@ -40,7 +40,6 @@ from .const import (
     SUBTITLE_SERVICE,
     AUDIO_SERVICE,
     BUTTON_SERVICE,
-    SEARCH_SERVICE,
     EVENT_TURN_ON,
 )
 
@@ -49,10 +48,6 @@ from .media_browser import build_item_response, library_payload, media_source_co
 DEFAULT_NAME = "Zidoo Media Player"
 
 ATTR_KEY = "key"
-QUERY_STRING = "query_string"
-VIDEO_TYPE = "search_type"
-
-SEARCH_SCHEMA = {vol.Optional(QUERY_STRING): str, vol.Optional(VIDEO_TYPE): str}
 
 SUPPORT_ZIDOO = (
     MediaPlayerEntityFeature.VOLUME_STEP
@@ -109,9 +104,6 @@ async def async_setup_entry(
     )
 
     platform = entity_platform.async_get_current_platform()
-    platform.async_register_entity_service(
-        SEARCH_SERVICE, SEARCH_SCHEMA, "async_search_media"
-    )
     platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
     platform.async_register_entity_service(AUDIO_SERVICE, {}, "async_set_audio")
     platform.async_register_entity_service(
@@ -145,8 +137,6 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._max_volume = None
         self._volume = None
         self._last_update = None
-        self._search_query = None
-        self._search_type = None
         self._config_entry = config_entry
         self._last_state = STATE_OFF # debug only
 
@@ -460,11 +450,6 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def media_image_url(self) -> str | None:
         """Image url of current playing media."""
         return self._player.generate_current_image_url()
-
-    async def async_search_media(self, query_string, search_type=None):
-        """sets search string for media browser."""
-        self._search_query = query_string
-        self._search_type = search_type
 
     async def async_set_subtitle(self):
         """sets or toggles the video subtitle"""

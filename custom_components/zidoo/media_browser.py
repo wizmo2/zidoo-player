@@ -4,7 +4,6 @@ import contextlib
 from homeassistant.components import media_source
 from homeassistant.components.media_player import BrowseError, BrowseMedia
 from homeassistant.components.media_player.const import (
-    MEDIA_CLASS_ALBUM,
     MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_MOVIE,
     MEDIA_CLASS_MUSIC,
@@ -20,14 +19,13 @@ from homeassistant.helpers.network import is_internal_request
 
 from .const import (
     MEDIA_TYPE_FILE,
-    ZTYPE_MEDIA_CLASS,
     ZCONTENT_ITEM_TYPE,
     ITEM_TYPE_MEDIA_CLASS,
     ZSHORTCUTS,
     ZDEFAULT_SHORTCUTS,
     CONF_SHORTCUT,
 )
-from .zidoorc import ZVIDEO_FILTER_TYPES, ZVIDEO_SEARCH_TYPES, ZMUSIC_SEARCH_TYPES
+from .zidoorc import ZVIDEO_FILTER_TYPES, ZMUSIC_SEARCH_TYPES
 
 BROWSE_LIMIT = 1000
 ZTITLE = "Zidoo Media"
@@ -45,16 +43,6 @@ async def build_item_response(entity, payload):
     title = ZTITLE
     thumbnail = None
     result = None
-
-    # Universal Search
-    if search_id == "*":
-        if entity._search_query:
-            search_id = search_id + entity._search_query
-            if entity._search_type:
-                search_type = entity._search_type
-                child_media_class = search_type
-        else:
-            raise BrowseError(f"Use Search service to set keyword query string")
 
     # File Browser Lists
     if media_class == MEDIA_CLASS_DIRECTORY: # file system list
