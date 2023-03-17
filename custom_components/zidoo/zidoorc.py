@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 TIMEOUT = 2  # default timeout
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
@@ -538,6 +538,10 @@ class ZidooRC(object):
                 return_value["position"] = result.get("currentPosition")
                 return_value["width"] = result.get("width")
                 return_value["height"] = result.get("height")
+                return_value["fps"] = result.get("fps")
+                return_value["bitrate"] = result.get("bitrate")
+                return_value["audio"] = result.get("audioInfo")
+                return_value["video"] = result.get("output")
                 if (
                     return_value["status"] is True
                     and return_value["uri"]
@@ -601,6 +605,8 @@ class ZidooRC(object):
                 return_value["artist"] = result.get("artist")
                 return_value["track"] = result.get("number")
                 return_value["uri"] = result.get("uri")
+                return_value["bitrate"] = result.get("bitrate")
+                return_value["audio"] = "{} channels {} bits {} Hz".format(result.get("channels"), result.get("bits"), result.get("SampleRate"))
                 self._music_id = result.get("id")
                 self._music_type = result.get("type")
 
