@@ -52,8 +52,6 @@ Set Audio - switch through video audio tracks[^5]
 
 Send Button Key = send remote control button key (see [Key Commands](key_commands.md))[^6]
 
-Search - sets the search parmeters for custom browser view.(See experimental [Searches](develop.md#search))
-
 ## FAQs
 > Q: Power-on does not work
 >
