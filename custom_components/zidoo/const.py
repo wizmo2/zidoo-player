@@ -66,7 +66,6 @@ MEDIA_TYPE_FILE = "file"
 MEDIA_TYPE_SEARCH = "search"
 
 ZSHORTCUTS = [
-    # {"name": "DOWNLOADS", "path": "/tmp/ramfs/mnt/192.168.1.1%23SHARED/DOWNLOAD", "type": MEDIA_TYPE_FILE},
     {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
     {"name": "LATEST", "path": "recent", "type": MEDIA_TYPE_VIDEO, "default": True},
     {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},

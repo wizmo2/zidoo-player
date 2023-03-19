@@ -1,16 +1,29 @@
 """Support for interface with Zidoo Media Player."""
 from __future__ import annotations
 
-from .zidoorc import ZidooRC, ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZMUSIC_SEARCH_TYPES, ZTYPE_MIMETYPE, ZKEYS
+from .zidoorc import (
+    ZidooRC,
+    ZCONTENT_MUSIC,
+    ZCONTENT_VIDEO,
+    ZMUSIC_SEARCH_TYPES,
+    ZTYPE_MIMETYPE,
+    ZKEYS,
+)
 
-from homeassistant.components.media_player import MediaPlayerEntity, BrowseMedia, MediaPlayerEntityFeature
+from homeassistant.components.media_player import (
+    MediaPlayerEntity,
+    BrowseMedia,
+    MediaPlayerEntityFeature,
+)
 from homeassistant.components.media_player.const import (
     MEDIA_TYPE_MUSIC,
     MEDIA_TYPE_TVSHOW,
     MEDIA_TYPE_MOVIE,
     MEDIA_TYPE_APP,
 )
-from homeassistant.components.media_player.browse_media import async_process_play_media_url
+from homeassistant.components.media_player.browse_media import (
+    async_process_play_media_url,
+)
 from homeassistant.components import media_source
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
@@ -25,7 +38,7 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
     CONF_HOST,
     CONF_NAME,
-	CONF_MAC,
+    CONF_MAC,
     STATE_IDLE,
     STATE_OFF,
     STATE_PAUSED,
@@ -43,7 +56,11 @@ from .const import (
     EVENT_TURN_ON,
 )
 
-from .media_browser import build_item_response, library_payload, media_source_content_filter
+from .media_browser import (
+    build_item_response,
+    library_payload,
+    media_source_content_filter,
+)
 
 DEFAULT_NAME = "Zidoo Media Player"
 
@@ -68,6 +85,7 @@ SUPPORT_MEDIA_MODES = (
     | MediaPlayerEntityFeature.PLAY
     | MediaPlayerEntityFeature.PLAY_MEDIA
 )
+
 
 async def async_setup_platform(
     hass: HomeAssistant,
@@ -107,13 +125,12 @@ async def async_setup_entry(
     platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
     platform.async_register_entity_service(AUDIO_SERVICE, {}, "async_set_audio")
     platform.async_register_entity_service(
-        BUTTON_SERVICE,
-        {vol.Required(ATTR_KEY): vol.In(ZKEYS)},
-        "async_send_key"
+        BUTTON_SERVICE, {vol.Required(ATTR_KEY): vol.In(ZKEYS)}, "async_send_key"
     )
 
     entity = ZidooPlayerDevice(hass, player, config_entry)
     async_add_entities([entity])
+
 
 class ZidooPlayerDevice(MediaPlayerEntity):
     """Representation of a Zidoo Media."""
@@ -138,7 +155,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
         self._config_entry = config_entry
-        self._last_state = STATE_OFF # debug only
+        self._last_state = STATE_OFF  # debug only
 
         # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
         # if response is not None:
@@ -185,9 +202,11 @@ class ZidooPlayerDevice(MediaPlayerEntity):
                         self._media_type = MEDIA_TYPE_APP
                     self._last_update = utcnow()
                 self._refresh_channels()
-				# debug only
+                # debug only
                 if not state == self._last_state:
-                    _LOGGER.debug("{} New state ({}): {}".format(self._name, state, playing_info))
+                    _LOGGER.debug(
+                        "{} New state ({}): {}".format(self._name, state, playing_info)
+                    )
                     self._last_state = state
             if not state == self._last_state:
                 _LOGGER.debug("{} New state ({})".format(self._name, state))
@@ -328,12 +347,23 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def extra_state_attributes(self):
         """Return the device specific state attributes."""
-        extras = {"uri","height","width","zoom","tag","date","bitrate","fps","audio","video"}
+        extras = {
+            "uri",
+            "height",
+            "width",
+            "zoom",
+            "tag",
+            "date",
+            "bitrate",
+            "fps",
+            "audio",
+            "video",
+        }
         attributes = {}
         for item in extras:
             value = self._media_info.get(item)
             if value:
-                attributes["media_"+ item] = value
+                attributes["media_" + item] = value
 
         return attributes
 
@@ -358,8 +388,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     async def async_turn_off(self):
         """Turn off media player."""
         await self.hass.async_add_executor_job(
-            self._player.turn_off,
-            self._config_entry.options.get(CONF_POWERMODE, False)
+            self._player.turn_off, self._config_entry.options.get(CONF_POWERMODE, False)
         )
 
     def volume_up(self):
@@ -413,21 +442,19 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        _LOGGER.debug("play request: media_id:{} media_type:{}".format(media_id, media_type))
+        _LOGGER.debug(
+            "play request: media_id:{} media_type:{}".format(media_id, media_type)
+        )
         if media_source.is_media_source_id(media_id):
             play_item = await media_source.async_resolve_media(
                 self.hass, media_id, self.entity_id
             )
-            media_id = async_process_play_media_url(self.hass,  play_item.url)
+            media_id = async_process_play_media_url(self.hass, play_item.url)
             media_type = play_item.mime_type
 
         _LOGGER.debug("play: media_id:{} media_type:{}".format(media_id, media_type))
 
-        await self.hass.async_add_executor_job(
-            self.play_media,
-            media_type,
-            media_id
-        )
+        await self.hass.async_add_executor_job(self.play_media, media_type, media_id)
 
     def play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""

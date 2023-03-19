@@ -25,9 +25,9 @@ from .const import (
 SUPPORTED_MANUFACTURERS = ["Zidoo", "ZIDOO", "Plutinosoft LLCL"]
 IGNORED_MODELS = []
 
+
 async def validate_input(hass, data):
-    """Validate the user input allows us to connect.
-    """
+    """Validate the user input allows us to connect."""
     try:
         player = ZidooRC(data[CONF_HOST])
         response = await hass.async_add_executor_job(
@@ -39,7 +39,7 @@ async def validate_input(hass, data):
         raise UnknownError
 
     if response is not None:
-        mac_id = response.get('net_mac')
+        mac_id = response.get("net_mac")
         name = response.get("model")
 
         return {"title": name, "mac": mac_id}
@@ -101,10 +101,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_HOST): str,
-                    vol.Optional(CONF_PASSWORD): str
-                }
+                {vol.Required(CONF_HOST): str, vol.Optional(CONF_PASSWORD): str}
             ),
             errors=errors,
         )
@@ -152,18 +149,16 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self.discovery_config[CONF_MAC] = validated["mac"]
             return await self.async_step_link()
 
-    async def async_step_link( self, user_input=None, confirm_only=False):
+    async def async_step_link(self, user_input=None, confirm_only=False):
         """Allow the user to confirm adding the device."""
-        #_LOGGER.debug("Link user_info: %s", user_input)
+        # _LOGGER.debug("Link user_info: %s", user_input)
         if user_input is not None:
             # Add name and host to config
             user_input[CONF_NAME] = self.discovery_config[CONF_NAME]
             user_input[CONF_HOST] = self.discovery_config[CONF_HOST]
             user_input[CONF_MAC] = self.discovery_config[CONF_MAC]
             _LOGGER.debug("Link Create config: %s", user_input)
-            return self.async_create_entry(
-                title=user_input[CONF_NAME], data=user_input
-            )
+            return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
 
         self._set_confirm_only()
 
@@ -173,11 +168,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_HOST: self.discovery_config[CONF_HOST],
                 CONF_NAME: self.discovery_config[CONF_NAME],
             },
-            data_schema=vol.Schema(
-                {
-                    vol.Optional(CONF_PASSWORD): str
-                }
-            ),
+            data_schema=vol.Schema({vol.Optional(CONF_PASSWORD): str}),
         )
 
 
@@ -187,22 +178,33 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
-        self.shortcut_list: dict[str, str] = {item["path"]: item["name"] for item in ZSHORTCUTS}
+        self.shortcut_list: dict[str, str] = {
+            item["path"]: item["name"] for item in ZSHORTCUTS
+        }
 
     async def async_step_init(self, user_input=None):
         """Handle options flow."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        shortcuts = [item for item in self.config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS) if item in self.shortcut_list]
+        shortcuts = [
+            item
+            for item in self.config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS)
+            if item in self.shortcut_list
+        ]
 
         data_schema = vol.Schema(
             {
-                vol.Optional(CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD,"")): str,
                 vol.Optional(
-                    CONF_SHORTCUT, default=shortcuts
-                ): cv.multi_select(self.shortcut_list),
-                vol.Optional(CONF_POWERMODE, default=self.config_entry.options.get(CONF_POWERMODE, False)): bool,
+                    CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD, "")
+                ): str,
+                vol.Optional(CONF_SHORTCUT, default=shortcuts): cv.multi_select(
+                    self.shortcut_list
+                ),
+                vol.Optional(
+                    CONF_POWERMODE,
+                    default=self.config_entry.options.get(CONF_POWERMODE, False),
+                ): bool,
             }
         )
         return self.async_show_form(step_id="init", data_schema=data_schema)
@@ -211,8 +213,10 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
 
+
 class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
 
 class UnknownError(exceptions.HomeAssistantError):
     """Error to indicate there is an unknown error."""
