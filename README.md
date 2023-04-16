@@ -67,6 +67,10 @@ Send Button Key = send remote control button key (see [Key Commands](key_command
 >  2. _Try turning off validation using the button in the app._  
 >
 > A. To switch from Wifi to LAN, the integration must be deleted and re added to update the new IP Address  
+>
+> Q. Is there anything else I might need to know?
+>
+> A. _Here are some [Application Notes](notes.md) based on feedback from other users_
 
 ## ToDo
 
