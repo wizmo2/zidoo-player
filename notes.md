@@ -43,7 +43,7 @@ The list as of 4/23 includes
 - "media_video" - the source video format
 
 ### Getting aspect ratio
-An example of using a template sensor to return the aspect ration
+An example of using a template sensor to return the aspect-ratio
 
 ```
 template:
