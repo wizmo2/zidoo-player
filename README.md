@@ -56,7 +56,7 @@ Send Button Key = send remote control button key (see [Key Commands](key_command
 >
 >  A. _See [Power-On Info](power.md)._
 > 
-> Q: What else?
+> Q: I'm having issues with the installation
 >
 > A. If you installed versions prior to 1.2.5 using HACS and the integration is not availble in ADD INTEGRATIONS
 >  1. _See  [Add / Remove HACS Integration](add_remove.md)_
