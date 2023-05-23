@@ -16,8 +16,8 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.2.2"
-TIMEOUT = 2  # default timeout
+VERSION = "0.2.3"
+TIMEOUT = 5  # default timeout
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
 DEFAULT_COUNT = 250  # default list limit
@@ -566,12 +566,10 @@ class ZidooRC(object):
         )
 
         if response:
-            result = response.get("video")
-            if result is not None:
-                movie_id = result.get("parentId")
             movie_info["type"] = response.get("type")
             result = response.get("movie")
             if result is not None:
+                movie_id = result.get("id")
                 movie_info["movie_name"] = result.get("name")
                 movie_info["tag"] = result["aggregation"].get("tagLine")
                 release = result["aggregation"].get("releaseDate")
@@ -579,6 +577,7 @@ class ZidooRC(object):
                     movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
             result = response.get("episode")
             if result is not None:
+                movie_id = result.get("id")
                 movie_info["episode"] = result["aggregation"].get("episodeNumber")
                 movie_info["episode_name"] = result["aggregation"].get("name")
             result = response.get("season")
@@ -586,6 +585,10 @@ class ZidooRC(object):
                 movie_info["season"] = result["aggregation"].get("seasonNumber")
                 movie_info["season_name"] = result["aggregation"].get("name")
                 movie_info["series_name"] = result["aggregation"].get("tvName")
+            if not movie_id:
+                result = response.get("video")
+                if result is not None:
+                    movie_id = result.get("parentId")
 
             self._movie_info = movie_info
 
@@ -1404,12 +1407,12 @@ class ZidooRC(object):
         """
         url = None
 
-        if self._current_source == ZCONTENT_VIDEO and self._video_id != -1:
+        if self._current_source == ZCONTENT_VIDEO and self._video_id > 0:
             url = "http://{}/ZidooPoster/getFile/getBackdrop?id={}&w={}&h={}".format(
                 self._host, self._video_id, width, height
             )
 
-        if self._current_source == ZCONTENT_MUSIC and self._music_id != -1:
+        if self._current_source == ZCONTENT_MUSIC and self._music_id > 0:
             url = "http://{}/ZidooMusicControl/v2/getImage?id={}&music_type={}&type=4&target=16".format(
                 self._host, self._music_id, self._music_type
             )
