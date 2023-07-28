@@ -21,11 +21,9 @@ from .const import (
 )
 
 DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_HOST): str,
-        vol.Optional(CONF_PASSWORD): str
-    }
+    {vol.Required(CONF_HOST): str, vol.Optional(CONF_PASSWORD): str}
 )
+
 
 async def validate_input(hass, data):
     """Validate the user input allows us to connect.
@@ -43,7 +41,7 @@ async def validate_input(hass, data):
         raise UnknownError
 
     if response is not None:
-        mac_id = response.get('net_mac')
+        mac_id = response.get("net_mac")
         name = response.get("model")
 
         return {"title": name, "mac": mac_id}
@@ -112,28 +110,40 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle import."""
         return await self.async_step_user(user_input)
 
+
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle a option flow for wiser hub."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
-        self.shortcut_list: dict[str, str] = {item["path"]: item["name"] for item in ZSHORTCUTS}
+        self.shortcut_list: dict[str, str] = {
+            item["path"]: item["name"] for item in ZSHORTCUTS
+        }
 
     async def async_step_init(self, user_input=None):
         """Handle options flow."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
-        shortcuts = [item for item in self.config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS) if item in self.shortcut_list]
+        shortcuts = [
+            item
+            for item in self.config_entry.options.get(CONF_SHORTCUT, ZDEFAULT_SHORTCUTS)
+            if item in self.shortcut_list
+        ]
 
         data_schema = vol.Schema(
             {
-                vol.Optional(CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD,"")): str,
                 vol.Optional(
-                    CONF_SHORTCUT, default=shortcuts
-                ): cv.multi_select(self.shortcut_list),
-                vol.Optional(CONF_POWERMODE, default=self.config_entry.options.get(CONF_POWERMODE, False)): bool,
+                    CONF_PASSWORD, default=self.config_entry.data.get(CONF_PASSWORD, "")
+                ): str,
+                vol.Optional(CONF_SHORTCUT, default=shortcuts): cv.multi_select(
+                    self.shortcut_list
+                ),
+                vol.Optional(
+                    CONF_POWERMODE,
+                    default=self.config_entry.options.get(CONF_POWERMODE, False),
+                ): bool,
             }
         )
         return self.async_show_form(step_id="init", data_schema=data_schema)
@@ -142,8 +152,10 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""
 
+
 class InvalidAuth(exceptions.HomeAssistantError):
     """Error to indicate there is invalid auth."""
+
 
 class UnknownError(exceptions.HomeAssistantError):
     """Error to indicate there is an unknown error."""

@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.2.3"
+VERSION = "0.2.4"
 TIMEOUT = 5  # default timeout
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
@@ -552,7 +552,7 @@ class ZidooRC(object):
                 result = response.get("zoom")
                 return_value["zoom"] = result.get("information")
                 return return_value
-        #_LOGGER.debug("video play info: %s", str(response))
+        # _LOGGER.debug("video play info: %s", str(response))
 
     def _get_id_from_uri(self, uri):
         """returns the movie id from the path"""
@@ -624,7 +624,7 @@ class ZidooRC(object):
                     return_value["status"] = result.get("playing")
 
                 return return_value
-        #_LOGGER.debug("music play info %s", str(response))
+        # _LOGGER.debug("music play info %s", str(response))
 
     def _get_movie_playing_info(self):
         """Get information from built in Movie Player."""
@@ -641,7 +641,7 @@ class ZidooRC(object):
                 return_value["duration"] = result.get("duration")
                 return_value["position"] = result.get("currentPosition")
                 return return_value
-        #_LOGGER.debug("movie play info {}".format(response))
+        # _LOGGER.debug("movie play info {}".format(response))
 
     def get_play_modes(self):
         """Get the playmode list
@@ -955,11 +955,28 @@ class ZidooRC(object):
                 raw API response if successful
         """
         if music_type == ZMEDIA_TYPE_ARTIST:
-            return self._get_artist_list(music_id)
+            return self._get_artist_list(music_id, max_count)
         elif music_type == ZMEDIA_TYPE_ALBUM:
-            return self._get_album_list(music_id)
+            return self._get_album_list(music_id, max_count)
         elif music_type == ZMEDIA_TYPE_PLAYLIST:
-            return self._get_playlist_list(music_id)
+            return self._get_playlist_list(music_id, max_count)
+        return self._get_song_list(max_count)
+
+    def _get_song_list(self, max_count=DEFAULT_COUNT):
+        """Return list of albums or album music
+        Parameters
+            max_count: int
+                maxumum number of list items
+        Returns
+            json
+                raw API response if successful
+        """
+        response = self._req_json(
+            "MusicControl/v2/getSingleMusics?start=0&count={}".format(max_count)
+        )
+
+        if response is not None:
+            return response
 
     def _get_album_list(self, album_id=None, max_count=DEFAULT_COUNT):
         """Return list of albums or album music
@@ -1187,13 +1204,15 @@ class ZidooRC(object):
         """
         # the res uri needs to be double quoted to protect keys etc.
         # use safe='' in quote to force "/" quoting
-        uri = urllib.parse.quote(uri, safe='')
+        uri = urllib.parse.quote(uri, safe="")
 
-        upnp = "upnp://{}/{}?type={}&res={}".format(ZUPNP_SERVERNAME, VERSION, media_type, uri)
-        url = "ZidooFileControl/v2/openFile?url={}".format(
-            urllib.parse.quote(upnp, safe='')
+        upnp = "upnp://{}/{}?type={}&res={}".format(
+            ZUPNP_SERVERNAME, VERSION, media_type, uri
         )
-        _LOGGER.debug("Stream command " + str(url))
+        url = "ZidooFileControl/v2/openFile?url={}".format(
+            urllib.parse.quote(upnp, safe="")
+        )
+        _LOGGER.debug("Stream command %s", str(url))
 
         response = self._req_json(url)
 
@@ -1322,7 +1341,7 @@ class ZidooRC(object):
         response = self._req_json(
             "ZidooFileControl/getHost?path={}&type={}".format(uri, host_type)
         )
-        _LOGGER.debug("zidoo host list: {}".format(response))
+        _LOGGER.debug("zidoo host list: %s", str(response))
 
         return_value = {}
         share_list = []

@@ -30,6 +30,7 @@ from .zidoorc import ZVIDEO_FILTER_TYPES, ZMUSIC_SEARCH_TYPES
 BROWSE_LIMIT = 1000
 ZTITLE = "Zidoo Media"
 
+
 async def build_item_response(entity, payload):
     """Create response payload for search described by payload."""
     search_id = payload["search_id"]
@@ -55,16 +56,14 @@ async def build_item_response(entity, payload):
             raise BrowseError(f"Use Search service to set keyword query string")
 
     # File Browser Lists
-    if media_class == MEDIA_CLASS_DIRECTORY: # file system list
+    if media_class == MEDIA_CLASS_DIRECTORY:  # file system list
         result = await entity._hass.async_add_executor_job(
-            player.get_file_list,
-            search_id
-            )
-    if media_class == MEDIA_CLASS_URL: # smb system list
+            player.get_file_list, search_id
+        )
+    if media_class == MEDIA_CLASS_URL:  # smb system list
         result = await entity._hass.async_add_executor_job(
-            player.get_host_list,
-            search_id
-            )
+            player.get_host_list, search_id
+        )
 
     if result is not None and result.get("filelist"):
         for item in result["filelist"]:
@@ -93,37 +92,35 @@ async def build_item_response(entity, payload):
 
     # Music Library Lists
     elif search_type in ZMUSIC_SEARCH_TYPES:
-        child_media_class = search_type # should be class
+        child_media_class = search_type  # should be class
         if "*" in search_id:
             result = await entity._hass.async_add_executor_job(
-                player.search_music,
-                search_id.replace("*",""),
-                search_type
-                )
+                player.search_music, search_id.replace("*", ""), search_type
+            )
             title = search_id
             # search_id = None
         else:
             if search_id in ZMUSIC_SEARCH_TYPES:
                 result = await entity._hass.async_add_executor_job(
-                    player.get_music_list,
-                    search_type
-                    )
-                if search_type == MEDIA_TYPE_PLAYLIST: # convert playlist list
-                    result.insert(0,{"name":"PLAYING","id":"playing"})
-                    result = to_array(result) # playlist convertor
+                    player.get_music_list, search_type
+                )
+                if search_type == MEDIA_TYPE_PLAYLIST:  # convert playlist list
+                    result.insert(0, {"name": "PLAYING", "id": "playing"})
+                    result = to_array(result)  # playlist convertor
                 shortcut = get_shortcut_name(search_id)
-                if shortcut: title = shortcut
-            else: # is media id
-                child_media_class=MEDIA_TYPE_MUSIC
-                thumbnail = get_thumbnail_url(search_type, search_id, entity, is_internal)
+                if shortcut:
+                    title = shortcut
+            else:  # is media id
+                child_media_class = MEDIA_TYPE_MUSIC
+                thumbnail = get_thumbnail_url(
+                    search_type, search_id, entity, is_internal
+                )
                 result = await entity._hass.async_add_executor_job(
-                    player.get_music_list,
-                    search_type,
-                    search_id
-                    )
+                    player.get_music_list, search_type, search_id
+                )
 
         if result and result.get("array"):
-            can_expand = (child_media_class!=MEDIA_CLASS_MUSIC)
+            can_expand = child_media_class != MEDIA_CLASS_MUSIC
             for item in result["array"]:
                 if item.get("result"):
                     data = item["result"]
@@ -131,11 +128,13 @@ async def build_item_response(entity, payload):
                     data = item
                 item_name = data.get("name")
                 if item_name is None:
-                    item_name = "{} - {}".format(data.get("artist"),data.get("title"))
+                    item_name = "{} - {}".format(data.get("artist"), data.get("title"))
                 item_id = data["id"]
                 item_type = child_media_class
-                item_thumbnail = get_thumbnail_url(item_type, item_id, entity, is_internal)
-                if thumbnail: # Song list
+                item_thumbnail = get_thumbnail_url(
+                    item_type, item_id, entity, is_internal
+                )
+                if thumbnail:  # Song list
                     item_id = "{},{}".format(search_id, item_id)
 
                 children.append(
@@ -151,8 +150,10 @@ async def build_item_response(entity, payload):
                 )
 
             if child_media_class == MEDIA_CLASS_MUSIC and item:
-                if search_type == MEDIA_TYPE_ARTIST: title = item["artist"]
-                if search_type == MEDIA_TYPE_ALBUM: title = item["album"]
+                if search_type == MEDIA_TYPE_ARTIST:
+                    title = item["artist"]
+                if search_type == MEDIA_TYPE_ALBUM:
+                    title = item["album"]
 
     # Movie/Poster Library Lists
     else:
@@ -160,40 +161,40 @@ async def build_item_response(entity, payload):
         if "*" in search_id:
             result = to_data_list(
                 await entity._hass.async_add_executor_job(
-                    player.search_movies,
-                    search_id.replace("*",""),
-                    search_type
-                    )
+                    player.search_movies, search_id.replace("*", ""), search_type
+                )
             )
             title = search_id
         elif search_id in ZVIDEO_FILTER_TYPES:
             result = await entity._hass.async_add_executor_job(
-                player.get_movie_list,
-                search_id,
-                BROWSE_LIMIT
-                )
+                player.get_movie_list, search_id, BROWSE_LIMIT
+            )
             shortcut = get_shortcut_name(search_id)
-            if shortcut: title = shortcut
+            if shortcut:
+                title = shortcut
         else:
             result = await entity._hass.async_add_executor_job(
-                player.get_collection_list,
-                search_id
-                )
+                player.get_collection_list, search_id
+            )
 
         if result and result.get("data"):
             video_type = result.get("type")
             data = result["data"]
             if video_type:
-                if video_type == 4: # tv show episodes
+                if video_type == 4:  # tv show episodes
                     child_media_class = MEDIA_TYPE_TRACK
                     episodes = await entity._hass.async_add_executor_job(
-                        player.get_episode_list,
-                        search_id
-                        )
+                        player.get_episode_list, search_id
+                    )
                     if episodes is not None:
                         data = episodes
                         if data[0].get("parentId") > 0:
-                            thumbnail = get_thumbnail_url(MEDIA_TYPE_VIDEO, data[0]["parentId"], entity, is_internal)
+                            thumbnail = get_thumbnail_url(
+                                MEDIA_TYPE_VIDEO,
+                                data[0]["parentId"],
+                                entity,
+                                is_internal,
+                            )
             for item in data:
                 child_type = item["type"]
                 item_id = item["id"]
@@ -201,7 +202,9 @@ async def build_item_response(entity, payload):
                 if child_type == 0:
                     item_type = MEDIA_TYPE_VIDEO
                     item_id = item["aggregationId"]
-                item_thumbnail = get_thumbnail_url(item_type, item_id, entity, is_internal)
+                item_thumbnail = get_thumbnail_url(
+                    item_type, item_id, entity, is_internal
+                )
 
                 children.append(
                     BrowseMedia(
@@ -229,8 +232,9 @@ async def build_item_response(entity, payload):
         thumbnail=thumbnail,
     )
 
+
 def to_data_list(response):
-    """ converts the serach response to a data list"""
+    """converts the serach response to a data list"""
     data_list = []
     if response and response.get("all"):
         for item in response["all"]:
@@ -252,27 +256,34 @@ def to_data_list(response):
 
         return return_value
 
+
 def to_array(response):
     return_value = {}
     return_value["array"] = response
     return return_value
 
+
 def get_shortcut_name(path):
     for item in ZSHORTCUTS:
-        if item["path"] == path: return item["name"]
+        if item["path"] == path:
+            return item["name"]
+
 
 def get_thumbnail_url(media_content_type, media_content_id, entity, is_internal):
     if is_internal:
-        url_path = entity._player.generate_image_url(media_content_id, media_content_type)
+        url_path = entity._player.generate_image_url(
+            media_content_id, media_content_type
+        )
     else:
-        #url_path = entity.get_browse_image_url(media_content_type,media_content_id)
-        """ 2022.2 fix """
+        # url_path = entity.get_browse_image_url(media_content_type,media_content_id)
+        """2022.2 fix"""
         url_path = (
             f"/api/media_player_proxy/{entity.entity_id}/browse_media"
             f"/{media_content_type}/{media_content_id}"
         )
 
     return str(url_path)
+
 
 def media_source_content_filter(item: BrowseMedia) -> bool:
     """Content filter for media sources."""
@@ -282,6 +293,7 @@ def media_source_content_filter(item: BrowseMedia) -> bool:
         item.media_content_id.startswith("media-source://camera/")
         and item.media_content_type == "image/png"
     )
+
 
 async def library_payload(entity):
     """Create response payload to describe contents of library."""
@@ -313,9 +325,7 @@ async def library_payload(entity):
             )
 
     # add zidoo file devices
-    result = await entity._hass.async_add_executor_job(
-        player.get_device_list
-        )
+    result = await entity._hass.async_add_executor_job(player.get_device_list)
     if result is not None:
         for item in result:
             content_type = item["type"]
@@ -350,4 +360,3 @@ async def library_payload(entity):
 
     response = BrowseMedia(**library_info)
     return response
-

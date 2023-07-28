@@ -1,6 +1,14 @@
 """Constants for Zidoo component."""
 import logging
-from .zidoorc import ZTYPE_VIDEO, ZTYPE_MOVIE, ZTYPE_TV_SHOW, ZTYPE_TV_SEASON,ZTYPE_TV_EPISODE,ZTYPE_COLLECTION,ZTYPE_OTHER
+from .zidoorc import (
+    ZTYPE_VIDEO,
+    ZTYPE_MOVIE,
+    ZTYPE_TV_SHOW,
+    ZTYPE_TV_SEASON,
+    ZTYPE_TV_EPISODE,
+    ZTYPE_COLLECTION,
+    ZTYPE_OTHER,
+)
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_ALBUM,
     MEDIA_CLASS_ARTIST,
@@ -36,6 +44,7 @@ from homeassistant.components.media_player.const import (
     MEDIA_TYPE_IMAGE,
     MEDIA_TYPE_PODCAST,
 )
+
 _LOGGER = logging.getLogger(__package__)
 
 DOMAIN = "zidoo"
@@ -68,21 +77,21 @@ ZSHORTCUTS = [
     {"name": "FAVORITES", "path": "favorite", "type": MEDIA_TYPE_VIDEO},
     {"name": "LATEST", "path": "recent", "type": MEDIA_TYPE_VIDEO, "default": True},
     {"name": "WATCHING", "path": "watching", "type": MEDIA_TYPE_VIDEO},
-    {"name": "SD", "path": 'sd', "type": MEDIA_TYPE_VIDEO},
-    {"name": "DISC", "path": 'bluray', "type": MEDIA_TYPE_VIDEO},
-    {"name": "UHD", "path": '4k', "type": MEDIA_TYPE_VIDEO},
+    {"name": "SD", "path": "sd", "type": MEDIA_TYPE_VIDEO},
+    {"name": "DISC", "path": "bluray", "type": MEDIA_TYPE_VIDEO},
+    {"name": "UHD", "path": "4k", "type": MEDIA_TYPE_VIDEO},
     {"name": "3D", "path": "3d", "type": MEDIA_TYPE_VIDEO},
     {"name": "KIDS", "path": "children", "type": MEDIA_TYPE_GENRE},
     {"name": "UNWATCHED", "path": "unwatched", "type": MEDIA_TYPE_VIDEO},
     {"name": "OTHER", "path": "other", "type": MEDIA_TYPE_VIDEO},
-    {"name": "ALL", "path": 'all', "type": MEDIA_TYPE_VIDEO},
+    {"name": "ALL", "path": "all", "type": MEDIA_TYPE_VIDEO},
     {"name": "MOVIES", "path": "movie", "type": MEDIA_TYPE_MOVIE, "default": True},
     {"name": "TV SHOWS", "path": "tvshow", "type": MEDIA_TYPE_TVSHOW, "default": True},
 ]
-ZDEFAULT_SHORTCUTS = ['recent','movie','tvshow']
+ZDEFAULT_SHORTCUTS = ["recent", "movie", "tvshow"]
 
 ITEM_TYPE_MEDIA_CLASS = {
-    MEDIA_TYPE_MUSIC:   MEDIA_CLASS_MUSIC,
+    MEDIA_TYPE_MUSIC: MEDIA_CLASS_MUSIC,
     MEDIA_TYPE_ALBUM: MEDIA_CLASS_ALBUM,
     MEDIA_TYPE_ARTIST: MEDIA_CLASS_ARTIST,
     MEDIA_TYPE_GENRE: MEDIA_CLASS_GENRE,
@@ -102,10 +111,10 @@ ITEM_TYPE_MEDIA_CLASS = {
 }
 
 ZCONTENT_ITEM_TYPE = {
-    0: MEDIA_TYPE_FILE,   # folder
+    0: MEDIA_TYPE_FILE,  # folder
     1: MEDIA_TYPE_TRACK,  # music
     2: MEDIA_TYPE_VIDEO,  # video
-    3: MEDIA_TYPE_IMAGE,   # image
+    3: MEDIA_TYPE_IMAGE,  # image
     # 4: 'text', # 5: 'apk', # 6: 'pdf', # 7: 'document', # 8: 'spreadsheet', # 9: 'presentation', # 10: 'web', # 11: 'archive' ,  # 12: 'other'
     1000: MEDIA_TYPE_FILE,  # hhd
     1001: MEDIA_TYPE_FILE,  # usb
@@ -125,8 +134,8 @@ ZTYPE_MEDIA_CLASS = {
     ZTYPE_TV_SHOW: MEDIA_CLASS_TV_SHOW,
     ZTYPE_TV_SEASON: MEDIA_CLASS_SEASON,
     ZTYPE_TV_EPISODE: MEDIA_CLASS_TRACK,  # MEDIA_CLASS_EPISODE, # no episode images with zidoo
-    6: MEDIA_CLASS_TRACK, # Other
-    7: MEDIA_CLASS_TRACK, # Dummy for +1
+    6: MEDIA_CLASS_TRACK,  # Other
+    7: MEDIA_CLASS_TRACK,  # Dummy for +1
 }
 
 ZTYPE_MEDIA_TYPE = {
@@ -135,7 +144,7 @@ ZTYPE_MEDIA_TYPE = {
     ZTYPE_COLLECTION: MEDIA_TYPE_MOVIE,
     ZTYPE_TV_SHOW: MEDIA_TYPE_TVSHOW,
     ZTYPE_TV_SEASON: MEDIA_TYPE_SEASON,
-    ZTYPE_TV_EPISODE: MEDIA_TYPE_EPISODE, # no episode images with zidoo
+    ZTYPE_TV_EPISODE: MEDIA_TYPE_EPISODE,  # no episode images with zidoo
     ZTYPE_OTHER: MEDIA_TYPE_TRACK,
-    7: MEDIA_CLASS_TRACK, # Dummy for +1
+    7: MEDIA_CLASS_TRACK,  # Dummy for +1
 }
