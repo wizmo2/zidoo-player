@@ -6,7 +6,7 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 
 - Control Zidoo devices as media players through HA
 - Album art and movie backdrops
-- Browse movies, music, file system, and share mounts through HA Media Browser
+- Browse movies, file system, and share mounts through HA Media Browser 
 
 ![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
 ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
@@ -51,32 +51,6 @@ Set Audio - switch through video audio tracks[^5]
 
 Send Button Key = send remote control button key (see [Key Commands](key_commands.md))[^6]
 
-### Custom Search Card
-The `zidoo-search-card` can be used to filter media browser results.[^7]
-
-![Search Card](images/search-card.png)
-
-After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button.  Edit the yaml `entity` field with your zidoo media_player id.
-
-```
-type: custom:zidoo-search-card
-entity: media_player.zidoo
-```
-
-Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
-
-#### Restrict Button List
-You can control which Media Type buttons are available by adding a 'buttons' field to the yaml configuration
-```
-type: custom:zidoo-search-card
-entity: media_player.z9x
-buttons:
-  - movie
-  - tvshow
-```
-_NOTE:  Available button types are `"video","movie","tvshow","music","album","artist"`_
-
-
 ## FAQs
 > Q: Power-on does not work
 >
@@ -112,5 +86,4 @@ _NOTE:  Available button types are `"video","movie","tvshow","music","album","ar
 [^3]: Release 1.2.9 - Extended search shortcuts.  Requires HA 2022.2 or above
 [^4]: Release 1.2.10 - Standby option.  Not recommended on Z9S or UHD3000
 [^5]: Release 1.2.11 - Subtitle and Audio services
-[^6]: Release 1.3.0 - Bump zidoorc .  Add Send Key service
-[^7]: Release 1.4.0 - Add music functionality and search card
+[^6]: Release 1.3.0 - bump zidoorc .  Add Send Key service
