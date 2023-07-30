@@ -454,9 +454,9 @@ class ZidooRC(object):
                         return result
                 _LOGGER.debug("URL Error for %s: %s", str(url), str(result))
                 sleep(timeout)
-            max_retries-=1
+            max_retries -= 1
 
-        self._cookies = None # forces reconnect on next update
+        self._cookies = None  # forces reconnect on next update
 
     def get_source(self):
         """Returns last known app"""
@@ -610,7 +610,12 @@ class ZidooRC(object):
                 return_value["date"] = result.get("date")
                 return_value["uri"] = result.get("uri")
                 return_value["bitrate"] = result.get("bitrate")
-                return_value["audio"] = "{}: {} channels {} bits {} Hz".format(result.get("extension"), result.get("channels"), result.get("bits"), result.get("SampleRate"))
+                return_value["audio"] = "{}: {} channels {} bits {} Hz".format(
+                    result.get("extension"),
+                    result.get("channels"),
+                    result.get("bits"),
+                    result.get("SampleRate"),
+                )
                 self._music_id = result.get("id")
                 self._music_type = result.get("type")
 
@@ -704,7 +709,7 @@ class ZidooRC(object):
         """Get the audio track list
         Returns
             dictionary
-            	list of audio tracks
+                list of audio tracks
         """
         return_values = {}
         response = self._req_json("ZidooVideoPlay/getAudioList")
@@ -1469,12 +1474,17 @@ class ZidooRC(object):
         # self._send_key(ZKEY_OK)
         if self._current_source == ZCONTENT_NONE and self._last_video_path:
             self.play_file(self._last_video_path)
+        elif (self._current_source == ZCONTENT_MUSIC):
+            self._req_json("MusicControl/v2/playOrPause")
         else:
             self._send_key(ZKEY_MEDIA_PLAY)
 
     def media_pause(self):
         """Send media pause command to media player."""
-        self._send_key(ZKEY_MEDIA_PAUSE)
+        if (self._current_source == ZCONTENT_MUSIC):
+            self._req_json("MusicControl/v2/playOrPause")
+        else:
+            self._send_key(ZKEY_MEDIA_PAUSE)
 
     def media_stop(self):
         """Send media pause command to media player."""
@@ -1482,11 +1492,17 @@ class ZidooRC(object):
 
     def media_next_track(self):
         """Send next track command."""
-        self._send_key(ZKEY_MEDIA_NEXT)
+        if (self._current_source == ZCONTENT_MUSIC):
+            self._req_json("MusicControl/v2/playNext")
+        else:
+            self._send_key(ZKEY_MEDIA_NEXT)
 
     def media_previous_track(self):
         """Send the previous track command."""
-        self._send_key(ZKEY_MEDIA_PREVIOUS)
+        if (self._current_source == ZCONTENT_MUSIC):
+            self._req_json("MusicControl/v2/playLast")
+        else:
+            self._send_key(ZKEY_MEDIA_PREVIOUS)
 
     def set_media_position(self, position, durationsec=1):
         """Set the current playing position.

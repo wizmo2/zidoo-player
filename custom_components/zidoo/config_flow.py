@@ -108,6 +108,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_import(self, user_input):
         """Handle import."""
+        _LOGGER.debug("Import user_info: %s", user_input)
         return await self.async_step_user(user_input)
 
 

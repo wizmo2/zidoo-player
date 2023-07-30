@@ -1,74 +1,56 @@
 """Support for interface with Zidoo Media Player."""
 from __future__ import annotations
+import voluptuous as vol
 
-from .zidoorc import (
-    ZidooRC,
-    ZCONTENT_MUSIC,
-    ZCONTENT_VIDEO,
-    ZMUSIC_SEARCH_TYPES,
-    ZTYPE_MIMETYPE,
-    ZKEYS,
-)
-
-from homeassistant.components.media_player import MediaPlayerEntity
-from homeassistant.components.media_player.const import (
-    SUPPORT_BROWSE_MEDIA,
-    SUPPORT_NEXT_TRACK,
-    SUPPORT_PAUSE,
-    SUPPORT_PLAY,
-    SUPPORT_PLAY_MEDIA,
-    SUPPORT_PREVIOUS_TRACK,
-    SUPPORT_SEEK,
-    SUPPORT_SELECT_SOURCE,
-    SUPPORT_STOP,
-    SUPPORT_TURN_OFF,
-    SUPPORT_TURN_ON,
-    SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_STEP,
-    MEDIA_TYPE_MUSIC,
-    MEDIA_TYPE_TVSHOW,
-    MEDIA_TYPE_MOVIE,
-    MEDIA_TYPE_APP,
+from homeassistant.components import media_source
+from homeassistant.components.media_player import (
+    BrowseMedia,
+    MediaPlayerEntity,
+    MediaPlayerEntityFeature,
+    MediaPlayerState,
+    MediaType,
 )
 from homeassistant.components.media_player.browse_media import (
     async_process_play_media_url,
 )
 from homeassistant.components import media_source
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    CONF_HOST,
+    CONF_MAC,
+    CONF_NAME,
+)
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.util.dt import utcnow
-import voluptuous as vol
 
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-    CONF_HOST,
-    CONF_NAME,
-    CONF_MAC,
-    STATE_IDLE,
-    STATE_OFF,
-    STATE_PAUSED,
-    STATE_PLAYING,
-)
 from .const import (
-    DOMAIN,
     _LOGGER,
-    CLIENTID_PREFIX,
-    CLIENTID_NICKNAME,
-    CONF_POWERMODE,
-    SUBTITLE_SERVICE,
     AUDIO_SERVICE,
     BUTTON_SERVICE,
+    CLIENTID_NICKNAME,
+    CLIENTID_PREFIX,
+    CONF_POWERMODE,
+    DOMAIN,
     EVENT_TURN_ON,
+    SUBTITLE_SERVICE,
 )
-
 from .media_browser import (
     build_item_response,
     library_payload,
     media_source_content_filter,
+)
+from .zidoorc import (
+    ZCONTENT_MUSIC,
+    ZCONTENT_VIDEO,
+    ZKEYS,
+    ZMUSIC_SEARCH_TYPES,
+    ZTYPE_MIMETYPE,
+    ZidooRC,
 )
 
 DEFAULT_NAME = "Zidoo Media Player"
@@ -76,23 +58,23 @@ DEFAULT_NAME = "Zidoo Media Player"
 ATTR_KEY = "key"
 
 SUPPORT_ZIDOO = (
-    SUPPORT_VOLUME_STEP
-    | SUPPORT_VOLUME_MUTE
-    | SUPPORT_TURN_ON
-    | SUPPORT_TURN_OFF
-    | SUPPORT_SELECT_SOURCE
-    | SUPPORT_BROWSE_MEDIA
-    | SUPPORT_SEEK
+    MediaPlayerEntityFeature.VOLUME_STEP
+    | MediaPlayerEntityFeature.VOLUME_MUTE
+    | MediaPlayerEntityFeature.TURN_ON
+    | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.SELECT_SOURCE
+    | MediaPlayerEntityFeature.BROWSE_MEDIA
+    | MediaPlayerEntityFeature.SEEK
 )
-# SUPPORT_CLEAR_PLAYLIST # SUPPORT_SEEK # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
+# SUPPORT_CLEAR_PLAYLIST # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
 
 SUPPORT_MEDIA_MODES = (
-    SUPPORT_PAUSE
-    | SUPPORT_STOP
-    | SUPPORT_PREVIOUS_TRACK
-    | SUPPORT_NEXT_TRACK
-    | SUPPORT_PLAY
-    | SUPPORT_PLAY_MEDIA
+    MediaPlayerEntityFeature.PAUSE
+    | MediaPlayerEntityFeature.STOP
+    | MediaPlayerEntityFeature.PREVIOUS_TRACK
+    | MediaPlayerEntityFeature.NEXT_TRACK
+    | MediaPlayerEntityFeature.PLAY
+    | MediaPlayerEntityFeature.PLAY_MEDIA
 )
 
 
@@ -151,7 +133,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._hass = hass
         self._name = config_entry.title
         self._unique_id = config_entry.entry_id
-        self._state = STATE_OFF
+        self._state = MediaPlayerState.OFF
         self._muted = False
         self._source = None
         self._source_list = []
@@ -164,7 +146,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self._volume = None
         self._last_update = None
         self._config_entry = config_entry
-        self._last_state = STATE_OFF  # debug only
+        self._last_state = MediaPlayerState.OFF  # debug only
 
         # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
         # if response is not None:
@@ -180,45 +162,43 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
         # Retrieve the latest data.
         try:
-            state = STATE_OFF
+            state = MediaPlayerState.OFF
             if self._player.is_connected():
-                state = STATE_PAUSED
+                state = MediaPlayerState.PAUSED
                 self._source = self._player.get_source()
                 playing_info = self._player.get_playing_info()
                 self._media_info = {}
                 if playing_info is None or not playing_info:
-                    self._media_type = MEDIA_TYPE_APP
-                    state = STATE_IDLE
+                    self._media_type = MediaType.APP
+                    state = MediaPlayerState.IDLE
                 else:
                     self._media_info = playing_info
                     status = playing_info.get("status")
                     if status and status is not None:
                         if status == 1 or status is True:
-                            state = STATE_PLAYING
+                            state = MediaPlayerState.PLAYING
                     mediatype = playing_info.get("source")
                     if mediatype and mediatype is not None:
                         if mediatype == "video":
                             item_type = self._media_info.get("type")
                             if item_type is not None and item_type == "tv":
-                                self._media_type = MEDIA_TYPE_TVSHOW
+                                self._media_type = MediaType.TVSHOW
                             else:
-                                self._media_type = MEDIA_TYPE_MOVIE
+                                self._media_type = MediaType.MOVIE
                             self._source = ZCONTENT_VIDEO
                         else:
-                            self._media_type = MEDIA_TYPE_MUSIC
+                            self._media_type = MediaType.MUSIC
                             self._source = ZCONTENT_MUSIC
                     else:
-                        self._media_type = MEDIA_TYPE_APP
+                        self._media_type = MediaType.APP
                     self._last_update = utcnow()
                 self._refresh_channels()
                 # debug only
                 if not state == self._last_state:
-                    _LOGGER.debug(
-                        "{} New state ({}): {}".format(self._name, state, playing_info)
-                    )
+                    _LOGGER.debug("%s New state (%s): %s", self._name, state, playing_info)
                     self._last_state = state
             if not state == self._last_state:
-                _LOGGER.debug("{} New state ({})".format(self._name, state))
+                _LOGGER.debug("%s New state (%s)", self._name, state)
                 self._last_state = state
 
             self._state = state
@@ -380,7 +360,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     def app_name(self):
         """Return the current running application."""
         date = self._media_info.get("date")
-        if self._media_type == MEDIA_TYPE_MOVIE and date is not None:
+        if self._media_type == MediaType.MOVIE and date is not None:
             return "({})".format(date.year)
 
     # def set_volume_level(self, volume):
@@ -451,9 +431,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
-        _LOGGER.debug(
-            "play request: media_id:{} media_type:{}".format(media_id, media_type)
-        )
+        _LOGGER.debug("play request: media_id:%s media_type:%s", media_id, media_type)
         if media_source.is_media_source_id(media_id):
             play_item = await media_source.async_resolve_media(
                 self.hass, media_id, self.entity_id
@@ -461,7 +439,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
             media_id = async_process_play_media_url(self.hass, play_item.url)
             media_type = play_item.mime_type
 
-        _LOGGER.debug("play: media_id:{} media_type:{}".format(media_id, media_type))
+        _LOGGER.debug("play: media_id:%s media_type:%s", media_id, media_type)
 
         await self.hass.async_add_executor_job(self.play_media, media_type, media_id)
 
