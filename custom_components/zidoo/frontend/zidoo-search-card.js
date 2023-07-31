@@ -13,6 +13,9 @@ customElements.whenDefined('card-tools').then(() => {
     setConfig(config) {
       this.config = config;
       this.entity_id = this.config.entity;
+      if (!this.entity_id)
+        throw new Error("Add a valid Entity id in the Card Configuration!");
+
       this.buttons = this.config.buttons || ["video","movie","tvshow","music","album","artist"]
 
       this.search_text = this.config.search_text || "Media search...";
@@ -23,9 +26,7 @@ customElements.whenDefined('card-tools').then(() => {
     }
 
     render() {
-      if (!this.entity_id)
-        return ct.LitHtml `Add a valid Entity id in the Card Configuration!`
-        return ct.LitHtml `
+      return ct.LitHtml `
         <ha-card>
           <div id="searchContainer">
             <paper-input id="searchText"

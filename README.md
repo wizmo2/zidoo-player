@@ -57,25 +57,20 @@ The `zidoo-search-card` can be used to filter media browser results.[^7]
 ![Search Card](images/search-card.png)
 
 After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button.  Edit the yaml `entity` field with your zidoo media_player id.
+ _*NOTE:  The card requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
 
 ```
 type: custom:zidoo-search-card
 entity: media_player.zidoo
+
+# Optional field to control which Media buttons are available
+# from "video","movie","tvshow","music","album","artist"
+buttons:
+  - movie
+  - tvshow 
 ```
 
 Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
-
-#### Restrict Button List
-You can control which Media Type buttons are available by adding a 'buttons' field to the yaml configuration
-```
-type: custom:zidoo-search-card
-entity: media_player.z9x
-buttons:
-  - movie
-  - tvshow
-```
-_NOTE:  Available button types are `"video","movie","tvshow","music","album","artist"`_
-
 
 ## FAQs
 > Q: Power-on does not work
