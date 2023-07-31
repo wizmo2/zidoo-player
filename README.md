@@ -13,6 +13,11 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 
 Streaming content currently uses a hack with the players uPNP functions.  There are limitations with content, including issues with the Media Player 6.0 (audio files are streamed to the Video Player for now).  Playlists can be handled using Kodi or ZDMC (this includes support for camera stream, although it is a little buggy). 
 
+A Custom Lovelace card `zidoo-search-card` can be used to filter media browser results.[^7] Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
+
+![Search Card](images/search-card.png)
+Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
+
 ## Installation
 
 ### HACS Install 
@@ -52,10 +57,6 @@ Set Audio - switch through video audio tracks[^5]
 Send Button Key = send remote control button key (see [Key Commands](key_commands.md))[^6]
 
 ### Custom Search Card
-The `zidoo-search-card` can be used to filter media browser results.[^7]
-
-![Search Card](images/search-card.png)
-
 After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button.  Edit the yaml `entity` field with your zidoo media_player id.
  _*NOTE:  The card requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or add [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
 
@@ -69,8 +70,6 @@ buttons:
   - movie
   - tvshow 
 ```
-
-Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
 
 ## FAQs
 > Q: Power-on does not work
