@@ -22,7 +22,7 @@ customElements.whenDefined('card-tools').then(() => {
     }
 
     getCardSize() {
-      return 4;
+      return 1;
     }
 
     render() {
@@ -89,12 +89,12 @@ customElements.whenDefined('card-tools').then(() => {
 
       var location = `/media-browser/${this.entity_id}/${searchType}%2C${searchText?searchText+"*":searchType}`;
 
-      history.replaceState(null, "", location);
+      history.pushState(null, "", location);
       const event = new Event("location-changed", {
         bubbles: true,
         composed: true,
       });
-      event.detail = { replace: true };
+      event.detail = { replace: false };
       this.dispatchEvent(event);
     }
 
