@@ -57,7 +57,7 @@ The `zidoo-search-card` can be used to filter media browser results.[^7]
 ![Search Card](images/search-card.png)
 
 After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button.  Edit the yaml `entity` field with your zidoo media_player id.
- _*NOTE:  The card requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
+ _*NOTE:  The card requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or add [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
 
 ```
 type: custom:zidoo-search-card
