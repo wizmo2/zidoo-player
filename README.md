@@ -96,7 +96,6 @@ Use the Media Search text editor to add a keyword, then select the desired Media
 ## ToDo
 
 - Testing on other devices
-- Add Coverflow options for additional file shortcuts in Media Browser
 - Add Discovery (dev branch tested with z9s, need testing and/or DNLA header information for other device support)
 - ZidooRC API will eventually needs to be released as a python library per HA requirements.  
 
