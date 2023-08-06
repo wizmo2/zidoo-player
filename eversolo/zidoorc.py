@@ -1329,6 +1329,32 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             return response
 
+    def get_file_list2(self, uri, file_type=0):
+        """get file list in hass format
+        Returns
+            json if sucessful
+                'status':200
+                'isExists':True
+                'perentPath':'/storage/356d9775-8a40-4d4e-8ef9-9eea931fc5ae'
+                'filelist': list
+                    'name': file name
+                    'type': file type
+                    'path': full file path
+                    'isBDMV': True if ?high definition
+                    'isBluray': True if blue ray resolution
+                    'length': length in ms
+                    'modifyDate': linux date code
+        """
+        response = self._req_json(
+            "ZidooFileControl/v2/getFiles?url={}".format(
+                urllib.parse.quote(uri, safe="")
+            )
+        )
+
+        if response is not None and response.get("code") == 0:
+            return response
+
+
     def get_host_list(self, uri, host_type=1005):
         """get host list of saved network shares
         Returns
