@@ -1,4 +1,4 @@
-http://192.168.20.153:9529/SystemSettings/getSystemSettings
+http://<ip>:9529/SystemSettings/getSystemSettings
 ```json
 {
   "status": 200,

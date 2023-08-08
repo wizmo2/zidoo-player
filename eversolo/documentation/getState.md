@@ -1,4 +1,4 @@
-http://192.168.20.153:9529/ZidooMusicControl/v2/getState
+http://<ip>:9529/ZidooMusicControl/v2/getState
 ```json
 {
   "state": 3,
