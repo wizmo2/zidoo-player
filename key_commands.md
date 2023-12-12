@@ -1,6 +1,6 @@
 # Zidoo Button Service
 
-The `zidoo.send_key`` (Send Button Key) service can be used to issue a remote key command to the player.  The service can be called as a Lovelace action (Tap, Hold), in a Script, or an Automation.  Use any of the button keys from the "Key Command" list in the table below.
+The `zidoo.send_key` (Send Button Key) service can be used to issue a remote key command to the player.  The service can be called as a Lovelace action (Tap, Hold), in a Script, or an Automation.  Use any of the button keys from the "Key Command" list in the table below.
 
 ![Script Example](images/button_script.png)
 
