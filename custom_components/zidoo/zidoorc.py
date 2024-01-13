@@ -16,7 +16,7 @@ import urllib.parse
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 TIMEOUT = 5  # default timeout
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
