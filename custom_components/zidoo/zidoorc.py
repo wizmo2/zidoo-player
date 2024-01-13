@@ -428,7 +428,7 @@ class ZidooRC(object):
             try:
                 # self._cookies = self._recreate_auth_cookie()
                 response = requests.get(
-                    url, params, cookies=self._cookies, timeout=timeout, headers=headers
+                    url, params=params, cookies=self._cookies, timeout=timeout, headers=headers
                 )
 
             except requests.exceptions.Timeout as exception_instance:
