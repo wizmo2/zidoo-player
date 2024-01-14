@@ -38,7 +38,7 @@ customElements.whenDefined('card-tools').then(() => {
               </ha-textfield>
             </search-input>
             </div>
-            <div class="sub-section">
+            <div id="searchButtons" class="sub-section">
               <div class="sub-heading">Search Media</div>
               ${(this.buttons.includes("video")) ? ct.LitHtml `
               <mwc-button id=${"video"} @click=${this._searchMedia}>
@@ -100,7 +100,6 @@ customElements.whenDefined('card-tools').then(() => {
     static get styles() {
       return ct.LitCSS `
         #searchContainer {
-          width: 90%;
           display: block;
           margin-left: auto;
           margin-right: auto;
@@ -110,6 +109,9 @@ customElements.whenDefined('card-tools').then(() => {
         }
         #searchText {
           width: 100%;
+        }
+        #searchButtons {
+          padding: 5px 15px;
         }
       `;
     }
