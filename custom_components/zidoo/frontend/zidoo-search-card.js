@@ -29,16 +29,15 @@ customElements.whenDefined('card-tools').then(() => {
       return ct.LitHtml `
         <ha-card>
           <div id="searchContainer">
-            <paper-input id="searchText"
-                         no-label-float type="text" autocomplete="off"
-                         label="${this.search_text}">
-              <ha-icon icon="mdi:magnify" id="searchIcon"
-                         slot="prefix"></ha-icon>
-              <ha-icon-button slot="suffix"
-                                 @click="${this._clearInput}"
-                                 alt="Clear"
-                                 title="Clear"><ha-icon icon="mdi:close"></ha-icon></ha-icon-button>
-            </paper-input>
+          <div class="search-toolbar">
+            <search-input>
+              <ha-textfield id="searchText" icon="mdi:magnify" placeholder="${this.search_text}">
+              <slot name="prefix" slot="leadingIcon">
+		            <ha-icon icon="mdi:magnify" id="searchIcon" slot="prefix"></ha-icon>
+              </slot>
+              </ha-textfield>
+            </search-input>
+            </div>
             <div class="sub-section">
               <div class="sub-heading">Search Media</div>
               ${(this.buttons.includes("video")) ? ct.LitHtml `
@@ -106,92 +105,16 @@ customElements.whenDefined('card-tools').then(() => {
           margin-left: auto;
           margin-right: auto;
         }
-          #searchIcon {
+        #searchIcon {
           padding: 10px;
+        }
+        #searchText {
+          width: 100%;
         }
       `;
     }
-
-    /*
-    static getConfigElement() {
-      return document.createElement("zidoo-search-editor");
-    }
-    */
   }
 
-  /*
-  class ZidoSearchEditor extends ct.LitElement {
-    setConfig(config) {
-      this._config = config;
-      this._included_domains = ["media_player"]
-
-      this.results = [];
-      this._getEntities();
-    }
-
-    _getEntities() {
-      this.results = [];
-
-      try {
-        for (var entity_id in this.hass.states) {
-          if ( this._included_domains.includes(entity_id.split(".")[0])) {
-            this.results.push(entity_id);
-          }
-        }
-      } catch (err) {
-        console.warn(err);
-      }
-    }
-
-    configChanged(newConfig) {
-      const event = new Event("config-changed", {
-        bubbles: true,
-        composed: true,
-      });
-      event.detail = { config: newConfig };
-      this.dispatchEvent(event);
-    }
-
-    render() {
-      var rows = this.results.map((entity_id) => this._createResultRow(entity_id));
-      return ct.LitHtml `
-
-        <div id="searchContainer">
-          <ha-select id="searchText"
-                       label="Select the Zidoo Entity">
-            ${(rows.length > 0) ?
-              ct.LitHtml `<div id="results">${rows}</div>`
-            : ''}
-          </ha-select>
-        </div>
-    `;
-    }
-
-    _createResultRow(entity_id) {
-      var row = ct.createEntityRow({entity: entity_id});
-      row.addEventListener("click", () => ct.moreInfo(entity_id));
-      row.hass = this.hass;
-      return row;
-    }
-
-    static get styles() {
-      return ct.LitCSS `
-        #searchContainer {
-          width: 90%;
-          display: block;
-          margin-left: auto;
-          margin-right: auto;
-        }
-          #searchIcon {
-          padding: 10px;
-        }
-      `;
-    }
-
-  }
-
-  customElements.define("zidoo-search-editor", ZidoSearchEditor);
-  */
   customElements.define('zidoo-search-card', ZidooSearchCard);
 
   });
