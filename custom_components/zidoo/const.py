@@ -1,6 +1,6 @@
 """Constants for Zidoo component."""
 import logging
-from .zidoorc import (
+from .zidooaio import (
     ZTYPE_VIDEO,
     ZTYPE_MOVIE,
     ZTYPE_TV_SHOW,

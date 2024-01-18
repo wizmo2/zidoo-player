@@ -2,7 +2,7 @@
 import requests.exceptions
 import voluptuous as vol
 
-from .zidoorc import ZidooRC
+from .zidooaio import ZidooRC
 
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC
@@ -12,8 +12,6 @@ import homeassistant.helpers.config_validation as cv
 from .const import (
     _LOGGER,
     DOMAIN,
-    CLIENTID_PREFIX,
-    CLIENTID_NICKNAME,
     CONF_POWERMODE,
     CONF_SHORTCUT,
     ZSHORTCUTS,
@@ -32,9 +30,8 @@ async def validate_input(hass, data):
     """
     try:
         player = ZidooRC(data[CONF_HOST])
-        response = await hass.async_add_executor_job(
-            player.connect, CLIENTID_PREFIX, CLIENTID_NICKNAME
-        )
+        response = await player.connect()
+        await player.disconnect()
     except requests.exceptions.ConnectionError:
         raise CannotConnect
     except RuntimeError:
