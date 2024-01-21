@@ -54,7 +54,7 @@ Set Subtitle - switch through video player subtitle list[^5]
 
 Set Audio - switch through video audio tracks[^5]
 
-Send Button Key = send remote control button key (see [Key Commands](key_commands.md))[^6]
+Remote Send Command = send remote control button key (see [Key Commands](key_commands.md))[^6]
 
 ### Custom Search Card
 After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button. Select the `custom:zidoo-search-card`, then edit the yaml to include a single `entity` value with your zidoo media_player id.

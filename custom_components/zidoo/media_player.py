@@ -363,6 +363,9 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
 
     async def async_send_key(self, key):
         """send a remote control key command"""
+        _LOGGER.warning(
+            "'Zidoo:Send Keys' is depreciated.  Please update to use 'Remote:Send command'"
+        )
         await self.coordinator.player._send_key(key)
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
