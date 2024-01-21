@@ -12,6 +12,8 @@ import homeassistant.helpers.config_validation as cv
 from .const import (
     _LOGGER,
     DOMAIN,
+    CLIENTID_PREFIX,
+    CLIENTID_NICKNAME,
     CONF_POWERMODE,
     CONF_SHORTCUT,
     ZSHORTCUTS,

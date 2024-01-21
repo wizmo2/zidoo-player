@@ -376,13 +376,15 @@ class ZidooRC(object):
 
         Parameters
             url: str
-                api call.
+                api call
             params: str
-                api parameters.
+                api parameters
             log_errors: bool
                 suppresses error logging if False
             max_retries
                 reties on response errors
+            timeout
+                request timeout in seconds
         Returns
             json
                 raw API response
@@ -401,12 +403,7 @@ class ZidooRC(object):
 
                 await asyncio.sleep(timeout)
 
-            _LOGGER.debug(
-                "Request Error url:%s params:%s result:%s",
-                str(url),
-                str(params),
-                str(result.get("status")),
-            )
+            _LOGGER.debug("Request Error url:%s params:%s", str(url), str(params))
             max_retries -= 1
 
         self._cookies = None  # forces reconnect on next update
@@ -427,6 +424,8 @@ class ZidooRC(object):
                 api parameters.
             log_errors: bool
                 suppresses error logging if False
+            timeout
+                request timeout in seconds
         Returns
             response
                 raw API response
@@ -490,7 +489,7 @@ class ZidooRC(object):
         if source in self._content_mapping:
             uri = self._content_mapping[source]
 
-    async def get_playing_info(self) -> dict:
+    async def get_playing_info(self) -> json:
         """Get playing information of active app.
 
         Returns
@@ -536,7 +535,7 @@ class ZidooRC(object):
 
         return return_value
 
-    async def _get_video_playing_info(self) -> dict:
+    async def _get_video_playing_info(self) -> json:
         """Get information from built in video player."""
         return_value = {}
         response = await self._req_json(
@@ -614,7 +613,7 @@ class ZidooRC(object):
         _LOGGER.debug("new media detected (%s): %s", str(movie_id), str(movie_info))
         return movie_id
 
-    async def _get_music_playing_info(self) -> dict:
+    async def _get_music_playing_info(self) -> json:
         """Get information from built in Music Player."""
         return_value = {}
         response = await self._req_json(
@@ -652,7 +651,7 @@ class ZidooRC(object):
                 return return_value
         # _LOGGER.debug("music play info %s", str(response))
 
-    async def _get_movie_playing_info(self) -> dict:
+    async def _get_movie_playing_info(self) -> json:
         """Get information from built in Movie Player."""
         return_value = {}
 
