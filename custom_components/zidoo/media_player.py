@@ -116,8 +116,6 @@ async def async_setup_entry(
 class ZidooEntity(CoordinatorEntity[ZidooCoordinator]):
     """Zidoo entity class."""
 
-    _attr_has_entity_name = True
-
     def __init__(
         self,
         coordinator: ZidooCoordinator,
@@ -126,13 +124,15 @@ class ZidooEntity(CoordinatorEntity[ZidooCoordinator]):
         """Initialize the entity."""
         super().__init__(coordinator)
 
-        self._attr_unique_id = config_entry.unique_id
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self.unique_id)},
+            identifiers={(DOMAIN, config_entry.unique_id)},
             manufacturer="Zidoo",
-            model=config_entry.title,
             name=config_entry.title,
         )
+        self._attr_unique_id = config_entry.title
+        self._attr_name = config_entry.title
+
+        _LOGGER.debug(self.device_info)
 
 
 class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):

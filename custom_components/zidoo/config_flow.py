@@ -72,9 +72,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return ZidooOptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input=None):
-        """
-        Manage device specific parameters.
-        """
+        """Manage device specific parameters."""
         errors = {}
         if user_input is not None:
             try:

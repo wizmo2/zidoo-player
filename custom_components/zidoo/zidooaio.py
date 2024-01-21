@@ -307,7 +307,7 @@ class ZidooRC(object):
             return response
 
     async def disconnect(self) -> None:
-        """Close connection."""
+        """Async Close connection."""
         if self._session:
             await self._session.close()
         self._psk = None
@@ -345,7 +345,7 @@ class ZidooRC(object):
             socket_instance.close()
 
     async def _send_key(self, key: str, log_errors: bool = False) -> bool:
-        """Send Remote Control button command to device.
+        """Async Send Remote Control button command to device.
 
         Parameters
             key: str
@@ -372,7 +372,7 @@ class ZidooRC(object):
         timeout: int = TIMEOUT,
         max_retries: int = RETRIES,
     ) -> json:
-        """Send request command via HTTP json to player.
+        """Async Send request command via HTTP json to player.
 
         Parameters
             url: str
@@ -415,7 +415,7 @@ class ZidooRC(object):
         log_errors: bool = True,
         timeout: int = TIMEOUT,
     ):
-        """Send request command via HTTP json to player.
+        """Async Send request command via HTTP json to player.
 
         Parameters
             url: str
@@ -474,15 +474,15 @@ class ZidooRC(object):
             return response
 
     async def get_source(self) -> str:
-        """Return last known app."""
+        """Async Return last known app."""
         return self._current_source
 
     async def load_source_list(self) -> dict:
-        """Return app list."""
+        """Async Return app list."""
         return await self.get_app_list()
 
     async def select_source(self, source) -> None:
-        """Set the input source. Not currently used."""
+        """Async Set the input source. Not currently used."""
         if len(self._content_mapping) == 0:
             self._content_mapping = self.load_source_list()
 
@@ -490,7 +490,7 @@ class ZidooRC(object):
             uri = self._content_mapping[source]
 
     async def get_playing_info(self) -> json:
-        """Get playing information of active app.
+        """Async Get playing information of active app.
 
         Returns
             json (if successful)
@@ -536,7 +536,7 @@ class ZidooRC(object):
         return return_value
 
     async def _get_video_playing_info(self) -> json:
-        """Get information from built in video player."""
+        """Async Get information from built in video player."""
         return_value = {}
         response = await self._req_json(
             "ZidooVideoPlay/" + ZCMD_STATUS, log_errors=False
@@ -573,7 +573,7 @@ class ZidooRC(object):
         # _LOGGER.debug("video play info: %s", str(response))
 
     async def _get_id_from_uri(self, uri: str) -> int:
-        """Return movie id from the path."""
+        """Async Return movie id from the path."""
         movie_id = 0
         movie_info = {}
 
@@ -614,7 +614,7 @@ class ZidooRC(object):
         return movie_id
 
     async def _get_music_playing_info(self) -> json:
-        """Get information from built in Music Player."""
+        """Async Get information from built in Music Player."""
         return_value = {}
         response = await self._req_json(
             "ZidooMusicControl/" + ZCMD_STATUS, log_errors=False
@@ -652,7 +652,7 @@ class ZidooRC(object):
         # _LOGGER.debug("music play info %s", str(response))
 
     async def _get_movie_playing_info(self) -> json:
-        """Get information from built in Movie Player."""
+        """Async Get information from built in Movie Player."""
         return_value = {}
 
         response = await self._req_json("ZidooControlCenter/" + ZCMD_STATUS)
@@ -669,7 +669,7 @@ class ZidooRC(object):
         # _LOGGER.debug("movie play info {}".format(response))
 
     async def get_play_modes(self) -> json:
-        """Get the playmode list.
+        """Async Get the playmode list.
 
         Returns
             json
@@ -690,7 +690,7 @@ class ZidooRC(object):
         return 0
 
     async def get_subtitle_list(self, log_errors=True) -> dict:
-        """Get subtitle list.
+        """Async Get subtitle list.
 
         Returns
             dictionary list
@@ -708,7 +708,7 @@ class ZidooRC(object):
         return return_values
 
     async def set_subtitle(self, index: int = None) -> bool:
-        """Start a subtitle.
+        """Async Select subtitle.
 
         Parameters
             index: int
@@ -731,7 +731,7 @@ class ZidooRC(object):
         return False
 
     async def get_audio_list(self) -> dict:
-        """Get audio track list.
+        """Async Get audio track list.
 
         Returns
             dictionary
@@ -748,7 +748,7 @@ class ZidooRC(object):
         return return_values
 
     async def set_audio(self, index: int = None) -> bool:
-        """Select audio track.
+        """Async Select audio track.
 
         Parameters
             index: int
@@ -769,7 +769,7 @@ class ZidooRC(object):
         return False
 
     async def get_system_info(self) -> json:
-        """Get system information.
+        """Async Get system information.
 
         Returns
             json is successful
@@ -796,7 +796,7 @@ class ZidooRC(object):
             return response
 
     async def get_power_status(self) -> str:
-        """Get power status.
+        """Async Get power status.
 
         Returns
             "on" when player is on
@@ -817,16 +817,16 @@ class ZidooRC(object):
         return "off"
 
     async def get_volume_info(self):
-        """Get volume info. Not currently supported."""
+        """Async Get volume info. Not currently supported."""
         return None
 
     async def set_volume_level(self, volume):
-        """Set volume level. Not currently supported."""
+        """Async Set volume level. Not currently supported."""
         # api_volume = str(int(round(volume * 100)))
         return 0
 
     async def get_app_list(self, log_errors=True) -> dict:
-        """Get the list of installed apps.
+        """Async Get the list of installed apps.
 
         Results
             list of openable apps
@@ -847,7 +847,7 @@ class ZidooRC(object):
         return return_values
 
     async def start_app(self, app_name: str, log_errors=True) -> bool:
-        """Start an app by name.
+        """Async Start an app by name.
 
         Parameters
             app_name: str
@@ -864,7 +864,7 @@ class ZidooRC(object):
         return False
 
     async def _start_app(self, app_id, log_errors=True) -> bool:
-        """Start an app by package name."""
+        """Async Start an app by package name."""
         response = await self._req_json(
             "ZidooControlCenter/Apps/openApp?packageName={}".format(app_id)
         )
@@ -874,7 +874,7 @@ class ZidooRC(object):
         return False
 
     async def get_device_list(self) -> json:
-        """Return list of root file system devices.
+        """Async Return list of root file system devices.
 
         Returns
             json device list if successful
@@ -888,7 +888,7 @@ class ZidooRC(object):
             return response["devices"]
 
     async def get_movie_list(self, filter_type=-1, max_count=DEFAULT_COUNT) -> json:
-        """Return list of movies.
+        """Async Return list of movies.
 
         Parameters
             max_count: int
@@ -919,7 +919,7 @@ class ZidooRC(object):
             return response
 
     async def get_collection_list(self, movie_id) -> json:
-        """Return video collection details.
+        """Async Return video collection details.
 
         Parameters
             movie_id: int
@@ -936,7 +936,7 @@ class ZidooRC(object):
             return response
 
     async def get_movie_details(self, movie_id: int) -> json:
-        """Return video details.
+        """Async Return video details.
 
         Parameters
             movie_id: int
@@ -952,7 +952,7 @@ class ZidooRC(object):
             return response
 
     async def get_episode_list(self, season_id: int) -> json:
-        """Return video list sorted by episodes.
+        """Async Return video list sorted by episodes.
 
         Parameters
             movie_id: int
@@ -980,7 +980,7 @@ class ZidooRC(object):
                 return episodes
 
     async def _collection_video_id(self, movie_id: int) -> int:
-        """Get collection id for movie."""
+        """Async Get collection id for movie."""
         response = await self.get_collection_list(movie_id)
 
         if response is not None:
@@ -992,7 +992,7 @@ class ZidooRC(object):
     async def get_music_list(
         self, music_type: int = 0, music_id: int = None, max_count: int = DEFAULT_COUNT
     ) -> json:
-        """Return list of music.
+        """Async Return list of music.
 
         Parameters
             max_count: int
@@ -1012,7 +1012,7 @@ class ZidooRC(object):
         return await self._get_song_list(max_count)
 
     async def _get_song_list(self, max_count: int = DEFAULT_COUNT) -> json:
-        """Return list of albums or album music.
+        """Async Return list of albums or album music.
 
         Parameters
             max_count: int
@@ -1031,7 +1031,7 @@ class ZidooRC(object):
     async def _get_album_list(
         self, album_id: int = None, max_count: int = DEFAULT_COUNT
     ) -> json:
-        """Return list of albums or album music.
+        """Async Return list of albums or album music.
 
         Parameters
             album_id: int or str
@@ -1059,7 +1059,7 @@ class ZidooRC(object):
     async def _get_artist_list(
         self, artist_id: int = None, max_count: int = DEFAULT_COUNT
     ) -> json:
-        """Return list of artists or artist music.
+        """Async Return list of artists or artist music.
 
         Parameters
             artist_id: int
@@ -1087,7 +1087,7 @@ class ZidooRC(object):
             return response
 
     async def _get_playlist_list(self, playlist_id=None, max_count=DEFAULT_COUNT):
-        """Return list of playlists.
+        """Async Return list of playlists.
 
         Parameters
             max_count: int
@@ -1121,7 +1121,7 @@ class ZidooRC(object):
     async def search_movies(
         self, query: str, search_type: int = 0, max_count: int = DEFAULT_COUNT
     ) -> json:
-        """Return video details.
+        """Async Return list of video based on query.
 
         Parameters
             movie_id: int
@@ -1148,7 +1148,7 @@ class ZidooRC(object):
     async def search_music(
         self, query: str, search_type: int = 0, max_count: int = DEFAULT_COUNT
     ) -> json:
-        """Search for music.
+        """Async Return list of music based on query.
 
         Parameters
             query: str
@@ -1171,7 +1171,7 @@ class ZidooRC(object):
         return await self._search_song(query, max_count)
 
     async def _search_song(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
-        """Get search list on song title.
+        """Async Search by song title.
 
         Parameters
             query: str
@@ -1190,7 +1190,7 @@ class ZidooRC(object):
             return response
 
     async def _search_album(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
-        """Get search list on album name.
+        """Async Search by album name.
 
         Parameters
             query: str
@@ -1210,7 +1210,7 @@ class ZidooRC(object):
             return response
 
     async def _search_artist(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
-        """Get serach list on artist name.
+        """Async Search by artist name.
 
         Parameters
             query: str
@@ -1229,7 +1229,7 @@ class ZidooRC(object):
             return response
 
     async def play_file(self, uri: str) -> bool:
-        """Play content by URI.
+        """Async Play content by URI.
 
         Parameters
             uri: str
@@ -1248,7 +1248,7 @@ class ZidooRC(object):
         return False
 
     async def play_stream(self, uri: str, media_type: int) -> bool:
-        """Play url by type.
+        """Async Play url by type.
 
         Uses undocumented v2 upnp FileOpen calls using 'res' and 'type'
             res: str = quoted url
@@ -1293,7 +1293,7 @@ class ZidooRC(object):
         return False
 
     async def play_movie(self, movie_id: int, video_type: int = -1) -> bool:
-        """Play video content by Movie id.
+        """Async Play video content by Movie id.
 
         Parameters
             movie_id
@@ -1318,7 +1318,7 @@ class ZidooRC(object):
     async def play_music(
         self, media_id: int, media_type: int = "music", music_id: int = None
     ) -> bool:
-        """Play video content by id.
+        """Async Play video content by id.
 
         Parameters
             media_id
@@ -1348,7 +1348,7 @@ class ZidooRC(object):
         return False
 
     async def get_video_playlist(self) -> json:
-        """Get the current video playlist.
+        """Async Return the current video playlist.
 
         Returns
             json if successful
@@ -1364,7 +1364,7 @@ class ZidooRC(object):
             return response
 
     async def get_music_playlist(self, max_count: int = DEFAULT_COUNT) -> json:
-        """Get current music player playlist.
+        """Async Get current music player playlist.
 
         Parameters
             max_count: int
@@ -1380,7 +1380,7 @@ class ZidooRC(object):
             return response
 
     async def get_file_list(self, uri: str, file_type: int = 0) -> json:
-        """Get file list in hass format.
+        """Async Return file list in hass format.
 
         Returns
             json if sucessful
@@ -1404,7 +1404,7 @@ class ZidooRC(object):
             return response
 
     async def get_host_list(self, uri: str, host_type: int = 1005) -> json:
-        """Get host list of saved network shares.
+        """Async Return host list of saved network shares.
 
         Returns
             json if sucessful
@@ -1529,32 +1529,32 @@ class ZidooRC(object):
         return url
 
     async def turn_on(self):
-        """Turn the media player on."""
+        """Async Turn the media player on."""
         # Try using the power on command incase the WOL doesn't work
         self._wakeonlan()
         return await self._send_key(ZKEY_POWER_ON, False)
 
     async def turn_off(self, standby=False):
-        """Turn off media player."""
+        """Async Turn off media player."""
         key = ZKEY_POWER_OFF
         if standby:
             key = ZKEY_POWER_STANDBY
         return await self._send_key(key)
 
     async def volume_up(self):
-        """Volume up the media player."""
+        """Async Volume up the media player."""
         return await self._send_key(ZKEY_VOLUME_UP)
 
     async def volume_down(self):
-        """Volume down media player."""
+        """Async Volume down media player."""
         return await self._send_key(ZKEY_VOLUME_DOWN)
 
     async def mute_volume(self):
-        """Send mute command."""
+        """Async Send mute command."""
         return self._send_key(ZKEY_MUTE)
 
     async def media_play(self):
-        """Send play command."""
+        """Async Send play command."""
         # self._send_key(ZKEY_OK)
         if self._current_source == ZCONTENT_NONE and self._last_video_path:
             return await self.play_file(self._last_video_path)
@@ -1563,32 +1563,32 @@ class ZidooRC(object):
         return await self._send_key(ZKEY_MEDIA_PLAY)
 
     async def media_pause(self):
-        """Send media pause command to media player."""
+        """Async Send media pause command to media player."""
         if self._current_source == ZCONTENT_MUSIC:
             return await self._req_json("MusicControl/v2/playOrPause")
         else:
             return await self._send_key(ZKEY_MEDIA_PAUSE)
 
     async def media_stop(self):
-        """Send media pause command to media player."""
+        """Async Send media pause command to media player."""
         return await self._send_key(ZKEY_MEDIA_STOP)
 
     async def media_next_track(self):
-        """Send next track command."""
+        """Async Send next track command."""
         if self._current_source == ZCONTENT_MUSIC:
             return await self._req_json("MusicControl/v2/playNext")
         else:
             return await self._send_key(ZKEY_MEDIA_NEXT)
 
     async def media_previous_track(self):
-        """Send the previous track command."""
+        """Async Send the previous track command."""
         if self._current_source == ZCONTENT_MUSIC:
             return await self._req_json("MusicControl/v2/playLast")
         else:
             self._send_key(ZKEY_MEDIA_PREVIOUS)
 
     async def set_media_position(self, position, durationsec=1):
-        """Set the current playing position.
+        """Async Set the current playing position.
 
         Parameters
             position
@@ -1608,7 +1608,7 @@ class ZidooRC(object):
         return False
 
     async def _set_movie_position(self, position):
-        """Set current posotion for video player."""
+        """Async Set current posotion for video player."""
         response = await self._req_json(
             "ZidooVideoPlay/seekTo?positon={}".format(int(position))
         )
@@ -1617,7 +1617,7 @@ class ZidooRC(object):
             return response
 
     async def _set_audio_position(self, position):
-        """Set current position for music player."""
+        """Async Set current position for music player."""
         response = await self._req_json(
             "ZidooMusicControl/seekTo?time={}".format(int(position))
         )
