@@ -1,6 +1,7 @@
 """Support for interface with Zidoo Media Player."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Iterable
 import time
 from typing import Any
@@ -91,7 +92,7 @@ class ZidooRemote(ZidooEntity, RemoteEntity):
                 # Not supported : hold and release modes
                 # if hold_secs > 0:
                 #     self._device.send_key(single_command)
-                #     time.sleep(hold_secs)
+                #     await asyncio.sleep(hold_secs)
                 # else:
                 result = await self.coordinator.player._send_key(single_command)
                 _LOGGER.debug(
@@ -101,4 +102,4 @@ class ZidooRemote(ZidooEntity, RemoteEntity):
                     delay_secs,
                     result,
                 )
-                time.sleep(delay_secs)
+                await asyncio.sleep(delay_secs)

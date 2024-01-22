@@ -283,8 +283,7 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
 
     async def async_select_source(self, source):
         """Set the input source."""
-        if source in self._content_mapping:
-            await self.coordinator.player.start_app(source)
+        await self.coordinator.player.start_app(source)
 
     async def async_media_play_pause(self):
         """Simulate play pause media player."""
@@ -389,7 +388,7 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         self, media_content_type, media_content_id, media_image_id=None
     ):
         """Get media image from server."""
-        image_url = await self.coordinator.player.generate_image_url(
+        image_url = self.coordinator.player.generate_image_url(
             media_content_id, media_content_type
         )
         if image_url:

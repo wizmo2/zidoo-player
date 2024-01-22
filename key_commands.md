@@ -42,7 +42,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Up
     entity: ''
@@ -57,7 +57,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Home
     entity: ''
@@ -81,7 +81,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Audio
   - show_name: false
@@ -91,7 +91,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Left
     entity: ''
@@ -106,7 +106,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Ok
     entity: ''
@@ -116,7 +116,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Select
   - show_name: false
@@ -126,7 +126,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Right
     entity: ''
@@ -142,6 +142,7 @@ cards:
       service: zidoo.set_subtitle
       target:
         entity_id: media_player.zidoo_z9s
+      data: {}
     entity: ''
     icon: mdi:subtitles-outline
     name: Subtitle
@@ -149,7 +150,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Subtitle
   - show_name: false
@@ -159,7 +160,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Back
     entity: ''
@@ -169,7 +170,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Cancel
   - show_name: false
@@ -179,7 +180,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Down
     entity: ''
@@ -194,7 +195,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Menu
     entity: ''
@@ -204,7 +205,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Resolution
   - show_name: false
@@ -214,7 +215,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.Pip
     entity: ''
@@ -224,7 +225,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.APP.Switch
   - show_name: false
@@ -234,7 +235,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.MediaPrev
     entity: ''
@@ -249,7 +250,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.MediaBackward
     entity: ''
@@ -264,7 +265,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.MediaForward
     entity: ''
@@ -279,7 +280,7 @@ cards:
       action: call-service
       service: remote.send_command
       target:
-        entity_id: media_player.zidoo_z9s
+        entity_id: remote.zidoo_z9s
       data:
         command: Key.MediaNext
     entity: ''
