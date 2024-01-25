@@ -3,7 +3,6 @@ import contextlib
 
 from homeassistant.components import media_source
 from homeassistant.components.media_player import (
-    BrowseError,
     BrowseMedia,
     MediaClass,
     MediaType,

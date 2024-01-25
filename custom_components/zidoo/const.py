@@ -1,5 +1,8 @@
 """Constants for Zidoo component."""
 import logging
+
+from homeassistant.components.media_player import MediaClass, MediaType
+
 from .zidooaio import (
     ZTYPE_VIDEO,
     ZTYPE_MOVIE,
@@ -9,7 +12,6 @@ from .zidooaio import (
     ZTYPE_COLLECTION,
     ZTYPE_OTHER,
 )
-from homeassistant.components.media_player import MediaClass, MediaType
 
 _LOGGER = logging.getLogger(__package__)
 

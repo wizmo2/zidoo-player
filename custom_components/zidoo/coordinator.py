@@ -18,7 +18,6 @@ from .const import (
     DOMAIN,
     EVENT_TURN_ON,
 )
-
 from .zidooaio import (
     ZCONTENT_MUSIC,
     ZCONTENT_VIDEO,

@@ -2,8 +2,6 @@
 import requests.exceptions
 import voluptuous as vol
 
-from .zidooaio import ZidooRC
-
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC
 from homeassistant.core import callback
@@ -19,6 +17,7 @@ from .const import (
     ZSHORTCUTS,
     ZDEFAULT_SHORTCUTS,
 )
+from .zidooaio import ZidooRC
 
 DATA_SCHEMA = vol.Schema(
     {vol.Required(CONF_HOST): str, vol.Optional(CONF_PASSWORD): str}
@@ -62,7 +61,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self):
-        """Initialize the zidoo flow."""
+        """Initialize the Zidoo flow."""
         self.discovery_schema = None
 
     @staticmethod
@@ -110,7 +109,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle a option flow for wiser hub."""
+    """Handle a option flow for Zidoo."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
