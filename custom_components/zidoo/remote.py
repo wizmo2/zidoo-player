@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Iterable
-import time
 from typing import Any
 
 from homeassistant.components.remote import (
@@ -17,19 +16,13 @@ from homeassistant.components.remote import (
     RemoteEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-)
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    _LOGGER,
-    CONF_POWERMODE,
-    DOMAIN,
-    EVENT_TURN_ON,
-)
+from .const import _LOGGER, DOMAIN
 from .media_player import ZidooEntity
+from .zidooaio import ZKEYS
 
 
 async def async_setup_entry(
@@ -47,39 +40,28 @@ async def async_setup_entry(
 
 
 class ZidooRemote(ZidooEntity, RemoteEntity):
-    """Representation of a Bravia TV Remote."""
+    """Zidoo Remote Interface."""
 
-    _attr_supported_features = (
-        RemoteEntityFeature.LEARN_COMMAND | RemoteEntityFeature.ACTIVITY
-    )
+    _attr_supported_features = RemoteEntityFeature.ACTIVITY
+    _attr_activity_list = ZKEYS
 
     @property
     def state(self):
         """Return the state of the device."""
         return self.coordinator.state
 
-    @property
-    def current_activity(self):
-        """Return the current activity."""
-        return self.coordinator.source
-
-    @property
-    def activity_list(self):
-        """List of available activities."""
-        return self.coordinator.source_list
-
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the media player on."""
-        # Fire events for automations
-        self.hass.bus.async_fire(EVENT_TURN_ON, {ATTR_ENTITY_ID: self.entity_id})
-        # Try API and WOL
-        await self.coordinator.player.turn_on()
+        await self.coordinator.async_turn_on(
+            event_data={
+                ATTR_ENTITY_ID: self.entity_id,
+                ATTR_DEVICE_ID: self.device_entry.id,
+            }
+        )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off media player."""
-        await self.coordinator.player.turn_off(
-            self._config_entry.options.get(CONF_POWERMODE, False)
-        )
+        await self.coordinator.async_turn_off()
 
     async def async_send_command(self, command: Iterable[str], **kwargs: Any) -> None:
         """Send commands to one device."""

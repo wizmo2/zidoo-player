@@ -1,17 +1,23 @@
-"""Update coordinator for Bravia TV integration."""
+"""Update coordinator for Zidoo Media Player integration."""
 from __future__ import annotations
 
 from datetime import timedelta
-import logging
 from types import MappingProxyType
 from typing import Any, Final
+
 from homeassistant.components.media_player import MediaPlayerState, MediaType
+from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.dt import utcnow
 
-from .const import DOMAIN
+from .const import (
+    _LOGGER,
+    CONF_POWERMODE,
+    DOMAIN,
+    EVENT_TURN_ON,
+)
 
 from .zidooaio import (
     ZCONTENT_MUSIC,
@@ -19,7 +25,6 @@ from .zidooaio import (
     ZidooRC,
 )
 
-_LOGGER = logging.getLogger(__name__)
 SCAN_INTERVAL: Final = timedelta(seconds=5)
 SCAN_INTERVAL_RAPID: Final = timedelta(seconds=1)
 
@@ -45,7 +50,7 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
         self._media_type = None
         self._media_info = {}
         self._last_update = None
-        self._last_state = MediaPlayerState.OFF  # debug only
+        self._last_state = MediaPlayerState.OFF
 
         super().__init__(
             hass,
@@ -56,6 +61,11 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                 hass, _LOGGER, cooldown=1.0, immediate=False
             ),
         )
+
+    @property
+    def state(self):
+        """Gets status of device."""
+        return self._state
 
     async def async_refresh_channels(self, force=True):
         """Update source list."""
@@ -68,14 +78,14 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
     async def _async_update_data(self) -> None:
         """Update data callback."""
         if not self.player.is_connected():
-            if await self.player.get_power_status() != "off":
-                await self.player.connect()
+            await self.player.connect()
 
         # Retrieve the latest data.
+        state = MediaPlayerState.OFF
         try:
-            state = MediaPlayerState.OFF
             if self.player.is_connected():
                 state = MediaPlayerState.PAUSED
+                await self.async_refresh_channels(force=False)
                 self._source = await self.player.get_source()
                 playing_info = await self.player.get_playing_info()
                 self._media_info = {}
@@ -103,25 +113,33 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                     else:
                         self._media_type = MediaType.APP
                     self._last_update = utcnow()
-                # Update source list
-                await self.async_refresh_channels(force=False)
-                # debug only
-                if state != self._last_state:
-                    _LOGGER.debug(
-                        "%s New state (%s): %s", self._name, state, playing_info
-                    )
-                    self._last_state = state
-            if state != self._last_state:
-                _LOGGER.debug("%s New state (%s)", self._name, state)
-                self._last_state = state
 
-            self._state = state
+        except Exception as err:  # pylint: disable=broad-except
+            return
+
+        if state != self._last_state:
+            _LOGGER.debug("%s New state (%s)", self._name, state)
+            self._last_state = state
             self.update_interval = (
                 SCAN_INTERVAL if state == MediaPlayerState.OFF else SCAN_INTERVAL_RAPID
             )
+        self._state = state
 
-        except Exception as exception_instance:  # pylint: disable=broad-except
-            _LOGGER.error(exception_instance)
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the media player on."""
+        if self._state == MediaPlayerState.OFF:
+            # Try 'zidoo.turn_on' event for automaton control
+            data = kwargs.get("event_data", {CONF_UNIQUE_ID: self._unique_id})
+            self.hass.bus.async_fire(EVENT_TURN_ON, data)
+            # Try API and WOL
+            await self._player.turn_on()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn off media player."""
+        if self._state != MediaPlayerState.OFF:
+            await self._player.turn_off(
+                self._config_entry.options.get(CONF_POWERMODE, False)
+            )
 
     @property
     def player(self):

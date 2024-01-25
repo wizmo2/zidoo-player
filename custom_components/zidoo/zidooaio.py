@@ -12,13 +12,14 @@ import socket
 import struct
 from aiohttp import BasicAuth, ClientError, ClientSession, CookieJar
 from datetime import datetime
-from time import sleep
 import urllib.parse
+from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
 VERSION = "0.3.0"
 TIMEOUT = 5  # default timeout
+TIMEOUT_INFO = 1  # for playing info
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
 DEFAULT_COUNT = 250  # default list limit
@@ -258,15 +259,14 @@ class ZidooRC(object):
             mac:
                 address is optional and can be used to manually assign the WOL address.
             psk:
-                authorization passwortd key.  If not assigned, standard basic auth is used.
+                authorization password key.  If not assigned, standard basic auth is used.
         """
 
         self._host = "{}:{}".format(host, CONF_PORT)
         self._mac = mac
-        self._session = None
         self._psk = psk
+        self._session = None
         self._cookies = None
-        self._commands = []
         self._content_mapping = []
         self._current_source = None
         self._app_list = {}
@@ -297,10 +297,10 @@ class ZidooRC(object):
             json
                 raw api response if successful.
         """
-        response = await self.get_system_info()
+        response = await self.get_system_info(log_errors=False)
 
-        _LOGGER.debug("connected: %s", response)
-        if response is not None or response.get("status") == 200:
+        if response and response.get("status") == 200:
+            _LOGGER.debug("connected: %s", response)
             if self._mac is None:
                 self._mac = response.get("net_mac")
             self._power_status = True
@@ -320,10 +320,7 @@ class ZidooRC(object):
             bool
                 True if connected.
         """
-        if self._cookies is None:
-            return False
-        else:
-            return True
+        return self._cookies is not None
 
     def _wakeonlan(self) -> None:
         """Send WOL command. to known mac addresses."""
@@ -351,9 +348,9 @@ class ZidooRC(object):
             key: str
                 remote control key command (see ZKEY list)
             log_errors: bool
-                suppesses error logging if False
+                suppresses error logging if False
         Returns
-            True if sucessful
+            True if successful
         """
         url = "ZidooControlCenter/RemoteControl/sendkey"
         params = {"key": key}
@@ -401,12 +398,13 @@ class ZidooRC(object):
                     if ZCMD_STATUS not in url or result.get("status") != 804:
                         return result
 
-                await asyncio.sleep(timeout)
-
-            _LOGGER.debug("Request Error url:%s params:%s", str(url), str(params))
+            _LOGGER.warning("[W] Retry %d: url:%s", max_retries, url)
             max_retries -= 1
 
-        self._cookies = None  # forces reconnect on next update
+        # clear cookies to show not connected
+        if self._cookies is not None:
+            _LOGGER.debug("No response from player! Showing not connected")
+            self._cookies = None
 
     async def _send_cmd(
         self,
@@ -446,7 +444,7 @@ class ZidooRC(object):
 
         try:
             response = await self._session.get(
-                url,
+                URL(url, encoded=True),
                 params=params,
                 cookies=self._cookies,
                 timeout=timeout,
@@ -455,18 +453,18 @@ class ZidooRC(object):
 
         except ClientError as err:
             if log_errors and self._power_status:
-                _LOGGER.info("[I] Timeout occurred: %s", str(err))
-            _LOGGER.debug("[D] Timeout url:%s params:%s", str(url), str(params))
+                _LOGGER.info("[I] Client Error: %s", str(err))
+            _LOGGER.debug("[D] Client Error: url:%s params:%s", str(url), str(params))
 
         except ConnectionError as err:
             if log_errors and self._power_status:
-                _LOGGER.info("[I] Connect occurred: %s", str(err))
-            _LOGGER.debug("[D] Connect url:%s params:%s", str(url), str(params))
+                _LOGGER.info("[I] Connect Error: %s", str(err))
+            _LOGGER.debug("[D] Connect Error url:%s params:%s", str(url), str(params))
 
         except asyncio.exceptions.TimeoutError as err:
             if log_errors and self._power_status:
-                _LOGGER.warning("[W] HTTPError: %s", str(err))
-            _LOGGER.debug("[D] HTTPError url:%s params:%s", str(url), str(params))
+                _LOGGER.warning("[W] Timeout Error: %s", str(err))
+            _LOGGER.debug("[D] Timeout Error: url:%s params:%s", str(url), str(params))
 
         else:
             if response is not None or response.status == 200:
@@ -480,14 +478,6 @@ class ZidooRC(object):
     async def load_source_list(self) -> dict:
         """Async Return app list."""
         return await self.get_app_list()
-
-    async def select_source(self, source) -> None:
-        """Async Set the input source. Not currently used."""
-        if len(self._content_mapping) == 0:
-            self._content_mapping = self.load_source_list()
-
-        if source in self._content_mapping:
-            uri = self._content_mapping[source]
 
     async def get_playing_info(self) -> json:
         """Async Get playing information of active app.
@@ -539,7 +529,7 @@ class ZidooRC(object):
         """Async Get information from built in video player."""
         return_value = {}
         response = await self._req_json(
-            "ZidooVideoPlay/" + ZCMD_STATUS, log_errors=False
+            "ZidooVideoPlay/" + ZCMD_STATUS, log_errors=False, timeout=TIMEOUT_INFO
         )
 
         if response is not None and response.get("status") == 200:
@@ -617,7 +607,7 @@ class ZidooRC(object):
         """Async Get information from built in Music Player."""
         return_value = {}
         response = await self._req_json(
-            "ZidooMusicControl/" + ZCMD_STATUS, log_errors=False
+            "ZidooMusicControl/" + ZCMD_STATUS, log_errors=False, timeout=TIMEOUT_INFO
         )
 
         if response is not None and response.get("status") == 200:
@@ -655,7 +645,9 @@ class ZidooRC(object):
         """Async Get information from built in Movie Player."""
         return_value = {}
 
-        response = await self._req_json("ZidooControlCenter/" + ZCMD_STATUS)
+        response = await self._req_json(
+            "ZidooControlCenter/" + ZCMD_STATUS, log_errors=False, timeout=TIMEOUT_INFO
+        )
 
         if response is not None and response.get("status") == 200:
             if response.get("file"):
@@ -669,7 +661,7 @@ class ZidooRC(object):
         # _LOGGER.debug("movie play info {}".format(response))
 
     async def get_play_modes(self) -> json:
-        """Async Get the playmode list.
+        """Async Get the play-mode list.
 
         Returns
             json
@@ -714,7 +706,7 @@ class ZidooRC(object):
             index: int
                 subtitle list reference
         Return
-            True if sucessful
+            True if successful
         """
         if index is None:
             index = self._next_data(
@@ -754,7 +746,7 @@ class ZidooRC(object):
             index: int
                 audio track list reference
         Return
-            True if sucessful
+            True if successful
         """
         if index is None:
             index = self._next_data(await self.get_audio_list(), self._current_audio)
@@ -768,7 +760,7 @@ class ZidooRC(object):
             return True
         return False
 
-    async def get_system_info(self) -> json:
+    async def get_system_info(self, log_errors=True) -> json:
         """Async Get system information.
 
         Returns
@@ -779,7 +771,7 @@ class ZidooRC(object):
                 'net_mac': wired mac address
                 'wif_mac': wifi mac address
                 'language': system language
-                'firmware': firmwate version
+                'firmware': firmware version
                 'androidversion': os version
                 'flash': flash/emmc memory size
                 'ram':' ram memory size
@@ -789,9 +781,11 @@ class ZidooRC(object):
                 'ableRemoteBoot': network boot compatible (wol)
                 'pyapiversion': python api version
         """
-        response = await self._req_json("ZidooControlCenter/getModel")
+        response = await self._req_json(
+            "ZidooControlCenter/getModel", log_errors=log_errors, max_retries=0
+        )
 
-        if response is not None and response.get("status") == 200:
+        if response and response.get("status") == 200:
             response["pyapiversion"] = VERSION
             return response
 
@@ -800,13 +794,13 @@ class ZidooRC(object):
 
         Returns
             "on" when player is on
-            "off" when player is not availble
+            "off" when player is not available
         """
         self._power_status = False
         try:
             response = await self.get_system_info()
 
-            if response is not None:
+            if response and response.get("status") == 200:
                 self._power_status = True
 
         except:  # pylint: disable=broad-except
@@ -1235,7 +1229,7 @@ class ZidooRC(object):
             uri: str
                 path of file to play
         Returns
-            True if sucessful
+            True if successful
         """
         url = "ZidooFileControl/openFile?path={}&videoplaymode={}".format(
             uri, 0
@@ -1247,12 +1241,14 @@ class ZidooRC(object):
             return True
         return False
 
-    async def play_stream(self, uri: str, media_type: int) -> bool:
+    async def play_stream(self, uri: str, media_type) -> bool:
         """Async Play url by type.
 
         Uses undocumented v2 upnp FileOpen calls using 'res' and 'type'
-            res: str = quoted url
-            type : int = app launch
+            res: str
+                quoted url
+            type : int or str
+                mime type or see ZTYPE_MIMETYPE
             other information parameters can be used
                 name: str (title?)
                 date: datetime
@@ -1266,14 +1262,21 @@ class ZidooRC(object):
                 number: int (audio)
                 sampleRates: int (audio)
                 albumArt: url (audio)
-        Parmeters:
+        Parameters:
             uri: str
                 uri link to stream
             media_type: int
                 See ZTYPE_MIMETYPE
         Returns
-            True if sucessful
+            True if successful
         """
+        # take major form mime type
+        if "/" in media_type:
+            media_type = media_type.split("/")[0]
+
+        if media_type in ZTYPE_MIMETYPE:
+            media_type = ZTYPE_MIMETYPE[media_type]
+
         # the res uri needs to be double quoted to protect keys etc.
         # use safe='' in quote to force "/" quoting
         uri = urllib.parse.quote(uri, safe="")
@@ -1299,7 +1302,7 @@ class ZidooRC(object):
             movie_id
                 database id
         Returns
-            True if sucessfuL
+            True if successful
         """
         # uses the agreggateid to find the first video to play
         if video_type != 0:
@@ -1328,7 +1331,7 @@ class ZidooRC(object):
             music_id
                 database id for track to play (use None or -1 for first)
         Returns
-            True if sucessfuL
+            True if successfull
         """
         if media_type in ZMUSIC_PLAYLISTTYPE:
             response = await self._req_json(
@@ -1370,7 +1373,7 @@ class ZidooRC(object):
             max_count: int
                 list size limit
         Returns
-            raw api response if sucessful
+            raw api response if successful
         """
         response = await self._req_json(
             "MusicControl/v2/getPlayQueue?start=0&count={}".format(max_count)
@@ -1383,7 +1386,7 @@ class ZidooRC(object):
         """Async Return file list in hass format.
 
         Returns
-            json if sucessful
+            json if successful
                 'status':200
                 'isExists':True
                 'perentPath':'/storage/356d9775-8a40-4d4e-8ef9-9eea931fc5ae'
@@ -1407,7 +1410,7 @@ class ZidooRC(object):
         """Async Return host list of saved network shares.
 
         Returns
-            json if sucessful
+            json if successful
                 'status':200
                 'filelist': list
                     'name': host/share name
@@ -1460,7 +1463,7 @@ class ZidooRC(object):
 
         Parameters
             movie_id: int
-                dtanabase id
+                database id
             width: int
                 image width in pixels
             height: int
@@ -1505,7 +1508,7 @@ class ZidooRC(object):
 
         Parameters
             movie_id: int
-                dtanabase id
+                database id
             width: int
                 image width in pixels
             height: int
@@ -1536,10 +1539,7 @@ class ZidooRC(object):
 
     async def turn_off(self, standby=False):
         """Async Turn off media player."""
-        key = ZKEY_POWER_OFF
-        if standby:
-            key = ZKEY_POWER_STANDBY
-        return await self._send_key(key)
+        return await self._send_key(ZKEY_POWER_STANDBY if standby else ZKEY_POWER_OFF)
 
     async def volume_up(self):
         """Async Volume up the media player."""
@@ -1587,16 +1587,14 @@ class ZidooRC(object):
         else:
             self._send_key(ZKEY_MEDIA_PREVIOUS)
 
-    async def set_media_position(self, position, durationsec=1):
+    async def set_media_position(self, position):
         """Async Set the current playing position.
 
         Parameters
             position
                 position in ms
-            duractionsec: int
-                duration in seconds
         Return
-            True if sucessful
+            True if successful
         """
         if self._current_source == ZCONTENT_VIDEO:
             response = await self._set_movie_position(position)
@@ -1608,7 +1606,7 @@ class ZidooRC(object):
         return False
 
     async def _set_movie_position(self, position):
-        """Async Set current posotion for video player."""
+        """Async Set current position for video player."""
         response = await self._req_json(
             "ZidooVideoPlay/seekTo?positon={}".format(int(position))
         )

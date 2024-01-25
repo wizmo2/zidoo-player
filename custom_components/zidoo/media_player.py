@@ -6,6 +6,7 @@ from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
+    MediaPlayerState,
     MediaType,
 )
 from homeassistant.components.media_player.browse_media import (
@@ -13,11 +14,7 @@ from homeassistant.components.media_player.browse_media import (
 )
 from homeassistant.components import media_source
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-    CONF_HOST,
-    CONF_NAME,
-)
+from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import DeviceInfo
@@ -31,7 +28,6 @@ from .const import (
     AUDIO_SERVICE,
     BUTTON_SERVICE,
     DOMAIN,
-    EVENT_TURN_ON,
     SUBTITLE_SERVICE,
 )
 from .media_browser import (
@@ -42,11 +38,8 @@ from .media_browser import (
 from .zidooaio import (
     ZKEYS,
     ZMUSIC_SEARCH_TYPES,
-    ZTYPE_MIMETYPE,
 )
 from .coordinator import ZidooCoordinator
-
-DEFAULT_NAME = "Zidoo Media Player"
 
 ATTR_KEY = "key"
 
@@ -80,7 +73,7 @@ async def async_setup_platform(
     """Add Media Player form configuration."""
 
     _LOGGER.warning(
-        "Loading zidoo via platform config is deprecated, it will be automatically imported; Please remove it afterwards"
+        "Loading Zidoo via platform config is deprecated, it will be automatically imported; Please remove it afterwards"
     )
 
     config_new = {
@@ -124,22 +117,19 @@ class ZidooEntity(CoordinatorEntity[ZidooCoordinator]):
         """Initialize the entity."""
         super().__init__(coordinator)
 
+        self._attr_unique_id = config_entry.entry_id
+        self._attr_name = config_entry.title
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, config_entry.unique_id)},
+            identifiers={(DOMAIN, config_entry.entry_id)},
             manufacturer="Zidoo",
             name=config_entry.title,
         )
-        self._attr_unique_id = config_entry.title
-        self._attr_name = config_entry.title
-
-        _LOGGER.debug(self.device_info)
 
 
 class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     """Zidoo Media Player."""
 
     _attr_supported_features = SUPPORT_ZIDOO | SUPPORT_MEDIA_MODES
-    _attr_playing = False
 
     @property
     def state(self):
@@ -212,12 +202,16 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     @property
     def media_duration(self):
         """Duration of current playing media in seconds."""
-        return self.coordinator.media_info.get("duration")
+        duration = self.coordinator.media_info.get("duration")
+        if duration:
+            return float(duration) / 1000
 
     @property
     def media_position(self):
         """Position of current playing media in seconds."""
-        return self.coordinator.media_info.get("position")
+        position = self.coordinator.media_info.get("position")
+        if position:
+            return float(position) / 1000
 
     @property
     def media_position_updated_at(self):
@@ -260,14 +254,16 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
 
     async def async_turn_on(self):
         """Turn the media player on."""
-        # Fire events for automations
-        self.hass.bus.async_fire(EVENT_TURN_ON, {ATTR_ENTITY_ID: self.entity_id})
-        # Try API and WOL
-        await self.coordinator.player.turn_on()
+        await self.coordinator.async_turn_on(
+            event_data={
+                ATTR_ENTITY_ID: self.entity_id,
+                ATTR_DEVICE_ID: self.device_entry.id,
+            }
+        )
 
     async def async_turn_off(self):
         """Turn off media player."""
-        await self.coordinator.player.turn_off()
+        await self.coordinator.async_turn_off()
 
     async def async_volume_up(self):
         """Volume up the media player."""
@@ -287,35 +283,31 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
 
     async def async_media_play_pause(self):
         """Simulate play pause media player."""
-        if self.playing:
-            await self.media_pause()
-        else:
-            await self.media_play()
+        if self.state == MediaPlayerState.PLAYING:
+            return await self.async_media_pause()
+        return await self.async_media_play()
 
     async def async_media_play(self):
         """Send play command."""
-        self.playing = True
-        await self.coordinator.player.media_play()
+        return await self.coordinator.player.media_play()
 
     async def async_media_pause(self):
         """Send media pause command."""
-        if await self.coordinator.player.media_pause():
-            self.playing = False
+        return await self.coordinator.player.media_pause()
 
     async def async_media_stop(self):
         """Send media stop command."""
-        if await self.coordinator.player.media_stop():
-            self.playing = False
+        return await self.coordinator.player.media_stop()
 
     async def async_media_next_track(self):
         """Send next track command."""
-        await self.coordinator.player.media_next_track()
-        self.schedule_update_ha_state()
+        return await self.coordinator.player.media_next_track()
+        # self.schedule_update_ha_state()
 
     async def async_media_previous_track(self):
         """Send the previous track command."""
-        await self.coordinator.player.media_previous_track()
-        self.schedule_update_ha_state()
+        return await self.coordinator.player.media_previous_track()
+        # self.schedule_update_ha_state()
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
@@ -336,16 +328,13 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
                 media_ids[0], media_type, media_ids[-1]
             )
         elif "/" in media_type:
-            mime_major = media_type.split("/")[0]
-            await self.coordinator.player.play_stream(
-                media_id, ZTYPE_MIMETYPE[mime_major]
-            )
+            await self.coordinator.player.play_stream(media_id, media_type)
         else:
             await self.coordinator.player.play_movie(media_id)
 
     async def async_media_seek(self, position):
         """Send media_seek command to media player."""
-        await self.coordinator.player.set_media_position(position, self.media_duration)
+        await self.coordinator.player.set_media_position(float(position) * 1000)
 
     @property
     def media_image_url(self):
@@ -353,22 +342,22 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         return self.coordinator.player.generate_current_image_url()
 
     async def async_set_subtitle(self):
-        """sets or toggles the video subtitle"""
+        """Sets or toggles the video subtitle."""
         await self.coordinator.player.set_subtitle()
 
     async def async_set_audio(self):
-        """sets or toggles the audio_track subtitle"""
+        """Sets or toggles the audio_track subtitle."""
         await self.coordinator.player.set_audio()
 
     async def async_send_key(self, key):
-        """send a remote control key command"""
+        """Send a remote control key command."""
         _LOGGER.warning(
             "'Zidoo:Send Keys' is depreciated.  Please update to use 'Remote:Send command'"
         )
         await self.coordinator.player._send_key(key)
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
-        """Implement the websocket media browsing helper"""
+        """Implement the websocket media browsing helper."""
         if media_content_type in [None, "library"]:
             return await library_payload(self)
 
