@@ -2,11 +2,11 @@
 
 An issue with the HACS configuration file was introduced in release versions 1.2.4 and below, which prevents Versions from downloading correctly.
 
-v1.2.5 fixes the issue, but if a previous version had been installed the following procuedure is required to add and remove the HACS install.
+v1.2.5 fixes the issue, but if a previous version had been installed the following procedure is required to add and remove the HACS install.
 
 _NOTE:  Older versions have been re-built and re-released with the correct HACS configuration file to prevent ongoing issues (using 'v' prefix to the tags)_
 
-### Remove any exisitng HA integrations
+### Remove any existing HA integrations
 
 1. Goto Configuration/Integrations and remove any installed media player devices
 
@@ -32,7 +32,7 @@ a. Restart HA Server
 
 ![Step3](images/ar_step5.png) ![Step4](images/ar_step6.png)
 
-a. Press the EXPLORE & DOWLOAD REPOSITORIES button
+a. Press the EXPLORE & DOWNLOAD REPOSITORIES button
 
 b. Search for Zidoo and select Zidoo Media Player
 
@@ -52,7 +52,7 @@ a. Restart HA Server
 
 a.  Press the ADD INTEGRATION button
 
-b.  Seach for Zidoo and select Zidoo
+b.  Search for Zidoo and select Zidoo
 
 d.  Enter the IP address and Password (if applicable)
 
