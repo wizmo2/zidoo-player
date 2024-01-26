@@ -278,6 +278,7 @@ class ZidooRC(object):
         self._movie_info = {}
         self._current_subtitle = 0
         self._current_audio = 0
+        self._song_list = None
 
     def _jdata_build(self, method: str, params: dict = None) -> str:
         if params:
@@ -454,17 +455,14 @@ class ZidooRC(object):
         except ClientError as err:
             if log_errors and self._power_status:
                 _LOGGER.info("[I] Client Error: %s", str(err))
-            _LOGGER.debug("[D] Client Error: url:%s params:%s", str(url), str(params))
 
         except ConnectionError as err:
             if log_errors and self._power_status:
                 _LOGGER.info("[I] Connect Error: %s", str(err))
-            _LOGGER.debug("[D] Connect Error url:%s params:%s", str(url), str(params))
 
         except asyncio.exceptions.TimeoutError as err:
             if log_errors and self._power_status:
                 _LOGGER.warning("[W] Timeout Error: %s", str(err))
-            _LOGGER.debug("[D] Timeout Error: url:%s params:%s", str(url), str(params))
 
         else:
             if response is not None or response.status == 200:
@@ -1018,6 +1016,7 @@ class ZidooRC(object):
         response = await self._req_json(
             "MusicControl/v2/getSingleMusics?start=0&count={}".format(max_count)
         )
+        self._song_list = self._get_music_ids(response.get("array"))
 
         if response is not None:
             return response
@@ -1097,6 +1096,7 @@ class ZidooRC(object):
                 response = await self._req_json(
                     "MusicControl/v2/getPlayQueue?start=0&count={}".format(max_count)
                 )
+                self._song_list = self._get_music_ids(response.get("array"))
             else:
                 response = await self._req_json(
                     "MusicControl/v2/getSongListMusics?id={}&start=0&count={}".format(
@@ -1140,7 +1140,11 @@ class ZidooRC(object):
             return response
 
     async def search_music(
-        self, query: str, search_type: int = 0, max_count: int = DEFAULT_COUNT
+        self,
+        query: str,
+        search_type: int = 0,
+        max_count: int = DEFAULT_COUNT,
+        play: bool = False,
     ) -> json:
         """Async Return list of music based on query.
 
@@ -1151,6 +1155,8 @@ class ZidooRC(object):
                 see ZMUSIC_SEARCH_TYPES
             max_count: int
                 max number of songs returned
+            play: bool
+                automatically plays content.  search_type=0 only
         Returns
             json
                 raw API response (no status)
@@ -1162,7 +1168,11 @@ class ZidooRC(object):
             return await self._search_album(query, max_count)
         elif search_type == 2:
             return await self._search_artist(query, max_count)
-        return await self._search_song(query, max_count)
+        response = await self._search_song(query, max_count)
+        self._song_list = self._get_music_ids(response.get("array"), sub="result")
+        if play and self._song_list:
+            await self.play_music(media_type="music", music_id=self._song_list[0])
+        return response
 
     async def _search_song(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
         """Async Search by song title.
@@ -1180,7 +1190,7 @@ class ZidooRC(object):
             )
         )
 
-        if response is not None:  # and response.get("status") == 200:
+        if response is not None:
             return response
 
     async def _search_album(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
@@ -1200,7 +1210,7 @@ class ZidooRC(object):
             timeout=10,
         )
 
-        if response is not None:  # and response.get("status") == 200:
+        if response is not None:
             return response
 
     async def _search_artist(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
@@ -1219,7 +1229,7 @@ class ZidooRC(object):
             )
         )
 
-        if response is not None:  # and response.get("status") == 200:
+        if response is not None:
             return response
 
     async def play_file(self, uri: str) -> bool:
@@ -1318,8 +1328,17 @@ class ZidooRC(object):
             return True
         return False
 
+    def _get_music_ids(self, data, key="id", sub=None):
+        ids = []
+        for item in data:
+            result = item.get(sub) if sub else item
+            if result:
+                id = result.get(key)
+                ids.append(str(id))
+        return ids
+
     async def play_music(
-        self, media_id: int, media_type: int = "music", music_id: int = None
+        self, media_id: int = None, media_type: int = "music", music_id: int = None
     ) -> bool:
         """Async Play video content by id.
 
@@ -1333,7 +1352,7 @@ class ZidooRC(object):
         Returns
             True if successfull
         """
-        if media_type in ZMUSIC_PLAYLISTTYPE:
+        if media_type in ZMUSIC_PLAYLISTTYPE and media_id != "playing":
             response = await self._req_json(
                 "MusicControl/v2/playMusic?type={}&id={}&musicId={}&music_type=0&trackIndex=1&sort=0".format(
                     ZMUSIC_PLAYLISTTYPE[media_type], media_id, music_id
@@ -1342,7 +1361,7 @@ class ZidooRC(object):
         else:  # music
             response = await self._req_json(
                 "MusicControl/v2/playMusics?ids={}&musicId={}&trackIndex=-1".format(
-                    media_id, music_id
+                    "%2C".join(self._song_list), music_id
                 )
             )
 
@@ -1379,7 +1398,7 @@ class ZidooRC(object):
             "MusicControl/v2/getPlayQueue?start=0&count={}".format(max_count)
         )
 
-        if response is not None and response.get("status") == 200:
+        if response is not None:
             return response
 
     async def get_file_list(self, uri: str, file_type: int = 0) -> json:
