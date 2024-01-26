@@ -20,6 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 VERSION = "0.3.0"
 TIMEOUT = 5  # default timeout
 TIMEOUT_INFO = 1  # for playing info
+TIMEOUT_SEARCH = 10  # for searches
 RETRIES = 3  # default retries
 CONF_PORT = 9529  # default api port
 DEFAULT_COUNT = 250  # default list limit
@@ -399,7 +400,8 @@ class ZidooRC(object):
                     if ZCMD_STATUS not in url or result.get("status") != 804:
                         return result
 
-            _LOGGER.warning("[W] Retry %d: url:%s", max_retries, url)
+            if max_retries > 0:
+                _LOGGER.warning("[W] Retry %d: url:%s", max_retries, url)
             max_retries -= 1
 
         # clear cookies to show not connected
@@ -1096,7 +1098,8 @@ class ZidooRC(object):
                 response = await self._req_json(
                     "MusicControl/v2/getPlayQueue?start=0&count={}".format(max_count)
                 )
-                self._song_list = self._get_music_ids(response.get("array"))
+                if response:
+                    self._song_list = self._get_music_ids(response.get("array"))
             else:
                 response = await self._req_json(
                     "MusicControl/v2/getSongListMusics?id={}&start=0&count={}".format(
@@ -1133,7 +1136,8 @@ class ZidooRC(object):
         response = await self._req_json(
             "Poster/v2/searchAggregation?q={}&type={}&start=0&count={}".format(
                 query, search_type, max_count
-            )
+            ),
+            timeout=TIMEOUT_SEARCH,
         )
 
         if response is not None and response.get("status") == 200:
@@ -1169,9 +1173,10 @@ class ZidooRC(object):
         elif search_type == 2:
             return await self._search_artist(query, max_count)
         response = await self._search_song(query, max_count)
-        self._song_list = self._get_music_ids(response.get("array"), sub="result")
-        if play and self._song_list:
-            await self.play_music(media_type="music", music_id=self._song_list[0])
+        if response:
+            self._song_list = self._get_music_ids(response.get("array"), sub="result")
+            if play and self._song_list:
+                await self.play_music(media_type="music", music_id=self._song_list[0])
         return response
 
     async def _search_song(self, query: str, max_count: int = DEFAULT_COUNT) -> json:
@@ -1187,7 +1192,8 @@ class ZidooRC(object):
         response = await self._req_json(
             "MusicControl/v2/searchMusic?key={}&start=0&count={}".format(
                 query, max_count
-            )
+            ),
+            timeout=TIMEOUT_SEARCH,
         )
 
         if response is not None:
@@ -1207,7 +1213,7 @@ class ZidooRC(object):
             "MusicControl/v2/searchAlbum?key={}&start=0&count={}".format(
                 query, max_count
             ),
-            timeout=10,
+            timeout=TIMEOUT_SEARCH,
         )
 
         if response is not None:
@@ -1226,7 +1232,8 @@ class ZidooRC(object):
         response = await self._req_json(
             "MusicControl/v2/searchArtist?key={}&start=0&count={}".format(
                 query, max_count
-            )
+            ),
+            timeout=TIMEOUT_SEARCH,
         )
 
         if response is not None:
@@ -1281,7 +1288,7 @@ class ZidooRC(object):
             True if successful
         """
         # take major form mime type
-        if "/" in media_type:
+        if media_type is type(str) and "/" in media_type:
             media_type = media_type.split("/")[0]
 
         if media_type in ZTYPE_MIMETYPE:
@@ -1330,11 +1337,12 @@ class ZidooRC(object):
 
     def _get_music_ids(self, data, key="id", sub=None):
         ids = []
-        for item in data:
-            result = item.get(sub) if sub else item
-            if result:
-                id = result.get(key)
-                ids.append(str(id))
+        if data:
+            for item in data:
+                result = item.get(sub) if sub else item
+                if result:
+                    id = result.get(key)
+                    ids.append(str(id))
         return ids
 
     async def play_music(
