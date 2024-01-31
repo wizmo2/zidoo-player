@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from typing import Any
 
 from homeassistant.components.remote import (
+    ATTR_ACTIVITY,
     ATTR_DELAY_SECS,
     ATTR_HOLD_SECS,
     ATTR_NUM_REPEATS,
@@ -43,6 +44,7 @@ class ZidooRemote(ZidooEntity, RemoteEntity):
     """Zidoo Remote Interface."""
 
     _attr_supported_features = RemoteEntityFeature.ACTIVITY
+    _attr_current_activity = ""
     _attr_activity_list = ZKEYS
 
     @property
@@ -52,12 +54,16 @@ class ZidooRemote(ZidooEntity, RemoteEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the media player on."""
-        await self.coordinator.async_turn_on(
-            event_data={
-                ATTR_ENTITY_ID: self.entity_id,
-                ATTR_DEVICE_ID: self.device_entry.id,
-            }
-        )
+        activity = kwargs.get(ATTR_ACTIVITY, None)
+        if activity:
+            await self.async_send_command([activity], **kwargs)
+        else:
+            await self.coordinator.async_turn_on(
+                event_data={
+                    ATTR_ENTITY_ID: self.entity_id,
+                    ATTR_DEVICE_ID: self.device_entry.id,
+                }
+            )
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn off media player."""
