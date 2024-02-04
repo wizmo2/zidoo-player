@@ -1288,7 +1288,7 @@ class ZidooRC(object):
             True if successful
         """
         # take major form mime type
-        if media_type is type(str) and "/" in media_type:
+        if isinstance(media_type, str) and "/" in media_type:
             media_type = media_type.split("/")[0]
 
         if media_type in ZTYPE_MIMETYPE:
