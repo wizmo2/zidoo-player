@@ -17,7 +17,7 @@ from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 TIMEOUT = 5  # default timeout
 TIMEOUT_INFO = 1  # for playing info
 TIMEOUT_SEARCH = 10  # for searches
