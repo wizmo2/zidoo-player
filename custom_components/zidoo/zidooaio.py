@@ -17,7 +17,7 @@ from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 TIMEOUT = 5  # default timeout
 TIMEOUT_INFO = 1  # for playing info
 TIMEOUT_SEARCH = 10  # for searches
@@ -291,6 +291,24 @@ class ZidooRC(object):
                 {"method": method, "params": [], "id": 1, "version": "1.0"}
             )
         return ret
+    
+    async def _init_network(self):
+        """Initialize network search on device."""
+        #await self._req_json("ZidooFileControl/v2/searchUpnp")
+        response = await self._req_json("ZidooFileControl/v2/getSavedSmbDevices")
+        if response: 
+            # attempt connection to each saved network share
+            data = response.get("data")
+            if data and data["count"] > 0:
+                for item in data["list"]: 
+                    url = urllib.parse.quote(item.get("url"), safe="")
+                    await self._req_json("ZidooFileControl/v2/getFiles?requestCount=100&startIndex=0&sort=0&url={}".format(url))
+        # gets current song list (and appears to initialize network shared on old devices) 
+        await self.get_music_playlist()
+        print("SONG_LIST: {}".format(self._song_list))
+        #_LOGGER.debug(response)
+        #await self._req_json("ZidooFileControl/v2/getUpnpDevices")
+
 
     async def connect(self) -> json:
         """Connect to player and get authentication cookie.
@@ -299,6 +317,10 @@ class ZidooRC(object):
             json
                 raw api response if successful.
         """
+        # /connect?uuid= requires authorization for each client
+        #url = "ZidooControlCenter/connect?name={}&uuid={}&tag=0".format(client_name, client_uuid)
+        #response = await self._req_json(url, log_errors=False)
+        
         response = await self.get_system_info(log_errors=False)
 
         if response and response.get("status") == 200:
@@ -306,6 +328,8 @@ class ZidooRC(object):
             if self._mac is None:
                 self._mac = response.get("net_mac")
             self._power_status = True
+
+            await self._init_network()
             return response
 
     async def disconnect(self) -> None:
