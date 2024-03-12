@@ -1,5 +1,8 @@
 """Support for interface with Zidoo Media Player."""
 from __future__ import annotations
+
+from typing import Iterable, Any, cast
+
 import voluptuous as vol
 
 from homeassistant.components import media_source
@@ -9,10 +12,12 @@ from homeassistant.components.media_player import (
     MediaPlayerState,
     MediaType,
 )
+
 from homeassistant.components.media_player.browse_media import (
     async_process_play_media_url,
 )
 from homeassistant.components import media_source
+from homeassistant.components.media_player.const import MediaPlayerEntityCommands
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
@@ -51,6 +56,10 @@ SUPPORT_ZIDOO = (
     | MediaPlayerEntityFeature.SELECT_SOURCE
     | MediaPlayerEntityFeature.BROWSE_MEDIA
     | MediaPlayerEntityFeature.SEEK
+    | MediaPlayerEntityFeature.DPAD
+    | MediaPlayerEntityFeature.NUMPAD
+    | MediaPlayerEntityFeature.MENU_NAVIGATION
+    | MediaPlayerEntityFeature.SEND_COMMAND
 )
 # SUPPORT_CLEAR_PLAYLIST # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
 
@@ -63,6 +72,28 @@ SUPPORT_MEDIA_MODES = (
     | MediaPlayerEntityFeature.PLAY_MEDIA
 )
 
+KEYMAP: dict[MediaPlayerEntityCommands, str] = {
+    MediaPlayerEntityCommands.BACK : "Key.Back",
+    MediaPlayerEntityCommands.CURSOR_UP : "Key.Up",
+    MediaPlayerEntityCommands.CURSOR_DOWN : "Key.Down",
+    MediaPlayerEntityCommands.CURSOR_LEFT : "Key.Left",
+    MediaPlayerEntityCommands.CURSOR_RIGHT : "Key.Right",
+    MediaPlayerEntityCommands.CURSOR_ENTER : "Key.Ok",
+    MediaPlayerEntityCommands.DIGIT_0 : "Key.Number_0",
+    MediaPlayerEntityCommands.DIGIT_1 : "Key.Number_1",
+    MediaPlayerEntityCommands.DIGIT_2 : "Key.Number_2",
+    MediaPlayerEntityCommands.DIGIT_3 : "Key.Number_3",
+    MediaPlayerEntityCommands.DIGIT_4 : "Key.Number_4",
+    MediaPlayerEntityCommands.DIGIT_5 : "Key.Number_5",
+    MediaPlayerEntityCommands.DIGIT_6 : "Key.Number_6",
+    MediaPlayerEntityCommands.DIGIT_7 : "Key.Number_7",
+    MediaPlayerEntityCommands.DIGIT_8 : "Key.Number_8",
+    MediaPlayerEntityCommands.DIGIT_9 : "Key.Number_9",
+    MediaPlayerEntityCommands.HOME : "Key.Home",
+    MediaPlayerEntityCommands.MENU : "Key.Menu",
+    MediaPlayerEntityCommands.CONTEXT_MENU : "Key.PopMenu",
+    MediaPlayerEntityCommands.INFO : "Key.Info"
+}
 
 async def async_setup_platform(
     hass: HomeAssistant,
@@ -348,6 +379,17 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     async def async_set_audio(self):
         """Sets or toggles the audio_track subtitle."""
         await self.coordinator.player.set_audio()
+
+    async def async_send_command(self, command: Iterable[str], **kwargs: Any) -> None:
+        for cmd in command:
+            try:
+                keymap = KEYMAP.get(MediaPlayerEntityCommands(cmd), None)
+                if keymap is None:
+                    await self.coordinator.player._send_key(cmd)
+                else:
+                    await self.coordinator.player._send_key(keymap)
+            except Exception:
+                await self.coordinator.player._send_key(cmd)
 
     async def async_send_key(self, key):
         """Send a remote control key command."""
