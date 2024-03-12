@@ -4,7 +4,6 @@ import voluptuous as vol
 
 from homeassistant.components import media_source
 from homeassistant.components.media_player import (
-    BrowseMedia,
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
@@ -15,28 +14,20 @@ from homeassistant.components.media_player.browse_media import (
 )
 from homeassistant.components import media_source
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-    CONF_HOST,
-    CONF_MAC,
-    CONF_NAME,
-)
+from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.util.dt import utcnow
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     _LOGGER,
     AUDIO_SERVICE,
     BUTTON_SERVICE,
-    CLIENTID_NICKNAME,
-    CLIENTID_PREFIX,
-    CONF_POWERMODE,
     DOMAIN,
-    EVENT_TURN_ON,
     SUBTITLE_SERVICE,
 )
 from .media_browser import (
@@ -44,16 +35,11 @@ from .media_browser import (
     library_payload,
     media_source_content_filter,
 )
-from .zidoorc import (
-    ZCONTENT_MUSIC,
-    ZCONTENT_VIDEO,
+from .zidooaio import (
     ZKEYS,
     ZMUSIC_SEARCH_TYPES,
-    ZTYPE_MIMETYPE,
-    ZidooRC,
 )
-
-DEFAULT_NAME = "Zidoo Media Player"
+from .coordinator import ZidooCoordinator
 
 ATTR_KEY = "key"
 
@@ -87,7 +73,7 @@ async def async_setup_platform(
     """Add Media Player form configuration."""
 
     _LOGGER.warning(
-        "Loading zidoo via platform config is deprecated, it will be automatically imported; Please remove it afterwards"
+        "Loading Zidoo via platform config is deprecated, it will be automatically imported; Please remove it afterwards"
     )
 
     config_new = {
@@ -108,9 +94,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Add Media Player from a config entry."""
-    player = ZidooRC(
-        config_entry.data[CONF_HOST], mac=config_entry.data.get(CONF_MAC, None)
-    )
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
@@ -119,147 +103,53 @@ async def async_setup_entry(
         BUTTON_SERVICE, {vol.Required(ATTR_KEY): vol.In(ZKEYS)}, "async_send_key"
     )
 
-    entity = ZidooPlayerDevice(hass, player, config_entry)
-    async_add_entities([entity])
+    async_add_entities([ZidooMediaPlayer(coordinator, config_entry)])
 
 
-class ZidooPlayerDevice(MediaPlayerEntity):
-    """Representation of a Zidoo Media."""
+class ZidooEntity(CoordinatorEntity[ZidooCoordinator]):
+    """Zidoo entity class."""
 
-    def __init__(self, hass, player, config_entry):
-        """Initialize the Zidoo device."""
+    def __init__(
+        self,
+        coordinator: ZidooCoordinator,
+        config_entry: str,
+    ) -> None:
+        """Initialize the entity."""
+        super().__init__(coordinator)
 
-        self._player = player
-        self._hass = hass
-        self._name = config_entry.title
-        self._unique_id = config_entry.entry_id
-        self._state = MediaPlayerState.OFF
-        self._muted = False
-        self._source = None
-        self._source_list = []
-        self._content_mapping = {}
-        self._playing = False
-        self._media_type = None
-        self._media_info = {}
-        self._min_volume = None
-        self._max_volume = None
-        self._volume = None
-        self._last_update = None
-        self._config_entry = config_entry
-        self._last_state = MediaPlayerState.OFF  # debug only
-
-        # response = self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
-        # if response is not None:
-        #    self.update()
-        # else:
-        #    self._state = STATE_OFF
-
-    def update(self):
-        """Update TV info."""
-        if not self._player.is_connected():
-            if self._player.get_power_status() != "off":
-                self._player.connect(CLIENTID_PREFIX, CLIENTID_NICKNAME)
-
-        # Retrieve the latest data.
-        try:
-            state = MediaPlayerState.OFF
-            if self._player.is_connected():
-                state = MediaPlayerState.PAUSED
-                self._source = self._player.get_source()
-                playing_info = self._player.get_playing_info()
-                self._media_info = {}
-                if playing_info is None or not playing_info:
-                    self._media_type = MediaType.APP
-                    state = MediaPlayerState.IDLE
-                else:
-                    self._media_info = playing_info
-                    status = playing_info.get("status")
-                    if status and status is not None:
-                        if status == 1 or status is True:
-                            state = MediaPlayerState.PLAYING
-                    mediatype = playing_info.get("source")
-                    if mediatype and mediatype is not None:
-                        if mediatype == "video":
-                            item_type = self._media_info.get("type")
-                            if item_type is not None and item_type == "tv":
-                                self._media_type = MediaType.TVSHOW
-                            else:
-                                self._media_type = MediaType.MOVIE
-                            self._source = ZCONTENT_VIDEO
-                        else:
-                            self._media_type = MediaType.MUSIC
-                            self._source = ZCONTENT_MUSIC
-                    else:
-                        self._media_type = MediaType.APP
-                    self._last_update = utcnow()
-                self._refresh_channels()
-                # debug only
-                if not state == self._last_state:
-                    _LOGGER.debug("%s New state (%s): %s", self._name, state, playing_info)
-                    self._last_state = state
-            if not state == self._last_state:
-                _LOGGER.debug("%s New state (%s)", self._name, state)
-                self._last_state = state
-
-            self._state = state
-
-        except Exception as exception_instance:  # pylint: disable=broad-except
-            _LOGGER.error(exception_instance)
-
-    def _refresh_volume(self):
-        """Refresh volume information."""
-        volume_info = self._player.get_volume_info()
-        if volume_info is not None:
-            self._volume = volume_info.get("volume")
-            self._min_volume = volume_info.get("minVolume")
-            self._max_volume = volume_info.get("maxVolume")
-            self._muted = volume_info.get("mute")
-
-    def _refresh_channels(self):
-        if not self._source_list:
-            self._content_mapping = self._player.load_source_list()
-            self._source_list = [ZCONTENT_VIDEO, ZCONTENT_MUSIC]
-            for key in self._content_mapping:
-                self._source_list.append(key)
-
-    @property
-    def unique_id(self):
-        """Return the unique id of the device."""
-        return self._unique_id
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device info for this device."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self.unique_id)},
+        self._attr_unique_id = config_entry.entry_id
+        self._attr_name = config_entry.title
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, config_entry.entry_id)},
             manufacturer="Zidoo",
-            name=self.name,
+            name=config_entry.title,
         )
 
-    @property
-    def name(self):
-        """Return the name of the device."""
-        return self._name
+
+class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
+    """Zidoo Media Player."""
+
+    _attr_supported_features = SUPPORT_ZIDOO | SUPPORT_MEDIA_MODES
 
     @property
     def state(self):
         """Return the state of the device."""
-        return self._state
+        return self.coordinator.state
 
     @property
     def source(self):
         """Return the current input source."""
-        return self._source
+        return self.coordinator.source
 
     @property
     def source_list(self):
         """List of available input sources."""
-        return self._source_list
+        return self.coordinator.source_list
 
     @property
     def media_content_type(self):
         """Content type of current playing media."""
-        return self._media_type
+        return self.coordinator.media_type
 
     # @property
     # def volume_level(self):
@@ -269,69 +159,64 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     #    return None
 
     @property
-    def is_volume_muted(self):
-        """Boolean if volume is currently muted."""
-        return self._muted
-
-    @property
-    def supported_features(self):
-        """Flag media player features that are supported."""
-        return SUPPORT_ZIDOO | SUPPORT_MEDIA_MODES
-
-    @property
     def media_title(self):
         """Title of current playing media."""
-        title = self._media_info.get("movie_name")
+        media_info = self.coordinator.media_info
+        title = media_info.get("movie_name")
         if title is None:
-            title = self._media_info.get("episode_name")
+            title = media_info.get("episode_name")
         if title is not None:
             return title
-        return self._media_info.get("title")
+        return media_info.get("title")
 
     @property
     def media_artist(self):
         """Artist of current playing media."""
-        return self._media_info.get("artist")
+        return self.coordinator.media_info.get("artist")
 
     @property
     def media_album_name(self):
         """Album of current playing media."""
-        return self._media_info.get("album")
+        return self.coordinator.media_info.get("album")
 
     @property
     def media_track(self):
         """Track number of current playing media (Music track only)."""
-        return self._media_info.get("track")
+        return self.coordinator.media_info.get("track")
 
     @property
     def media_series_title(self):
         """Return the title of the series of current playing media."""
-        return self._media_info.get("series_name")
+        return self.coordinator.media_info.get("series_name")
 
     @property
     def media_season(self):
         """Season of current playing media (TV Show only)."""
-        return str(self._media_info.get("season")).zfill(2)
+        return str(self.coordinator.media_info.get("season")).zfill(2)
 
     @property
     def media_episode(self):
         """Episode of current playing media (TV Show only)."""
-        return str(self._media_info.get("episode")).zfill(2)
+        return str(self.coordinator.media_info.get("episode")).zfill(2)
 
     @property
     def media_duration(self):
         """Duration of current playing media in seconds."""
-        return self._media_info.get("duration")
+        duration = self.coordinator.media_info.get("duration")
+        if duration:
+            return float(duration) / 1000
 
     @property
     def media_position(self):
         """Position of current playing media in seconds."""
-        return self._media_info.get("position")
+        position = self.coordinator.media_info.get("position")
+        if position:
+            return float(position) / 1000
 
     @property
     def media_position_updated_at(self):
         """Last time status was updated."""
-        return self._last_update
+        return self.coordinator.last_updated
 
     @property
     def extra_state_attributes(self):
@@ -350,7 +235,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         }
         attributes = {}
         for item in extras:
-            value = self._media_info.get(item)
+            value = self.coordinator.media_info.get(item)
             if value:
                 attributes["media_" + item] = value
 
@@ -359,75 +244,70 @@ class ZidooPlayerDevice(MediaPlayerEntity):
     @property
     def app_name(self):
         """Return the current running application."""
-        date = self._media_info.get("date")
-        if self._media_type == MediaType.MOVIE and date is not None:
+        date = self.coordinator.media_info.get("date")
+        if self.coordinator.media_type == MediaType.MOVIE and date is not None:
             return "({})".format(date.year)
 
     # def set_volume_level(self, volume):
     #    """Set volume level, range 0..1."""
-    #    self._player.set_volume_level(volume)
+    #    self.coordinator.player.set_volume_level(volume)
 
     async def async_turn_on(self):
         """Turn the media player on."""
-        # Fire events for automations
-        self.hass.bus.async_fire(EVENT_TURN_ON, {ATTR_ENTITY_ID: self.entity_id})
-        # Try API and WOL
-        self._player.turn_on()
+        await self.coordinator.async_turn_on(
+            event_data={
+                ATTR_ENTITY_ID: self.entity_id,
+                ATTR_DEVICE_ID: self.device_entry.id,
+            }
+        )
 
     async def async_turn_off(self):
         """Turn off media player."""
-        await self.hass.async_add_executor_job(
-            self._player.turn_off, self._config_entry.options.get(CONF_POWERMODE, False)
-        )
+        await self.coordinator.async_turn_off()
 
-    def volume_up(self):
+    async def async_volume_up(self):
         """Volume up the media player."""
-        self._player.volume_up()
+        await self.coordinator.player.volume_up()
 
-    def volume_down(self):
+    async def async_volume_down(self):
         """Volume down media player."""
-        self._player.volume_down()
+        await self.coordinator.player.volume_down()
 
-    def mute_volume(self, mute):
+    async def async_mute_volume(self, mute):
         """Send mute command."""
-        self._player.mute_volume()
+        await self.coordinator.player.mute_volume()
 
-    def select_source(self, source):
+    async def async_select_source(self, source):
         """Set the input source."""
-        if source in self._content_mapping:
-            self._player.start_app(source)
+        await self.coordinator.player.start_app(source)
 
-    def media_play_pause(self):
+    async def async_media_play_pause(self):
         """Simulate play pause media player."""
-        if self._playing:
-            self.media_pause()
-        else:
-            self.media_play()
+        if self.state == MediaPlayerState.PLAYING:
+            return await self.async_media_pause()
+        return await self.async_media_play()
 
-    def media_play(self):
+    async def async_media_play(self):
         """Send play command."""
-        self._playing = True
-        self._player.media_play()
+        return await self.coordinator.player.media_play()
 
-    def media_pause(self):
+    async def async_media_pause(self):
         """Send media pause command."""
-        if self._player.media_pause():
-            self._playing = False
+        return await self.coordinator.player.media_pause()
 
-    def media_stop(self):
+    async def async_media_stop(self):
         """Send media stop command."""
-        if self._player.media_stop():
-            self._playing = False
+        return await self.coordinator.player.media_stop()
 
-    def media_next_track(self):
+    async def async_media_next_track(self):
         """Send next track command."""
-        self._player.media_next_track()
-        self.schedule_update_ha_state()
+        return await self.coordinator.player.media_next_track()
+        # self.schedule_update_ha_state()
 
-    def media_previous_track(self):
+    async def async_media_previous_track(self):
         """Send the previous track command."""
-        self._player.media_previous_track()
-        self.schedule_update_ha_state()
+        return await self.coordinator.player.media_previous_track()
+        # self.schedule_update_ha_state()
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         """Play a piece of media."""
@@ -440,45 +320,44 @@ class ZidooPlayerDevice(MediaPlayerEntity):
             media_type = play_item.mime_type
 
         _LOGGER.debug("play: media_id:%s media_type:%s", media_id, media_type)
-
-        await self.hass.async_add_executor_job(self.play_media, media_type, media_id)
-
-    def play_media(self, media_type, media_id, **kwargs):
-        """Play a piece of media."""
         if media_type and media_type == "file":
-            self._player.play_file(media_id)
+            await self.coordinator.player.play_file(media_id)
         elif media_type in ZMUSIC_SEARCH_TYPES:
             media_ids = media_id.split(",")
-            self._player.play_music(media_ids[0], media_type, media_ids[-1])
+            await self.coordinator.player.play_music(
+                media_ids[0], media_type, media_ids[-1]
+            )
         elif "/" in media_type:
-            mime_major = media_type.split("/")[0]
-            self._player.play_stream(media_id, ZTYPE_MIMETYPE[mime_major])
+            await self.coordinator.player.play_stream(media_id, media_type)
         else:
-            self._player.play_movie(media_id)
+            await self.coordinator.player.play_movie(media_id)
 
-    def media_seek(self, position):
+    async def async_media_seek(self, position):
         """Send media_seek command to media player."""
-        self._player.set_media_position(position, self.media_duration)
+        await self.coordinator.player.set_media_position(float(position) * 1000)
 
     @property
     def media_image_url(self):
         """Image url of current playing media."""
-        return self._player.generate_current_image_url()
+        return self.coordinator.player.generate_current_image_url()
 
     async def async_set_subtitle(self):
-        """sets or toggles the video subtitle"""
-        await self.hass.async_add_executor_job(self._player.set_subtitle)
+        """Sets or toggles the video subtitle."""
+        await self.coordinator.player.set_subtitle()
 
     async def async_set_audio(self):
-        """sets or toggles the audio_track subtitle"""
-        await self.hass.async_add_executor_job(self._player.set_audio)
+        """Sets or toggles the audio_track subtitle."""
+        await self.coordinator.player.set_audio()
 
     async def async_send_key(self, key):
-        """send a remote control key command"""
-        await self.hass.async_add_executor_job(self._player._send_key, key)
+        """Send a remote control key command."""
+        _LOGGER.warning(
+            "'Zidoo:Send Keys' is depreciated.  Please update to use 'Remote:Send command'"
+        )
+        await self.coordinator.player._send_key(key)
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
-        """Implement the websocket media browsing helper"""
+        """Implement the websocket media browsing helper."""
         if media_content_type in [None, "library"]:
             return await library_payload(self)
 
@@ -498,7 +377,7 @@ class ZidooPlayerDevice(MediaPlayerEntity):
         self, media_content_type, media_content_id, media_image_id=None
     ):
         """Get media image from server."""
-        image_url = self._player.generate_image_url(
+        image_url = self.coordinator.player.generate_image_url(
             media_content_id, media_content_type
         )
         if image_url:

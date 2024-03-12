@@ -2,9 +2,9 @@
 The following are application notes based on feedback from other users.
 
 ## Rapid Update
-The integration uses `local polling` with the Zidoo REST API to access data.  The standard polling time within HA may result in slow updates of status.
+The integration uses `local polling` with the Zidoo REST API to access data.  **As of version 2.0.0, Rapid Update is built-in** with polling times of 1 second when the player is on, and 5 seconds when the player is off or not available.
 
-The HA dev team have depreciated support of adjusting polling times within integrations.  The current recommended method is to create automations to activate the `homeassistant.update_entity' service.
+If you want alternative polling times, the recommended method is to create automatons to activate the `homeassistant.update_entity' service.
 
 For example:
 ```
@@ -28,7 +28,7 @@ mode: single
 _NOTE: You can disable the default polling from within the Integration settings._
 
 ## Using Additional Attributes (dev)
-In addition to the native media player attributes, support for extra attributes is availble in the `main` beta release when the zidoo video or audio player is playing.
+In addition to the native media player attributes, support for extra attributes is available in the `main` beta release when the zidoo video or audio player is playing.
 
 The list as of 4/23 includes
 - "media_uri" - the file reference,
@@ -64,4 +64,4 @@ template:
             4:3
           {% endif %}
 '''
-You can customize the state to acheive the desired result based on your requirements. NOTE: 'media_zoom' may also be needed
+You can customize the state to achieve the desired result based on your requirements. NOTE: 'media_zoom' may also be needed

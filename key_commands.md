@@ -1,24 +1,297 @@
 # Zidoo Button Service
 
-The `zidoo.send_key` (Send Button Key) service can be used to issue a remote key command to the player.  The service can be called as a Lovelace action (Tap, Hold), in a Script, or an Automation.  Use any of the button keys from the "Key Command" list in the table below.
+The `remote.send_command` (Remote: Send Command) service can be used to issue a remote key command to the player.  The service can be called as a Lovelace action (Tap, Hold), in a Script, or an Automation.  Use any of the button keys from the "Key Command" list in the table below.
 
-![Script Example](images/button_script.png)
+_NOTE: `zidoo.send_key` is depreciated and will be removed in a future release._
 
-Yaml button example:
-```
-type: button
-show_name: false
-show_icon: true
-tap_action:
-  action: call-service
-  service: zidoo.send_key
-  target:
-    entity_id: media_player.z9x
-  data:
-    key: Key.Back
-icon: mdi:backspace
-icon_height: 35px
-```
+![Script Example](images/button_script_remote.png)
+
+![Front-end Button Example](images/button_grid.png)
+<details>
+  <summary>yaml details:</summary>
+  
+  ### Frontend Keypad Example
+  ```yaml
+square: true
+type: grid
+cards:
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Info
+    entity: ''
+    icon: mdi:menu-close
+    name: PopMenu
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: media_player.zidoo_z9s
+      data:
+        command: Key.PopMenu
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Up
+    entity: ''
+    icon: mdi:arrow-up-bold
+    name: Up
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Home
+    entity: ''
+    icon: mdi:home-outline
+    name: Home
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: zidoo.set_audio
+      target:
+        entity_id: media_player.zidoo_z9s
+      data: {}
+    entity: ''
+    icon: mdi:television-speaker
+    name: Audio Track
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Audio
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Left
+    entity: ''
+    icon: mdi:arrow-left-bold
+    name: Left
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Ok
+    entity: ''
+    icon: mdi:check-bold
+    name: OK
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Select
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Right
+    entity: ''
+    icon: mdi:arrow-right-bold
+    name: Right
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: zidoo.set_subtitle
+      target:
+        entity_id: media_player.zidoo_z9s
+      data: {}
+    entity: ''
+    icon: mdi:subtitles-outline
+    name: Subtitle
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Subtitle
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Back
+    entity: ''
+    icon: mdi:backspace-outline
+    name: Back
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Cancel
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Down
+    entity: ''
+    icon: mdi:arrow-down-bold
+    name: Down
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Menu
+    entity: ''
+    icon: mdi:menu
+    name: Menu
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Resolution
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.Pip
+    entity: ''
+    icon: mdi:exit-to-app
+    name: App
+    hold_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.APP.Switch
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.MediaPrev
+    entity: ''
+    icon: mdi:skip-backward
+    name: Previous
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.MediaBackward
+    entity: ''
+    icon: mdi:rewind
+    name: Rewind
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.MediaForward
+    entity: ''
+    icon: mdi:fast-forward
+    name: Forwards
+    hold_action:
+      action: none
+  - show_name: false
+    show_icon: true
+    type: button
+    tap_action:
+      action: call-service
+      service: remote.send_command
+      target:
+        entity_id: remote.zidoo_z9s
+      data:
+        command: Key.MediaNext
+    entity: ''
+    icon: mdi:skip-forward
+    name: Next
+    hold_action:
+      action: none
+columns: 4
+  ```
+  _NOTE: Add a Manual Card, paste content, and update all target entity_ids._
+</details>
 
 ## Zidoo button key command list
 

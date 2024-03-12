@@ -2,8 +2,6 @@
 import requests.exceptions
 import voluptuous as vol
 
-from .zidoorc import ZidooRC
-
 from homeassistant import config_entries, exceptions
 from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC
 from homeassistant.core import callback
@@ -19,6 +17,7 @@ from .const import (
     ZSHORTCUTS,
     ZDEFAULT_SHORTCUTS,
 )
+from .zidooaio import ZidooRC
 
 DATA_SCHEMA = vol.Schema(
     {vol.Required(CONF_HOST): str, vol.Optional(CONF_PASSWORD): str}
@@ -32,9 +31,8 @@ async def validate_input(hass, data):
     """
     try:
         player = ZidooRC(data[CONF_HOST])
-        response = await hass.async_add_executor_job(
-            player.connect, CLIENTID_PREFIX, CLIENTID_NICKNAME
-        )
+        response = await player.connect()
+        await player.disconnect()
     except requests.exceptions.ConnectionError:
         raise CannotConnect
     except RuntimeError:
@@ -63,7 +61,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     def __init__(self):
-        """Initialize the zidoo flow."""
+        """Initialize the Zidoo flow."""
         self.discovery_schema = None
 
     @staticmethod
@@ -73,9 +71,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return ZidooOptionsFlowHandler(config_entry)
 
     async def async_step_user(self, user_input=None):
-        """
-        Manage device specific parameters.
-        """
+        """Manage device specific parameters."""
         errors = {}
         if user_input is not None:
             try:
@@ -113,7 +109,7 @@ class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle a option flow for wiser hub."""
+    """Handle a option flow for Zidoo."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""

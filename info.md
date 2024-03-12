@@ -10,7 +10,8 @@ This is a custom component to allow control of [Zidoo Media Player](https://www.
 
 - Control Zidoo devices as media players through HA
 - Album art and movie backdrops
-- Browse movies, music, file system, and share mounts through HA Media Browser 
+- Browse movies, music, file system, and share mounts through HA Media Browser
+- Remote services for power and keys 
 
 ## Useful links
 

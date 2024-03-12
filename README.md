@@ -8,6 +8,9 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 - Album art and movie backdrops
 - Browse movies, music, file system, and share mounts through HA Media Browser
 
+**NOTE: From release 2.0.0, Rapid Update is updated in the integration. If you previously added an automation based on the documentation example, this can now be removed, but please re-enable automatic update if necessary**
+
+
 ![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
 ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
 
@@ -16,6 +19,7 @@ Streaming content currently uses a hack with the players uPNP functions.  There 
 A Custom Lovelace card `zidoo-search-card` can be used to filter media browser results.[^7] Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
 
 ![Search Card](images/search-card.png)
+
 Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
 
 ## Installation
@@ -54,7 +58,7 @@ Set Subtitle - switch through video player subtitle list[^5]
 
 Set Audio - switch through video audio tracks[^5]
 
-Send Button Key = send remote control button key (see [Key Commands](key_commands.md))[^6]
+Remote Send Command = send remote control button key (see [Key Commands](key_commands.md))[^8]
 
 ### Custom Search Card
 After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button. Select the `custom:zidoo-search-card`, then edit the yaml to include a single `entity` value with your zidoo media_player id.
@@ -107,3 +111,4 @@ buttons:
 [^5]: Release 1.2.11 - Subtitle and Audio services
 [^6]: Release 1.3.0 - Bump zidoorc .  Add Send Key service
 [^7]: Release 1.4.0 - Add music functionality and search card
+[^8]: Release 2.0.1 - Convert to zidoaio.  Add Remote entity

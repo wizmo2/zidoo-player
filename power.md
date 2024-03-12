@@ -5,7 +5,7 @@ The Zidoo-Player integration supports power on natively when the device supports
 
 If this does not work then.
 
-- Verify sure your device supports WOL.  Note:  Earier zidoo devices such as the Z9S are not supported.
+- Verify sure your device supports WOL.  Note:  Earlier zidoo devices such as the Z9S are not supported.
 - WOL only works over the LAN connection. WOL over Wifi is not supported.
 - Magic UDP packets are not routed outside your local area network.  The Home-Assistant Server and the Device must be on the same sub-net
 - If you have Home-Assistant installed in a docker, you either need to configure the container with the '--net=host' argument, or have some type of WOL gateway setup to forward the packets from inside the container ([see this post](https://community.home-assistant.io/t/wake-on-lan-for-those-running-home-assistant-in-docker/189376/)).
