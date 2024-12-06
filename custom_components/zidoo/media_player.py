@@ -1,11 +1,11 @@
 """Support for interface with Zidoo Media Player."""
 from __future__ import annotations
 
-from typing import Iterable, Any, cast
+from enum import IntEnum
+from typing import Iterable, Any
 
 import voluptuous as vol
 
-from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
@@ -17,12 +17,10 @@ from homeassistant.components.media_player.browse_media import (
     async_process_play_media_url,
 )
 from homeassistant.components import media_source
-from homeassistant.components.media_player.const import MediaPlayerEntityCommands
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -56,10 +54,6 @@ SUPPORT_ZIDOO = (
     | MediaPlayerEntityFeature.SELECT_SOURCE
     | MediaPlayerEntityFeature.BROWSE_MEDIA
     | MediaPlayerEntityFeature.SEEK
-    | MediaPlayerEntityFeature.DPAD
-    | MediaPlayerEntityFeature.NUMPAD
-    | MediaPlayerEntityFeature.MENU_NAVIGATION
-    | MediaPlayerEntityFeature.SEND_COMMAND
 )
 # SUPPORT_CLEAR_PLAYLIST # SUPPORT_SELECT_SOUND_MODE # SUPPORT_SHUFFLE_SET # SUPPORT_VOLUME_SET
 
@@ -71,6 +65,29 @@ SUPPORT_MEDIA_MODES = (
     | MediaPlayerEntityFeature.PLAY
     | MediaPlayerEntityFeature.PLAY_MEDIA
 )
+
+class MediaPlayerEntityCommands(IntEnum):
+    """List of available commands."""
+    BACK = 1
+    CURSOR_UP = 2
+    CURSOR_DOWN = 3
+    CURSOR_LEFT = 4
+    CURSOR_RIGHT = 5
+    CURSOR_ENTER = 6
+    DIGIT_0 = 7
+    DIGIT_1 = 8
+    DIGIT_2 = 9
+    DIGIT_3 = 10
+    DIGIT_4 = 11
+    DIGIT_5 = 12
+    DIGIT_6 = 13
+    DIGIT_7 = 14
+    DIGIT_8 = 15
+    DIGIT_9 = 16
+    HOME = 17
+    MENU = 18
+    CONTEXT_MENU = 19
+    INFO = 20
 
 KEYMAP: dict[MediaPlayerEntityCommands, str] = {
     MediaPlayerEntityCommands.BACK : "Key.Back",
@@ -143,7 +160,7 @@ class ZidooEntity(CoordinatorEntity[ZidooCoordinator]):
     def __init__(
         self,
         coordinator: ZidooCoordinator,
-        config_entry: str,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize the entity."""
         super().__init__(coordinator)

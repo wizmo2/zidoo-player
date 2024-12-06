@@ -10,7 +10,7 @@ import logging
 import json
 import socket
 import struct
-from aiohttp import BasicAuth, ClientError, ClientSession, CookieJar
+from aiohttp import ClientError, ClientSession, CookieJar
 from datetime import datetime
 import urllib.parse
 from yarl import URL

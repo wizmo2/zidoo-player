@@ -1,7 +1,7 @@
 """Zidoo Frontend"""
 import logging
-import os
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.helpers.event import async_call_later
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,9 +22,8 @@ class ZidooCardRegistration:
     async def async_register_zidoo_path(self):
         # Register custom cards path
         await self.hass.http.async_register_static_paths(
-            URL_BASE,
-            self.hass.config.path("custom_components/zidoo/frontend"),
-            cache_headers=False,
+            [StaticPathConfig(URL_BASE, self.hass.config.path("custom_components/zidoo/frontend"),
+                              cache_headers=False)]
         )
 
     async def async_wait_for_lovelace_resources(self) -> None:
