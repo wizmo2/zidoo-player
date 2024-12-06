@@ -21,7 +21,7 @@ class ZidooCardRegistration:
     # install card resources
     async def async_register_zidoo_path(self):
         # Register custom cards path
-        self.hass.http.register_static_path(
+        await self.hass.http.async_register_static_paths(
             URL_BASE,
             self.hass.config.path("custom_components/zidoo/frontend"),
             cache_headers=False,
