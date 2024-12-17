@@ -63,5 +63,50 @@ template:
           {% else -%}
             4:3
           {% endif %}
-'''
+```
 You can customize the state to achieve the desired result based on your requirements. NOTE: 'media_zoom' may also be needed
+
+### Accessing Cover Art
+
+The media_player has a entity_picture attribute when available which references an api call.  You can access the call directly, or use it as a refeence within some cards.  The format is `https://<ip_address>:<port>/api/media_player_proxy/media_player.<name>?token=xxxxxxxx`.  
+
+For direct access you need to check the token from the attribute states or lookup how long-term tokens work.
+
+I use the Mini Media Player Card, available through HACS or [github](https://github.com/kalkih/mini-media-player).  This media player is highly customizable,  An example configuration to show a full screen image with minimal playing details is
+
+```
+title: nowplaying
+path: nowplaying
+type: panel
+cards:
+  - type: custom:mini-media-player
+    entity: media_player.zidoo
+    artwork: full-cover
+    hide:
+      name: false
+      icon: true
+      info: false
+      power: true
+      source: true
+      sound_mode: true
+      controls: true
+      prev: true
+      next: true
+      play_pause: true
+      play_stop: true
+      jump: true
+      volume: true
+      volume_level: true
+      mute: true
+      progress: false
+      runtime: true
+      runtime_remaining: true
+      artwork_border: true
+      power_state: true
+      icon_state: true
+      shuffle: true
+      repeat: true
+      state_label: true
+```
+
+![image](https://github.com/user-attachments/assets/bb30c91e-5569-4de9-bb9d-b3f392c32b57)
