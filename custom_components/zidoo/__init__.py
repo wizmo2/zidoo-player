@@ -26,7 +26,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][config_entry.entry_id] = coordinator
-
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     # Register custom cards

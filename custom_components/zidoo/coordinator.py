@@ -6,6 +6,7 @@ from types import MappingProxyType
 from typing import Any, Final
 
 from homeassistant.components.media_player import MediaPlayerState, MediaType
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_UNIQUE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.debounce import Debouncer
@@ -35,7 +36,7 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
         self,
         hass: HomeAssistant,
         player: ZidooRC,
-        config_entry: MappingProxyType[str, Any],
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize the Zidoo device."""
 
