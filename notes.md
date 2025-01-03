@@ -70,7 +70,7 @@ You can customize the state to achieve the desired result based on your requirem
 
 The media_player has a entity_picture attribute when available which references an api call.  You can access the call directly, or use it as a reference in some frontend cards.  The format is `https://<ip_address>:<port>/api/media_player_proxy/media_player.<name>?token=xxxxxxxx`.  
 
-For direct access you need to check the token from the attribute states or lookup how long-lived tokens work.
+For direct access you need to check the token from the attribute states or lookup how long-lived tokens work.  You can also use [mqtt-api-camera](https://github.com/wizmo2/mqtt-api-camera?tab=readme-ov-file#mqtt-api-camera) to create a virtual camera.
 
 I use the customizable Mini Media Player Card, available through HACS or [github](https://github.com/kalkih/mini-media-player).  An example configuration to show a full screen image with minimal playing details is
 

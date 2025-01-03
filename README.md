@@ -48,15 +48,17 @@ Access the Options menu by pressing the CONFIGURE button on the Integration card
 
 ![Configure Shortcuts](images/config.png)
 
-The Media browser allows access to the Movie Libary, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Additional search shortcuts can be added.[^3]. 
+The Media browser allows access to the Movie Library, plus file access to local devices and saved SMB shares.  By default, the RECENT, MOVIE and TVSHOW Library searches are displayed.  Additional search shortcuts can be added.[^3]. 
 
 Use Power Off control to enable Standby instead of a full power down.[^4]
 
 ### Services
 
-Set Subtitle - switch through video player subtitle list[^5]
+Set Subtitle - switch through list or select video player subtitle.[^5]
 
-Set Audio - switch through video audio tracks[^5]
+Set Audio - switch through list or select video audio track.[^5]
+
+Set Zoom - switch through list or select video zoom mode[^9]
 
 Remote Send Command = send remote control button key (see [Key Commands](key_commands.md))[^8]
 
@@ -112,3 +114,4 @@ buttons:
 [^6]: Release 1.3.0 - Bump zidoorc .  Add Send Key service
 [^7]: Release 1.4.0 - Add music functionality and search card
 [^8]: Release 2.0.1 - Convert to zidoaio.  Add Remote entity
+[^9]: Release 2.0.2 - Add zoom mode service
