@@ -1,4 +1,4 @@
-""" Config Flow for ZidoMedia Players. """
+""" Config Flow for ZidooMedia Players. """
 import requests.exceptions
 import voluptuous as vol
 

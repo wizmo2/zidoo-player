@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from types import MappingProxyType
 from typing import Any, Final
 
 from homeassistant.components.media_player import MediaPlayerState, MediaType
