@@ -2,13 +2,13 @@
 from __future__ import annotations
 import voluptuous as vol
 
-from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
 )
+
 from homeassistant.components.media_player.browse_media import (
     async_process_play_media_url,
 )
@@ -17,7 +17,6 @@ from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -112,7 +111,7 @@ class ZidooEntity(CoordinatorEntity[ZidooCoordinator]):
     def __init__(
         self,
         coordinator: ZidooCoordinator,
-        config_entry: str,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize the entity."""
         super().__init__(coordinator)
