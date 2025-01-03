@@ -1,4 +1,5 @@
 """Support for interface with Zidoo Media Player."""
+
 from __future__ import annotations
 import voluptuous as vol
 
@@ -16,7 +17,7 @@ from homeassistant.components import media_source
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_platform
+from homeassistant.helpers import entity_platform, config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -28,6 +29,7 @@ from .const import (
     BUTTON_SERVICE,
     DOMAIN,
     SUBTITLE_SERVICE,
+    ZOOM_SERVICE,
 )
 from .media_browser import (
     build_item_response,
@@ -96,8 +98,19 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     platform = entity_platform.async_get_current_platform()
-    platform.async_register_entity_service(SUBTITLE_SERVICE, {}, "async_set_subtitle")
-    platform.async_register_entity_service(AUDIO_SERVICE, {}, "async_set_audio")
+    platform.async_register_entity_service(
+        SUBTITLE_SERVICE,
+        {vol.Optional("index"): cv.positive_int},
+        "async_set_subtitle",
+    )
+    platform.async_register_entity_service(
+        AUDIO_SERVICE,
+        {vol.Optional("index"): cv.positive_int},
+        "async_set_audio",
+    )
+    platform.async_register_entity_service(
+        ZOOM_SERVICE, {vol.Optional("mode"): cv.string}, "async_set_zoom"
+    )
     platform.async_register_entity_service(
         BUTTON_SERVICE, {vol.Required(ATTR_KEY): vol.In(ZKEYS)}, "async_send_key"
     )
@@ -340,13 +353,17 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         """Image url of current playing media."""
         return self.coordinator.player.generate_current_image_url()
 
-    async def async_set_subtitle(self):
+    async def async_set_subtitle(self, index=None):
         """Sets or toggles the video subtitle."""
-        await self.coordinator.player.set_subtitle()
+        await self.coordinator.player.set_subtitle(index)
 
-    async def async_set_audio(self):
+    async def async_set_audio(self, index=None):
         """Sets or toggles the audio_track subtitle."""
-        await self.coordinator.player.set_audio()
+        await self.coordinator.player.set_audio(index)
+
+    async def async_set_zoom(self, mode=None):
+        """Sets or toggles the audio_track subtitle."""
+        await self.coordinator.player.set_zoom(mode)
 
     async def async_send_key(self, key):
         """Send a remote control key command."""

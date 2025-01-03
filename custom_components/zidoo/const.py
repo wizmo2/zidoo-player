@@ -1,4 +1,5 @@
 """Constants for Zidoo component."""
+
 import logging
 
 from homeassistant.components.media_player import MediaClass, MediaType
@@ -32,6 +33,7 @@ CONF_POWERMODE = "powermode"
 
 SUBTITLE_SERVICE = "set_subtitle"
 AUDIO_SERVICE = "set_audio"
+ZOOM_SERVICE = "set_zoom"
 BUTTON_SERVICE = "send_key"
 
 # Triggers

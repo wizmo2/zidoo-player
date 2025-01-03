@@ -1,17 +1,57 @@
 set_subtitle:
   name: Set Subtitle
-  description: Set the subtitle index.
+  description: "Set the subtitle index."
   target:
     entity:
       integration: zidoo
       domain: media_player
+  fields:
+    index:
+      name: Index
+      description: "Enter the subtitle index or leave blank tom toggle next."
+      example: 0
+      required: false
+      selector:
+        number:
+          mode: box
 set_audio:
   name: Set Audio Track
-  description: Set the audio track index.
+  description: "Set the audio track index."
   target:
     entity:
       integration: zidoo
       domain: media_player
+  fields:
+    index:
+      name: Index
+      description: "Enter the audio track index or leave blank to toggle next."
+      example: 0
+      required: false
+      selector:
+        number:
+          mode: box
+set_zoom:
+  name: Set Zoom Mode
+  description: "Set the video display mode."
+  target:
+    entity:
+      integration: zidoo
+      domain: media_player
+  fields:
+    mode:
+      name: Mode
+      description: "Enter the zoom mode or leave blank to toggle next."
+      example: "Full"
+      required: false
+      selector:
+        select:
+          custom_value: true
+          options:
+          - "Full"
+          - "Fit"
+          - "Original"
+          - "16:9"
+          - "4:3"
 send_key:
   name: Send Button Key
   description: "Send a button key event to the player."

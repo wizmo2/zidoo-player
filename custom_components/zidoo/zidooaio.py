@@ -5,19 +5,20 @@ References
     oem v1: https://www.zidoo.tv/Support/developer/
     oem v2: http://apidoc.zidoo.tv/s/98365225
 """
+
 import asyncio
 import logging
 import json
 import socket
 import struct
-from aiohttp import BasicAuth, ClientError, ClientSession, CookieJar
+from aiohttp import ClientError, ClientSession, CookieJar
 from datetime import datetime
 import urllib.parse
 from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.3.2"
+VERSION = "0.3.3"
 TIMEOUT = 5  # default timeout
 TIMEOUT_INFO = 1  # for playing info
 TIMEOUT_SEARCH = 10  # for searches
@@ -233,6 +234,7 @@ ZTYPE_MIMETYPE = {
     "default": 4,
     "application": 4,
 }
+
 ZUPNP_SERVERNAME = "zidoo-rc"
 
 ZMEDIA_TYPE_ARTIST = "artist"
@@ -279,6 +281,8 @@ class ZidooRC(object):
         self._movie_info = {}
         self._current_subtitle = 0
         self._current_audio = 0
+        self._current_zoom = 0
+        self._current_playmode = 0
         self._song_list = None
 
     def _jdata_build(self, method: str, params: dict = None) -> str:
@@ -291,24 +295,27 @@ class ZidooRC(object):
                 {"method": method, "params": [], "id": 1, "version": "1.0"}
             )
         return ret
-    
+
     async def _init_network(self):
         """Initialize network search on device."""
-        #await self._req_json("ZidooFileControl/v2/searchUpnp")
+        # await self._req_json("ZidooFileControl/v2/searchUpnp")
         response = await self._req_json("ZidooFileControl/v2/getSavedSmbDevices")
-        if response: 
+        if response:
             # attempt connection to each saved network share
             data = response.get("data")
             if data and data["count"] > 0:
-                for item in data["list"]: 
+                for item in data["list"]:
                     url = urllib.parse.quote(item.get("url"), safe="")
-                    await self._req_json("ZidooFileControl/v2/getFiles?requestCount=100&startIndex=0&sort=0&url={}".format(url))
-        # gets current song list (and appears to initialize network shared on old devices) 
+                    await self._req_json(
+                        "ZidooFileControl/v2/getFiles?requestCount=100&startIndex=0&sort=0&url={}".format(
+                            url
+                        )
+                    )
+        # gets current song list (and appears to initialize network shared on old devices)
         await self.get_music_playlist()
         print("SONG_LIST: {}".format(self._song_list))
-        #_LOGGER.debug(response)
-        #await self._req_json("ZidooFileControl/v2/getUpnpDevices")
-
+        # _LOGGER.debug(response)
+        # await self._req_json("ZidooFileControl/v2/getUpnpDevices")
 
     async def connect(self) -> json:
         """Connect to player and get authentication cookie.
@@ -318,9 +325,9 @@ class ZidooRC(object):
                 raw api response if successful.
         """
         # /connect?uuid= requires authorization for each client
-        #url = "ZidooControlCenter/connect?name={}&uuid={}&tag=0".format(client_name, client_uuid)
-        #response = await self._req_json(url, log_errors=False)
-        
+        # url = "ZidooControlCenter/connect?name={}&uuid={}&tag=0".format(client_name, client_uuid)
+        # response = await self._req_json(url, log_errors=False)
+
         response = await self.get_system_info(log_errors=False)
 
         if response and response.get("status") == 200:
@@ -559,8 +566,16 @@ class ZidooRC(object):
         if response is not None and response.get("status") == 200:
             if response.get("subtitle"):
                 self._current_subtitle = response["subtitle"].get("index")
+                return_value["subtitle"] = response["subtitle"].get("information")
             if response.get("audio"):
                 self._current_audio = response["audio"].get("index")
+                # return_value["audio"] = response["audio"].get("information")
+            if response.get("zoom"):
+                self._current_zoom = response["zoom"].get("index")
+                return_value["zoom"] = response["zoom"].get("information")
+            if response.get("playMode"):
+                self._current_playmode = response["playMode"].get("index")
+                return_value["playmode"] = response["playMode"].get("information")
             if response.get("video"):
                 result = response.get("video")
                 return_value["status"] = result.get("status") == 1
@@ -581,8 +596,6 @@ class ZidooRC(object):
                 ):
                     self._last_video_path = return_value["uri"]
                     self._video_id = await self._get_id_from_uri(self._last_video_path)
-                result = response.get("zoom")
-                return_value["zoom"] = result.get("information")
                 return return_value
         # _LOGGER.debug("video play info: %s", str(response))
 
@@ -781,6 +794,50 @@ class ZidooRC(object):
 
         if response is not None and response.get("status") == 200:
             self._current_audio = index
+            return True
+        return False
+
+    async def get_zoom_list(self) -> dict:
+        """Async get video zoom list.
+
+        Returns
+            dictionary
+                list of zoom types
+        """
+        return_values = {}
+        response = await self._req_json("VideoPlay/getZoomList")
+
+        if response is not None and response.get("status") == 200:
+            for result in response["zoom"]:
+                index = result.get("index")
+                return_values[index] = result.get("title")
+
+        return return_values
+
+    async def set_zoom(self, index: str | int | None = None) -> bool:
+        """Async select video zoom.
+
+        Parameters
+            index: mode string or list index
+                audio track list reference
+        Return
+            True if successful
+        """
+        zoom_list = await self.get_zoom_list()
+        if isinstance(index, str):
+            index_list = list(zoom_list.values())
+            index = (
+                index_list.index(index) if index in index_list else self._current_zoom
+            )
+        if index is None:
+            index = self._next_data(zoom_list, self._current_zoom)
+
+        response = await self._req_json(
+            "VideoPlay/setZoom?index={}".format(index), log_errors=False
+        )
+
+        if response is not None and response.get("status") == 200:
+            self._current_zoom = index
             return True
         return False
 
