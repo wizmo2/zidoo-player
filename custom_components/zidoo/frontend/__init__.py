@@ -1,13 +1,16 @@
 """Zidoo Frontend"""
+
 import logging
 
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.helpers.event import async_call_later
+from homeassistant.components.lovelace.const import LOVELACE_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
 URL_BASE = "/zidoo"
 ZIDOO_CARD_FILENAMES = ["zidoo-search-card.js"]
+
 
 class ZidooCardRegistration:
     def __init__(self, hass):
@@ -15,20 +18,25 @@ class ZidooCardRegistration:
 
     async def async_register(self):
         await self.async_register_zidoo_path()
-        if self.hass.data["lovelace"]["mode"] == "storage":
+        if self.hass.data[LOVELACE_DATA].mode == "storage":
             await self.async_wait_for_lovelace_resources()
 
     # install card resources
     async def async_register_zidoo_path(self):
         # Register custom cards path
         await self.hass.http.async_register_static_paths(
-            [StaticPathConfig(URL_BASE, self.hass.config.path("custom_components/zidoo/frontend"),
-                              cache_headers=False)]
+            [
+                StaticPathConfig(
+                    URL_BASE,
+                    self.hass.config.path("custom_components/zidoo/frontend"),
+                    cache_headers=False,
+                )
+            ]
         )
 
     async def async_wait_for_lovelace_resources(self) -> None:
         async def check_lovelace_resources_loaded(now):
-            if self.hass.data["lovelace"]["resources"].loaded:
+            if self.hass.data[LOVELACE_DATA].resources.loaded:
                 await self.async_register_zidoo_cards()
             else:
                 _LOGGER.debug(
@@ -44,28 +52,27 @@ class ZidooCardRegistration:
             url = f"{URL_BASE}/{card_filename}"
             resource_loaded = [
                 res["url"]
-                for res in self.hass.data["lovelace"]["resources"].async_items()
+                for res in self.hass.data[LOVELACE_DATA].resources.async_items()
                 if res["url"] == url
             ]
             if not resource_loaded:
-                resource_id = await self.hass.data["lovelace"][
-                    "resources"
-                ].async_create_item({"res_type": "module", "url": url})
+                resource_id = await self.hass.data[
+                    LOVELACE_DATA
+                ].resources.async_create_item({"res_type": "module", "url": url})
 
     async def async_unregister(self):
         # Unload lovelace module resource
-        if self.hass.data["lovelace"]["mode"] == "storage":
+        if self.hass.data[LOVELACE_DATA].mode == "storage":
             for card_filename in ZIDOO_CARD_FILENAMES:
                 url = f"{URL_BASE}/{card_filename}"
                 zidoo_resources = [
                     resource
-                    for resource in self.hass.data["lovelace"][
-                        "resources"
-                    ].async_items()
+                    for resource in self.hass.data[
+                        LOVELACE_DATA
+                    ].resources.async_items()
                     if resource["url"] == url
                 ]
                 for resource in zidoo_resources:
-                    await self.hass.data["lovelace"]["resources"].async_delete_item(
+                    await self.hass.data[LOVELACE_DATA].resources.async_delete_item(
                         resource.get("id")
                     )
-
