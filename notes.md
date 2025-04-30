@@ -110,3 +110,38 @@ cards:
 ```
 
 ![image](https://github.com/user-attachments/assets/bb30c91e-5569-4de9-bb9d-b3f392c32b57)
+
+## Notifications
+
+The Zidoo Player integration does not support notifications directly, but is supported using "Notifications for Android TV". You do need to install an app on the player.
+
+**WARNING:  _The server does not appear to be open source.  I have not tested for any vuberabilities, but if is an approved [HA integration](https://www.home-assistant.io/integrations/nfandroidtv/)._**   
+
+1. Download the Server for Android TV apk from the [Dream Apps site](https://tvnotifications.de/en/v5)
+
+2. Upload and install using the apk installer from
+`http://<player_ip_address>:18888`
+
+3. Start the app on the player to intialize (setup wizard)
+
+4. In HA, add a new "Notifications for Android TV" service/action and add enter you player IP address. (I named mine 'Zidoo TV')
+
+4. Create a script
+```
+alias: Test Zidoo Notify
+sequence:
+- action: notify.zidoo_tv
+metadata: {}
+data:
+message: Here is a camera image
+title: Motion Detected
+data:
+icon:
+path: /config/www/logo-small.png
+image:
+path: /config/www/captures/webcam.jpg
+description: "Sends a message to the Z9X with an icon and saved image"
+```
+_NOTE: You may need to add whitelist folders for access to image files_
+
+Can confirm it works on a Z9X even when using the HDMI-In app in full-screen preview (over the HDMI output to TV) as of 04/2025.
