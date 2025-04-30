@@ -113,9 +113,9 @@ cards:
 
 ## Notifications
 
-The Zidoo Player integration does not support notifications directly, but is supported using "Notifications for Android TV". You do need to install an app on the player.
+The Zidoo Player integration does not support notifications directly, but is supported using "Notifications for Android TV".  You do need to install an app on the player.
 
-**WARNING:  _The server does not appear to be open source.  I have not tested for any vuberabilities, but if is an approved [HA integration](https://www.home-assistant.io/integrations/nfandroidtv/)._**   
+**WARNING:  _The server does not appear to be open source.  I have not tested for any vuberabilities, but if is 'local push' and an approved [HA integration](https://www.home-assistant.io/integrations/nfandroidtv/)._**   
 
 1. Download the Server for Android TV apk from the [Dream Apps site](https://tvnotifications.de/en/v5)
 
