@@ -126,7 +126,7 @@ The Zidoo Player integration does not support notifications directly, but is sup
 
 4. In HA, add a new "Notifications for Android TV" service/action and add enter you player IP address. (I named mine 'Zidoo TV')
 
-4. Create a script
+5. Create a script
 ```
 alias: Test Zidoo Notify
 sequence:
@@ -144,4 +144,6 @@ description: "Sends a message to the Z9X with an icon and saved image"
 ```
 _NOTE: You may need to add whitelist folders for access to image files_
 
+6. Add Notification App to launch on boot using the "Clean up" button and enabling in the 'Launch on Manager' menu
+    
 Can confirm it works on a Z9X even when using the HDMI-In app in full-screen preview (over the HDMI output to TV) as of 04/2025.
