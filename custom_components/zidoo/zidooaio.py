@@ -3,7 +3,7 @@ Zidoo Remote Control API
 By Wizmo
 References
     oem v1: https://www.zidoo.tv/Support/developer/
-    oem v2: http://apidoc.zidoo.tv/s/98365225
+    oem v2: https://apidoc.zidoo.tv
 """
 
 import asyncio
