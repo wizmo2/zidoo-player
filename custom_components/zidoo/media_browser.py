@@ -3,6 +3,7 @@ import contextlib
 
 from homeassistant.components import media_source
 from homeassistant.components.media_player import (
+    BrowseError,
     BrowseMedia,
     MediaClass,
     MediaType,
@@ -313,7 +314,7 @@ async def library_payload(entity):
                     )
                 )
 
-    with contextlib.suppress(media_source.BrowseError):
+    with contextlib.suppress(BrowseError):
         item = await media_source.async_browse_media(
             entity.hass, None, content_filter=media_source_content_filter
         )
