@@ -44,12 +44,12 @@ async def async_unload_entry(hass: HomeAssistant, confid_entry: ConfigEntry) -> 
         hass.data[DOMAIN].pop(confid_entry.entry_id)
 
     # Unload custom card resource if last instance
-    confid_entry = [
+    other_entries = [
         entry
         for entry in hass.config_entries.async_entries(DOMAIN)
         if not entry.disabled_by
     ]
-    if len(confid_entry) == 0:
+    if len(other_entries) == 0:
         cards = ZidooCardRegistration(hass)
         await cards.async_unregister()
 
