@@ -111,7 +111,7 @@ class ZidooOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
+        # self.config_entry = config_entry
         self.shortcut_list: dict[str, str] = {
             item["path"]: item["name"] for item in ZSHORTCUTS
         }
