@@ -8,6 +8,7 @@ References:
 import asyncio
 import logging
 import json
+import re
 import socket
 import struct
 from aiohttp import ClientError, ClientSession, CookieJar
@@ -273,6 +274,28 @@ ZMUSIC_PLAYLISTTYPE = {
     ZMEDIA_TYPE_PLAYLIST: 5,
 }
 
+ZSTATE_STOPPED = 0
+ZSTATE_PLAYING = 1
+ZSTATE_PAUSED = 2
+
+
+def NUM_STR(num, dec, dimen):
+    """Converts to a number to k/K or M (bps/Hz)."""
+    if num > 1000000:
+        dimen = "M" + dimen
+        num = num / 1000000
+    elif num > 1000:
+        dimen = "K" + dimen if dimen == "bps" else "k" + dimen
+        num = num / 1000
+
+    # check if num is not a whole number and if so, round to required decimals
+    if num % 1 == 0:
+        num = round(num)
+    else:
+        num = round(num, dec)
+
+    return str(num) + " " + dimen
+
 
 class ZidooRC:
     """Zidoo Media Player Remote Control."""
@@ -308,9 +331,11 @@ class ZidooRC:
         self._current_zoom: int = 0
         self._current_playmode = 0
         self._song_list = []
+        self._audio_output_list = []
 
-    async def _init_network(self):
-        """Initialize network search on device."""
+    async def _init_device(self):
+        """Initialize device on connect."""
+        # attempt to force network update
         # await self._req_json("ZidooFileControl/v2/searchUpnp")
         response = await self._req_json("ZidooFileControl/v2/getSavedSmbDevices")
         if response:
@@ -322,11 +347,15 @@ class ZidooRC:
                     await self._req_json(
                         f"ZidooFileControl/v2/getFiles?requestCount=100&startIndex=0&sort=0&url={url}"
                     )
+        # _LOGGER.debug(response)
+        # await self._req_json("ZidooFileControl/v2/getUpnpDevices")
+
         # gets current song list (and appears to initialize network shared on old devices)
         await self.get_music_playlist()
         _LOGGER.debug("SONG_LIST: %s", self._song_list)
-        # _LOGGER.debug(response)
-        # await self._req_json("ZidooFileControl/v2/getUpnpDevices")
+
+        # get audio_output_list to initialize v1/v2 alternative
+        await self.get_audio_output()
 
     async def connect(self):
         """Connect to player and get authentication cookie.
@@ -347,7 +376,7 @@ class ZidooRC:
                 self._mac = response.get("net_mac")
             self._power_status = True
 
-            await self._init_network()
+            await self._init_device()
             return response
         return None
 
@@ -556,11 +585,15 @@ class ZidooRC:
                 self._current_source = ZCONTENT_VIDEO
                 return {**return_value, **self._movie_info}
 
-        response = await self._get_music_playing_info()
+        if self._audio_output_list:
+            response = await self._get_music_playing_info_v2()
+        else:
+            response = await self._get_music_playing_info()
+
         if response is not None:
             return_value = response
             return_value["source"] = "music"
-            if return_value["status"] is True:
+            if return_value["status"]:
                 self._current_source = ZCONTENT_MUSIC
                 return return_value
 
@@ -573,7 +606,7 @@ class ZidooRC:
         """Async Get information from built in video player."""
         return_value = {}
         response = await self._req_json(
-            "ZidooVideoPlay/" + ZCMD_STATUS, log_errors=False, timeout=TIMEOUT_INFO
+            f"ZidooVideoPlay/{ZCMD_STATUS}", log_errors=False, timeout=TIMEOUT_INFO
         )
 
         if response is not None and response.get("status") == 200:
@@ -591,7 +624,7 @@ class ZidooRC:
                 return_value["playmode"] = response["playMode"].get("information")
             if response.get("video"):
                 result = response.get("video")
-                return_value["status"] = result.get("status") == 1
+                return_value["status"] = result.get("status") == ZSTATE_PLAYING
                 return_value["title"] = result.get("title")
                 return_value["uri"] = result.get("path")
                 return_value["duration"] = result.get("duration")
@@ -662,11 +695,13 @@ class ZidooRC:
         """Async Get information from built in Music Player."""
         return_value = {}
         response = await self._req_json(
-            "ZidooMusicControl/" + ZCMD_STATUS, log_errors=False, timeout=TIMEOUT_INFO
+            f"ZidooMusicControl/{ZCMD_STATUS}", log_errors=False, timeout=TIMEOUT_INFO
         )
 
         if response is not None and response.get("status") == 200:
-            return_value["status"] = response.get("isPlay")
+            return_value["status"] = (
+                ZSTATE_PAUSED if response.get("isPlay") else ZSTATE_STOPPED
+            )
             result = response.get("music")
             if result is not None:
                 return_value["title"] = result.get("title")
@@ -689,32 +724,102 @@ class ZidooRC:
                 return_value["position"] = result.get("position")
 
                 result = response.get("state")
-                if result is not None:
-                    # update with satte - playing for newer firmware
-                    return_value["status"] = result.get("playing")
+                if result is not None and result.get("playing"):
+                    return_value["status"] = ZSTATE_PLAYING
 
                 return return_value
         # _LOGGER.debug("music play info %s", str(response))
         return None
 
-    async def _get_movie_playing_info(self):
-        """Async Get information from built in Movie Player."""
+    async def _get_music_playing_info_v2(self):
+        """Async Get Eversolo information from built in Music Player using API V2."""
         return_value = {}
-
         response = await self._req_json(
-            "ZidooControlCenter/" + ZCMD_STATUS, log_errors=False, timeout=TIMEOUT_INFO
+            "ZidooMusicControl/v2/getState", log_errors=False, timeout=TIMEOUT_INFO
         )
 
-        if response is not None and response.get("status") == 200:
-            if response.get("file"):
-                result = response.get("file")
-                return_value["status"] = result.get("status") == 1
+        return_value["status"] = ZSTATE_STOPPED
+        if response is not None and response.get("state") != 0:
+            # common return values for LOCAL and DLNA
+            return_value["duration"] = response.get("duration")
+            return_value["position"] = response.get("position")
+            return_value["status"] = (
+                ZSTATE_PLAYING if response.get("state") == 3 else ZSTATE_PAUSED
+            )
+
+            # data depends on source
+            source = response.get("everSoloPlayInfo")
+            source = source.get("playTypeSubtitle") if source else "LOCAL"
+
+            if source == "LOCAL":
+                result = response.get("playingMusic")
+            else:
+                result = response.get("everSoloPlayInfo").get("everSoloPlayAudioInfo")
+
+            if result is not None and source == "LOCAL":
+                self._music_id = result.get("id")
+                self._music_type = result.get("type")
+
+                channels = result.get("channels")  # default no. of channels
+                channels_second = result.get("channelsSecond")  # may be absent
+                extension = result.get("extension")
+
+                sacd_area = response.get("volumeData")
+                sacd_area = sacd_area.get("sacdArea") if sacd_area else None
+
+                # no. of channels for multichannel SACD
+                if (
+                    extension == "SACD"
+                    and sacd_area == 1
+                    and channels_second is not None
+                ):
+                    channels = channels_second
+
+                return_value["album"] = result.get("album")
+                return_value["artist"] = result.get("artist")
+                return_value["bitrate"] = result.get("bitrate")
                 return_value["title"] = result.get("title")
-                return_value["uri"] = result.get("path")
-                return_value["duration"] = result.get("duration")
-                return_value["position"] = result.get("currentPosition")
-                return return_value
-        # _LOGGER.debug("movie play info {}".format(response))
+
+                return_value["audio"] = "{}: {} channels {} bits {}".format(
+                    extension,
+                    channels,
+                    result.get("bits"),
+                    result.get("sampleRate"),
+                )
+
+            elif result is not None:  # DLNA or Tidal Connect
+                self._music_id = 0  # no music id is retrievable for DLNA
+                self._music_type = response.get("volumeData").get("type")
+
+                bitrate = result.get("audioSampleRate")
+                bitrate *= result.get("audioChannels")
+                bitrate *= result.get("audioBitsPerSample")
+
+                # find DLNA subtype from icon if source is DLNA
+                dlna_subtype = source
+                if dlna_subtype == "DLNA":
+                    dlna_subtype = response.get("playingMusic").get("formIcon")
+                    dlna_subtype = re.sub(r"^.*musicplay_nav_", "", dlna_subtype)
+                    dlna_subtype = re.sub(r"_.*", "", dlna_subtype)
+                    dlna_subtype = re.sub(r"@.*", "", dlna_subtype)
+                dlna_subtype = dlna_subtype.upper()
+
+                return_value["album"] = result.get("albumName")
+                return_value["artist"] = result.get("artistName")
+                return_value["bitrate"] = NUM_STR(bitrate, 2, "bps")
+                return_value["channels"] = result.get("audioChannels")
+                return_value["source_type"] = dlna_subtype
+                return_value["title"] = result.get("songName")
+
+                return_value["audio"] = "{}: {} channels {} bits {}".format(
+                    result.get("audioDecodec"),
+                    result.get("audioChannels"),
+                    result.get("audioBitsPerSample"),
+                    NUM_STR(result.get("audioSampleRate"), 1, "Hz"),
+                )
+
+            return return_value
+        # _LOGGER.debug("music play info v2 %s", str(response))
         return None
 
     async def get_play_modes(self):
@@ -912,14 +1017,59 @@ class ZidooRC:
             return "on"
         return "off"
 
+    # TODO: investigate analogue volume control on eversolo devices
     # async def get_volume_info(self):
     #    """Async Get volume info. Not currently supported."""
     #    return None
 
-    async def set_volume_level(self, volume):
-        """Async Set volume level. Not currently supported."""
-        # api_volume = str(int(round(volume * 100)))
-        return 0
+    # async def set_volume_level(self, volume):
+    #    """Async Set volume level. Not currently supported."""
+    # api_volume = str(int(round(volume * 100)))
+    #    return 0
+
+    async def get_audio_output(self) -> int:
+        """Async Return last known audio output using API V2."""
+
+        response = await self._req_json(
+            "ZidooMusicControl/v2/getInputAndOutputList",
+            log_errors=False,
+            timeout=TIMEOUT_INFO,
+        )
+
+        if response is not None and response.get("status") == 200:
+            # update the output list (since we have it)
+            output_list = {}
+            for result in response["outputData"]:
+                if result.get("enable"):
+                    name = result.get("name")
+                    output_list[name] = result.get("tag")
+            self._audio_output_list = output_list
+
+            # return the index
+            return response.get("outputIndex")
+
+        # for debugging
+        # output_list = {}
+        # output_list["Output1"] = 0
+        # output_list["Output2"] = 1
+        # output_list["Output3"] = 3
+        # self._audio_output_list = output_list
+        return 0  # -1
+
+    async def load_audio_output_list(self) -> dict:
+        """Async Return audio output list."""
+        return self._audio_output_list
+
+    async def set_audio_output(self, output: str, log_errors=True) -> bool:
+        """Async Set an audio output by audio output tag."""
+        output_tag = self._audio_output_list[output]
+        response = await self._req_json(
+            f"ZidooMusicControl/v2/setOutInputList?tag={output_tag}"
+        )
+
+        if response is not None and response.get("status") == 200:
+            return True
+        return False
 
     async def get_app_list(self, log_errors=True) -> dict:
         """Async Get the list of installed apps.
@@ -984,7 +1134,9 @@ class ZidooRC:
             return response["devices"]
         return None
 
-    async def get_movie_list(self, filter_type: int = -1, max_count: int = DEFAULT_COUNT):
+    async def get_movie_list(
+        self, filter_type: int = -1, max_count: int = DEFAULT_COUNT
+    ):
         """Async Return list of movies.
 
         Parameters

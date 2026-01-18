@@ -46,6 +46,7 @@ SUPPORT_ZIDOO = (
     | MediaPlayerEntityFeature.VOLUME_MUTE
     | MediaPlayerEntityFeature.TURN_ON
     | MediaPlayerEntityFeature.TURN_OFF
+    | MediaPlayerEntityFeature.SELECT_SOUND_MODE
     | MediaPlayerEntityFeature.SELECT_SOURCE
     | MediaPlayerEntityFeature.BROWSE_MEDIA
     | MediaPlayerEntityFeature.SEEK
@@ -146,6 +147,16 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         return self.coordinator.state
 
     @property
+    def sound_mode(self):
+        """Return the current audio output source."""
+        return self.coordinator.audio_output
+        
+    @property
+    def sound_mode_list(self):
+        """List of available audio outputs as sound modes."""
+        return self.coordinator.audio_output_list
+
+    @property
     def source(self):
         """Return the current input source."""
         return self.coordinator.source
@@ -243,6 +254,8 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
             "fps",
             "audio",
             "video",
+            "channels",
+            "source_type"
             "id",
             "imdb_id",
             "tmdb_id",
@@ -291,6 +304,10 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     async def async_mute_volume(self, mute):
         """Send mute command."""
         await self.coordinator.player.mute_volume()
+
+    async def async_select_sound_mode(self, sound_mode):
+        """Set the audio output source."""
+        await self.coordinator.async_set_audio_output(sound_mode)
 
     async def async_select_source(self, source):
         """Set the input source."""

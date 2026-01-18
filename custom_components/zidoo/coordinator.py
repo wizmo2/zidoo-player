@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.dt import utcnow
 
 from .const import _LOGGER, CONF_POWERMODE, DOMAIN, EVENT_TURN_ON
-from .zidooaio import ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZidooRC
+from .zidooaio import ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZSTATE_PLAYING, ZidooRC
 
 SCAN_INTERVAL: Final = timedelta(seconds=5)
 SCAN_INTERVAL_RAPID: Final = timedelta(seconds=1)
@@ -37,11 +37,13 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
         self._unique_id = config_entry.entry_id
         self._state = MediaPlayerState.OFF
         self._source = None
-        self._source_list = None
+        self._source_list = []
         self._media_type = None
         self._media_info = {}
         self._last_update = None
         self._last_state = MediaPlayerState.OFF
+        self._audio_output_list = []
+        self._last_audio_output = None
 
         super().__init__(
             hass,
@@ -52,6 +54,14 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                 hass, _LOGGER, cooldown=1.0, immediate=False
             ),
         )
+
+    async def async_refresh_audio_outputs(self, force=True):
+        """Update audio output list."""
+        if not force and not self._audio_output_list:
+            audio_outputs = await self.player.load_audio_output_list()
+            self._audio_output_list = []
+            for key in audio_outputs:
+                self._audio_output_list.append(key)
 
     async def async_refresh_channels(self, force=True):
         """Update source list."""
@@ -71,6 +81,11 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
         try:
             if self.player.is_connected():
                 state = MediaPlayerState.PAUSED
+
+                await self.async_refresh_audio_outputs(force=False)
+                if self._audio_output_list:
+                    self._last_audio_output = await self.player.get_audio_output()
+
                 await self.async_refresh_channels(force=False)
                 self._source = await self.player.get_source()
                 playing_info = await self.player.get_playing_info()
@@ -82,7 +97,7 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                     self._media_info = playing_info
                     status = playing_info.get("status")
                     if status and status is not None:
-                        if status == 1 or status is True:
+                        if status == ZSTATE_PLAYING or status is True:
                             state = MediaPlayerState.PLAYING
                     mediatype = playing_info.get("source")
                     if mediatype and mediatype is not None:
@@ -110,6 +125,10 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                 SCAN_INTERVAL if state == MediaPlayerState.OFF else SCAN_INTERVAL_RAPID
             )
         self._state = state
+
+    async def async_set_audio_output(self, audio_output: str) -> None:
+        """Set audio output."""
+        await self._player.set_audio_output(audio_output)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the media player on."""
@@ -146,6 +165,17 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
     def media_info(self):
         """Info of current playing media."""
         return self._media_info
+
+    @property
+    def audio_output(self):
+        """Current audio_output."""
+        output_list = self._audio_output_list
+        return output_list[self._last_audio_output] if output_list else None
+
+    @property
+    def audio_output_list(self):
+        """Audio outputs List."""
+        return self._audio_output_list
 
     @property
     def source(self):
