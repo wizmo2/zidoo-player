@@ -340,12 +340,12 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         elif media_type in ZMUSIC_SEARCH_TYPES:
             media_ids = media_id.split(",")
             await self.coordinator.player.play_music(
-                int(media_ids[0]), media_type, int(media_ids[-1])
+                media_ids[0], media_type, media_ids[-1]
             )
         elif "/" in media_type:
             await self.coordinator.player.play_stream(media_id, media_type)
         else:
-            await self.coordinator.player.play_movie(int(media_id))
+            await self.coordinator.player.play_movie(media_id)
 
     async def async_media_seek(self, position):
         """Send media_seek command to media player."""
@@ -397,7 +397,7 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     ):
         """Get media image from server."""
         image_url = self.coordinator.player.generate_image_url(
-            int(media_content_id), int(media_content_type)
+            media_content_id, media_content_type
         )
         if image_url:
             return await self._async_fetch_image(image_url)

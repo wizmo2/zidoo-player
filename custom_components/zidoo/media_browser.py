@@ -9,7 +9,6 @@ from homeassistant.components.media_player import (
     MediaClass,
     MediaType,
 )
-
 from homeassistant.helpers.network import is_internal_request
 
 from .const import (
@@ -20,7 +19,7 @@ from .const import (
     ZDEFAULT_SHORTCUTS,
     ZSHORTCUTS,
 )
-from .zidooaio import ZVIDEO_FILTER_TYPES, ZMUSIC_SEARCH_TYPES
+from .zidooaio import ZMUSIC_SEARCH_TYPES, ZVIDEO_FILTER_TYPES
 
 BROWSE_LIMIT = 1000
 ZTITLE = "Zidoo Media"

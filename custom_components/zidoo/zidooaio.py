@@ -409,7 +409,7 @@ class ZidooRC:
     async def _req_json(
         self,
         url: str,
-        params: dict|None = None,
+        params: dict | None = None,
         log_errors: bool = True,
         timeout: int = TIMEOUT,
         max_retries: int = RETRIES,
@@ -456,7 +456,7 @@ class ZidooRC:
     async def _send_cmd(
         self,
         url: str,
-        params: dict|None = None,
+        params: dict | None = None,
         log_errors: bool = True,
         timeout: int = TIMEOUT,
     ):
@@ -984,7 +984,7 @@ class ZidooRC:
             return response["devices"]
         return None
 
-    async def get_movie_list(self, filter_type=-1, max_count=DEFAULT_COUNT):
+    async def get_movie_list(self, filter_type: int = -1, max_count: int = DEFAULT_COUNT):
         """Async Return list of movies.
 
         Parameters
@@ -1014,7 +1014,7 @@ class ZidooRC:
         #        response["array"].sort(key=byId, reverse=True)
         return response
 
-    async def get_collection_list(self, movie_id):
+    async def get_collection_list(self, movie_id: int | str):
         """Async Return video collection details.
 
         Parameters
@@ -1032,7 +1032,7 @@ class ZidooRC:
             return response
         return None
 
-    async def get_movie_details(self, movie_id: int):
+    async def get_movie_details(self, movie_id: int | str):
         """Async Return video details.
 
         Parameters
@@ -1050,7 +1050,7 @@ class ZidooRC:
             return response
         return None
 
-    async def get_episode_list(self, season_id: int):
+    async def get_episode_list(self, season_id: int | str):
         """Async Return video list sorted by episodes.
 
         Parameters
@@ -1092,7 +1092,7 @@ class ZidooRC:
     async def get_music_list(
         self,
         music_type: int = 0,
-        music_id: int | None = None,
+        music_id: int | str | None = None,
         max_count: int = DEFAULT_COUNT,
     ):
         """Async Return list of music.
@@ -1133,7 +1133,7 @@ class ZidooRC:
         return response
 
     async def _get_album_list(
-        self, album_id: int | None = None, max_count: int = DEFAULT_COUNT
+        self, album_id: int | str | None = None, max_count: int = DEFAULT_COUNT
     ):
         """Async Return list of albums or album music.
 
@@ -1158,7 +1158,7 @@ class ZidooRC:
         return response
 
     async def _get_artist_list(
-        self, artist_id: int | None = None, max_count: int = DEFAULT_COUNT
+        self, artist_id: int | str | None = None, max_count: int = DEFAULT_COUNT
     ):
         """Async Return list of artists or artist music.
 
@@ -1391,7 +1391,7 @@ class ZidooRC:
             return True
         return False
 
-    async def play_movie(self, movie_id: int, video_type: int = -1) -> bool:
+    async def play_movie(self, movie_id: int | str, video_type: int | str = -1) -> bool:
         """Async Play video content by Movie id.
 
         Parameters
@@ -1426,9 +1426,9 @@ class ZidooRC:
 
     async def play_music(
         self,
-        media_id: int | None = None,
+        media_id: int | str | None = None,
         media_type: int | str = "music",
-        music_id: int | None = None,
+        music_id: int | str | None = None,
     ) -> bool:
         """Async Play video content by id.
 
@@ -1548,8 +1548,8 @@ class ZidooRC:
 
     def generate_image_url(
         self,
-        media_id: int,
-        media_type: int,
+        media_id: int | str,
+        media_type: int | str,
         width: int = 400,
         height: int | None = None,
     ) -> str:
@@ -1567,7 +1567,7 @@ class ZidooRC:
         return ""
 
     def _generate_movie_image_url(
-        self, movie_id: int, width: int = 400, height: int = 600
+        self, movie_id: int | str, width: int = 400, height: int = 600
     ) -> str:
         """Get link to thumbnail.
 
@@ -1585,7 +1585,11 @@ class ZidooRC:
         return f"http://{self._host}/ZidooPoster/v2/getPoster?id={movie_id}&w={width}&h={height}"
 
     def _generate_music_image_url(
-        self, music_id: int, music_type: int = 0, width: int = 200, height: int = 200
+        self,
+        music_id: int | str,
+        music_type: int | str = 0,
+        width: int = 200,
+        height: int = 200,
     ) -> str:
         """Get link to thumbnail.
 
