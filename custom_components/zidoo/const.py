@@ -5,13 +5,13 @@ import logging
 from homeassistant.components.media_player import MediaClass, MediaType
 
 from .zidooaio import (
-    ZTYPE_VIDEO,
-    ZTYPE_MOVIE,
-    ZTYPE_TV_SHOW,
-    ZTYPE_TV_SEASON,
-    ZTYPE_TV_EPISODE,
     ZTYPE_COLLECTION,
+    ZTYPE_MOVIE,
     ZTYPE_OTHER,
+    ZTYPE_TV_EPISODE,
+    ZTYPE_TV_SEASON,
+    ZTYPE_TV_SHOW,
+    ZTYPE_VIDEO,
 )
 
 _LOGGER = logging.getLogger(__package__)
@@ -46,11 +46,11 @@ ZSHORTCUTS = [
     {"name": "FAVORITES", "path": "favorite", "type": MediaType.VIDEO},
     {"name": "LATEST", "path": "recent", "type": MediaType.VIDEO, "default": True},
     {"name": "WATCHING", "path": "watching", "type": MediaType.VIDEO},
-    {"name": "SD", "path": "sd", "type": MediaType.VIDEO},
+    # {"name": "SD", "path": "sd", "type": MediaType.VIDEO},
     {"name": "DISC", "path": "bluray", "type": MediaType.VIDEO},
     {"name": "UHD", "path": "4k", "type": MediaType.VIDEO},
     {"name": "3D", "path": "3d", "type": MediaType.VIDEO},
-    {"name": "KIDS", "path": "children", "type": MediaType.GENRE},
+    {"name": "KIDS", "path": "children", "type": MediaType.VIDEO},
     {"name": "UNWATCHED", "path": "unwatched", "type": MediaType.VIDEO},
     {"name": "OTHER", "path": "other", "type": MediaType.VIDEO},
     {"name": "ALL", "path": "all", "type": MediaType.VIDEO},

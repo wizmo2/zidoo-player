@@ -1,4 +1,5 @@
 """Support for media browsing."""
+
 import contextlib
 
 from homeassistant.components import media_source
@@ -45,7 +46,7 @@ async def build_item_response(entity, payload):
     if media_class == MediaClass.URL:  # smb system list
         result = await player.get_host_list(search_id)
 
-    if result is not None and result.get("filelist"):
+    if result is not None and result.get("filelist") is not None:
         for item in result["filelist"]:
             content_type = item["type"]
             item_type = None
@@ -109,7 +110,7 @@ async def build_item_response(entity, payload):
                     item_type, item_id, entity, is_internal
                 )
                 if thumbnail:  # Song list
-                    item_id = "{},{}".format(search_id, item_id)
+                    item_id = f"{search_id},{item_id}"
 
                 children.append(
                     BrowseMedia(
@@ -145,9 +146,11 @@ async def build_item_response(entity, payload):
         else:
             result = await player.get_collection_list(search_id)
 
-        if result and result.get("data"):
+        if result:  # and result.get("data"):
             video_type = result.get("type")
-            data = result["data"]
+            data = result.get("data")  # v1
+            if not data:
+                data = result.get("array")  # v2 (returns empty list if no items)
             if video_type:
                 if video_type == 4:  # tv show episodes
                     child_media_class = MediaType.TRACK
@@ -200,7 +203,7 @@ async def build_item_response(entity, payload):
 
 
 def to_data_list(response):
-    """converts the serach response to a data list"""
+    """Converts the serach response to a data list."""
     data_list = []
     if response and response.get("all"):
         for item in response["all"]:
@@ -221,28 +224,33 @@ def to_data_list(response):
         return_value["data"] = data_list
 
         return return_value
+    return None
 
 
 def to_array(response):
+    """Wraps response in array feild."""
     return_value = {}
     return_value["array"] = response
     return return_value
 
 
 def get_shortcut_name(path):
+    """Translates Dohortcut names."""
     for item in ZSHORTCUTS:
         if item["path"] == path:
             return item["name"]
+    return ""
 
 
 def get_thumbnail_url(media_content_type, media_content_id, entity, is_internal):
+    """Gets thumbnail url string."""
     if is_internal:
         url_path = entity.coordinator.player.generate_image_url(
             media_content_id, media_content_type
         )
     else:
         # url_path = entity.get_browse_image_url(media_content_type,media_content_id)
-        """2022.2 fix"""
+        # 2022.2 fix
         url_path = (
             f"/api/media_player_proxy/{entity.entity_id}/browse_media"
             f"/{media_content_type}/{media_content_id}"
@@ -324,5 +332,4 @@ async def library_payload(entity):
         else:
             library_info["children"].append(item)
 
-    response = BrowseMedia(**library_info)
-    return response
+    return BrowseMedia(**library_info)

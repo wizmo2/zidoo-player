@@ -1,15 +1,15 @@
 """The Zidoo component."""
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_MAC, Platform
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, _LOGGER
+from .const import _LOGGER, DOMAIN
+from .coordinator import ZidooCoordinator
 from .frontend import ZidooCardRegistration
 from .zidooaio import ZidooRC
-from .coordinator import ZidooCoordinator
-
 
 PLATFORMS = [Platform.MEDIA_PLAYER, Platform.REMOTE]
 

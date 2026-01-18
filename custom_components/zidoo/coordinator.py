@@ -1,4 +1,5 @@
 """Update coordinator for Zidoo Media Player integration."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -12,17 +13,8 @@ from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util.dt import utcnow
 
-from .const import (
-    _LOGGER,
-    CONF_POWERMODE,
-    DOMAIN,
-    EVENT_TURN_ON,
-)
-from .zidooaio import (
-    ZCONTENT_MUSIC,
-    ZCONTENT_VIDEO,
-    ZidooRC,
-)
+from .const import _LOGGER, CONF_POWERMODE, DOMAIN, EVENT_TURN_ON
+from .zidooaio import ZCONTENT_MUSIC, ZCONTENT_VIDEO, ZidooRC
 
 SCAN_INTERVAL: Final = timedelta(seconds=5)
 SCAN_INTERVAL_RAPID: Final = timedelta(seconds=1)
@@ -60,11 +52,6 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                 hass, _LOGGER, cooldown=1.0, immediate=False
             ),
         )
-
-    @property
-    def state(self):
-        """Gets status of device."""
-        return self._state
 
     async def async_refresh_channels(self, force=True):
         """Update source list."""
@@ -113,7 +100,7 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                         self._media_type = MediaType.APP
                     self._last_update = utcnow()
 
-        except Exception as err:  # pylint: disable=broad-except
+        except Exception:  # noqa: BLE001
             return
 
         if state != self._last_state:

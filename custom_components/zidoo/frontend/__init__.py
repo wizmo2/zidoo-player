@@ -3,8 +3,8 @@
 import logging
 
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.helpers.event import async_call_later
 from homeassistant.components.lovelace.const import LOVELACE_DATA
+from homeassistant.helpers.event import async_call_later
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,16 +13,19 @@ ZIDOO_CARD_FILENAMES = ["zidoo-search-card.js"]
 
 
 class ZidooCardRegistration:
+    """Custom card registration."""
+
     def __init__(self, hass):
         self.hass = hass
 
     async def async_register(self):
+        """Custom card registration."""
         await self.async_register_zidoo_path()
         if self.hass.data[LOVELACE_DATA].mode == "storage":
             await self.async_wait_for_lovelace_resources()
 
-    # install card resources
     async def async_register_zidoo_path(self):
+        """Install card resources."""
         # Register custom cards path
         await self.hass.http.async_register_static_paths(
             [
@@ -35,6 +38,8 @@ class ZidooCardRegistration:
         )
 
     async def async_wait_for_lovelace_resources(self) -> None:
+        """Check for resorces."""
+
         async def check_lovelace_resources_loaded(now):
             if self.hass.data[LOVELACE_DATA].resources.loaded:
                 await self.async_register_zidoo_cards()
@@ -47,6 +52,7 @@ class ZidooCardRegistration:
         await check_lovelace_resources_loaded(0)
 
     async def async_register_zidoo_cards(self):
+        """Register cards."""
         _LOGGER.debug("Installing Lovelace resources for zidoo cards")
         for card_filename in ZIDOO_CARD_FILENAMES:
             url = f"{URL_BASE}/{card_filename}"
@@ -61,6 +67,7 @@ class ZidooCardRegistration:
                 ].resources.async_create_item({"res_type": "module", "url": url})
 
     async def async_unregister(self):
+        """Unregister cards."""
         # Unload lovelace module resource
         if self.hass.data[LOVELACE_DATA].mode == "storage":
             for card_filename in ZIDOO_CARD_FILENAMES:

@@ -1,19 +1,20 @@
-""" Config Flow for ZidooMedia Players. """
+"""Config Flow for ZidooMedia Players."""
+
 import requests.exceptions
 import voluptuous as vol
 
 from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_MAC
+from homeassistant.const import CONF_HOST, CONF_MAC, CONF_NAME, CONF_PASSWORD
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
     _LOGGER,
-    DOMAIN,
     CONF_POWERMODE,
     CONF_SHORTCUT,
-    ZSHORTCUTS,
+    DOMAIN,
     ZDEFAULT_SHORTCUTS,
+    ZSHORTCUTS,
 )
 from .zidooaio import ZidooRC
 
@@ -47,8 +48,7 @@ async def validate_input(hass, data):
 
 @config_entries.HANDLERS.register(DOMAIN)
 class ZidooFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
-    """
-    ZidooFlowHandler configuration method.
+    """ZidooFlowHandler configuration method.
 
     The schema version of the entries that it creates
     Home Assistant will call your migrate method if the version changes

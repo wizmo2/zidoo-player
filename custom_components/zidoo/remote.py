@@ -1,4 +1,5 @@
 """Support for interface with Zidoo Media Player."""
+
 from __future__ import annotations
 
 import asyncio
@@ -17,7 +18,7 @@ from homeassistant.components.remote import (
     RemoteEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_DEVICE_ID
+from homeassistant.const import ATTR_DEVICE_ID, ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -54,7 +55,7 @@ class ZidooRemote(ZidooEntity, RemoteEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the media player on."""
-        activity = kwargs.get(ATTR_ACTIVITY, None)
+        activity = kwargs.get(ATTR_ACTIVITY)
         if activity:
             await self.async_send_command([activity], **kwargs)
         else:

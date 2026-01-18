@@ -1,26 +1,26 @@
 """Support for interface with Zidoo Media Player."""
 
 from __future__ import annotations
+
 import voluptuous as vol
 
+from homeassistant.components import media_source
 from homeassistant.components.media_player import (
     MediaPlayerEntity,
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
 )
-
 from homeassistant.components.media_player.browse_media import (
     async_process_play_media_url,
 )
-from homeassistant.components import media_source
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
-from homeassistant.const import CONF_HOST, CONF_NAME, ATTR_ENTITY_ID, ATTR_DEVICE_ID
+from homeassistant.const import ATTR_DEVICE_ID, ATTR_ENTITY_ID, CONF_HOST, CONF_NAME
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_platform, config_validation as cv
+from homeassistant.helpers import config_validation as cv, entity_platform
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -31,16 +31,13 @@ from .const import (
     SUBTITLE_SERVICE,
     ZOOM_SERVICE,
 )
+from .coordinator import ZidooCoordinator
 from .media_browser import (
     build_item_response,
     library_payload,
     media_source_content_filter,
 )
-from .zidooaio import (
-    ZKEYS,
-    ZMUSIC_SEARCH_TYPES,
-)
-from .coordinator import ZidooCoordinator
+from .zidooaio import ZKEYS, ZMUSIC_SEARCH_TYPES
 
 ATTR_KEY = "key"
 
@@ -217,6 +214,7 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         duration = self.coordinator.media_info.get("duration")
         if duration:
             return float(duration) / 1000
+        return None
 
     @property
     def media_position(self):
@@ -224,6 +222,7 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         position = self.coordinator.media_info.get("position")
         if position:
             return float(position) / 1000
+        return None
 
     @property
     def media_position_updated_at(self):
@@ -244,6 +243,9 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
             "fps",
             "audio",
             "video",
+            "id",
+            "imdb_id",
+            "tmdb_id",
         }
         attributes = {}
         for item in extras:
@@ -258,7 +260,8 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         """Return the current running application."""
         date = self.coordinator.media_info.get("date")
         if self.coordinator.media_type == MediaType.MOVIE and date is not None:
-            return "({})".format(date.year)
+            return f"({date.year})"
+        return ""
 
     # def set_volume_level(self, volume):
     #    """Set volume level, range 0..1."""
@@ -337,12 +340,12 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         elif media_type in ZMUSIC_SEARCH_TYPES:
             media_ids = media_id.split(",")
             await self.coordinator.player.play_music(
-                media_ids[0], media_type, media_ids[-1]
+                int(media_ids[0]), media_type, int(media_ids[-1])
             )
         elif "/" in media_type:
             await self.coordinator.player.play_stream(media_id, media_type)
         else:
-            await self.coordinator.player.play_movie(media_id)
+            await self.coordinator.player.play_movie(int(media_id))
 
     async def async_media_seek(self, position):
         """Send media_seek command to media player."""
@@ -394,10 +397,8 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     ):
         """Get media image from server."""
         image_url = self.coordinator.player.generate_image_url(
-            media_content_id, media_content_type
+            int(media_content_id), int(media_content_type)
         )
         if image_url:
-            result = await self._async_fetch_image(image_url)
-            return result
-
+            return await self._async_fetch_image(image_url)
         return (None, None)
