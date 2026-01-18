@@ -1,5 +1,6 @@
 {
   "name": "Zidoo Media Player",
   "content_in_root": false,
-  "homeassistant": "2025.12"
+  "homeassistant": "2025.11"
 }
+
