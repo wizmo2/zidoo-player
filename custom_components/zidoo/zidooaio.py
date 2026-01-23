@@ -6,14 +6,15 @@ References:
 """
 
 import asyncio
-import logging
+from datetime import datetime
 import json
+import logging
 import re
 import socket
 import struct
-from aiohttp import ClientError, ClientSession, CookieJar
-from datetime import datetime
 import urllib.parse
+
+from aiohttp import ClientError, ClientSession, CookieJar
 from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
@@ -716,7 +717,10 @@ class ZidooRC:
                     result.get("bits"),
                     result.get("SampleRate"),
                 )
-                self._music_id = result.get("id")
+                music_id = int(result.get("id"))
+                if music_id != self._music_id:
+                    _LOGGER.debug("music play info %s", str(response))
+                    self._music_id = music_id
                 self._music_type = result.get("type")
 
                 result = response.get("state")
@@ -728,7 +732,6 @@ class ZidooRC:
                     return_value["status"] = ZSTATE_PLAYING
 
                 return return_value
-        # _LOGGER.debug("music play info %s", str(response))
         return None
 
     async def _get_music_playing_info_v2(self):
@@ -748,78 +751,77 @@ class ZidooRC:
             )
 
             # data depends on source
-            source = response.get("everSoloPlayInfo")
-            source = source.get("playTypeSubtitle") if source else "LOCAL"
-
-            if source == "LOCAL":
-                result = response.get("playingMusic")
-            else:
-                result = response.get("everSoloPlayInfo").get("everSoloPlayAudioInfo")
-
-            if result is not None and source == "LOCAL":
-                self._music_id = result.get("id")
-                self._music_type = result.get("type")
-
-                channels = result.get("channels")  # default no. of channels
-                channels_second = result.get("channelsSecond")  # may be absent
-                extension = result.get("extension")
-
-                sacd_area = response.get("volumeData")
-                sacd_area = sacd_area.get("sacdArea") if sacd_area else None
-
-                # no. of channels for multichannel SACD
-                if (
-                    extension == "SACD"
-                    and sacd_area == 1
-                    and channels_second is not None
-                ):
-                    channels = channels_second
+            eversolo = response.get("everSoloPlayInfo")
+            result = response.get("playingMusic")
+            if result is not None:
+                album_art = result.get("albumArt")
+                music_id = str(album_art) if album_art else int(result.get("id"))
+                if music_id != self._music_id:
+                    _LOGGER.debug("music play info v2 %s", str(response))
+                    self._music_id = music_id
+                self._music_type = int(result.get("type"))
 
                 return_value["album"] = result.get("album")
                 return_value["artist"] = result.get("artist")
-                return_value["bitrate"] = result.get("bitrate")
                 return_value["title"] = result.get("title")
+                return_value["track"] = result.get("number")
+                return_value["date"] = result.get("date")
+                return_value["uri"] = result.get("uri")
+                return_value["bitrate"] = result.get("bitrate")
 
-                return_value["audio"] = "{}: {} channels {} bits {}".format(
-                    extension,
-                    channels,
-                    result.get("bits"),
-                    result.get("sampleRate"),
+                extension = result.get("extension")
+                channels = result.get("channels")
+                bits = result.get("bits")
+                samplerate = result.get("SampleRate")
+
+                if eversolo:
+                    # TODO:  alternative meta data may need to be included if not in playingInfo
+                    # return_value["album"] = eversolo.get("albumName")
+                    # return_value["artist"] = eversolo.get("artistName")
+                    # return_value["channels"] = eversolo.get("audioChannels")
+                    # return_value["title"] = eversolo.get("songName")
+
+                    eversolo_audio = eversolo.get("everSoloPlayAudioInfo")
+                    eversolo_volume = response.get("volumeData")
+                    # source = eversolo.get("playTypeSubtitle") if eversolo else "LOCAL"
+                    if self._music_type == 1:  # source == "LOCAL"
+                        # fix for multichannel SACD info
+                        # TODO: is channelsSecond in playingInfo or everSoloPlayInfo/everSoloPlayAudioInfo
+                        sacd_area = (
+                            eversolo_volume.get("sacdArea") if eversolo_volume else -1
+                        )
+                        channels2 = result.get("channelsSecond")
+                        if (
+                            extension == "SACD"
+                            and sacd_area == 1
+                            and channels2 is not None
+                        ):
+                            channels = channels2
+
+                    elif eversolo_audio:  # source == "DLNA":
+                        # fix for DLNA audio info
+                        # extension = (result.get("audioDecodec"),) # not in api ref
+                        channels = eversolo_audio.get("audioChannels")
+                        samplerate = eversolo_audio.get("audioSampleRate")
+                        bits = eversolo_audio.get("audioBitsPerSample")
+                        bitrate = samplerate * channels * bits
+                        return_value["bitrate"] = NUM_STR(bitrate, 2, "bps")
+
+                        # get DLNA subtype from icon name
+                        if self._music_type == 3:  # source == "DLNA":
+                            dlna_subtype = result.get("formIcon")
+                            dlna_subtype = re.sub(
+                                r"^.*musicplay_nav_", "", dlna_subtype
+                            )
+                            dlna_subtype = re.sub(r"_.*", "", dlna_subtype)
+                            dlna_subtype = re.sub(r"@.*", "", dlna_subtype)
+                            dlna_subtype = dlna_subtype.upper()
+                            return_value["source_type"] = dlna_subtype
+
+                return_value["audio"] = (
+                    f"{extension}: {channels} channels {bits} bits {samplerate}"
                 )
-
-            elif result is not None:  # DLNA or Tidal Connect
-                self._music_id = 0  # no music id is retrievable for DLNA
-                self._music_type = response.get("volumeData").get("type")
-
-                bitrate = result.get("audioSampleRate")
-                bitrate *= result.get("audioChannels")
-                bitrate *= result.get("audioBitsPerSample")
-
-                # find DLNA subtype from icon if source is DLNA
-                dlna_subtype = source
-                if dlna_subtype == "DLNA":
-                    dlna_subtype = response.get("playingMusic").get("formIcon")
-                    dlna_subtype = re.sub(r"^.*musicplay_nav_", "", dlna_subtype)
-                    dlna_subtype = re.sub(r"_.*", "", dlna_subtype)
-                    dlna_subtype = re.sub(r"@.*", "", dlna_subtype)
-                dlna_subtype = dlna_subtype.upper()
-
-                return_value["album"] = result.get("albumName")
-                return_value["artist"] = result.get("artistName")
-                return_value["bitrate"] = NUM_STR(bitrate, 2, "bps")
-                return_value["channels"] = result.get("audioChannels")
-                return_value["source_type"] = dlna_subtype
-                return_value["title"] = result.get("songName")
-
-                return_value["audio"] = "{}: {} channels {} bits {}".format(
-                    result.get("audioDecodec"),
-                    result.get("audioChannels"),
-                    result.get("audioBitsPerSample"),
-                    NUM_STR(result.get("audioSampleRate"), 1, "Hz"),
-                )
-
             return return_value
-        # _LOGGER.debug("music play info v2 %s", str(response))
         return None
 
     async def get_play_modes(self):
@@ -1784,8 +1786,11 @@ class ZidooRC:
             # url = "http://{}/ZidooPoster/getFile/getBackdrop?id={}&w={}&h={}".format(
             url = f"http://{self._host}/ZidooPoster/v2/getBackdrop?id={self._video_id}&w={width}&h={height}"
 
-        if self._current_source == ZCONTENT_MUSIC and self._music_id > 0:
-            url = f"http://{self._host}/ZidooMusicControl/v2/getImage?id={self._music_id}&music_type={self._music_type}&type=4&target=16"
+        if self._current_source == ZCONTENT_MUSIC:
+            if isinstance(self._music_id, str):
+                url = self._music_id
+            elif self._music_id > 0:
+                url = f"http://{self._host}/ZidooMusicControl/v2/getImage?id={self._music_id}&music_type={self._music_type}&type=4&target=16"
 
         # _LOGGER.debug("zidoo getting current image: url-{}".format(url))
         return url

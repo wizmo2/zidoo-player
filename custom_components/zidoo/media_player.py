@@ -150,7 +150,7 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     def sound_mode(self):
         """Return the current audio output source."""
         return self.coordinator.audio_output
-        
+
     @property
     def sound_mode_list(self):
         """List of available audio outputs as sound modes."""
