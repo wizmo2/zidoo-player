@@ -34,13 +34,13 @@ customElements.whenDefined('card-tools').then(() => {
         ha-card {
           overflow: hidden;
         }
-        search-input {
-          display: block;
-        }
         #searchContainer {
           display: block;
           margin-left: auto;
           margin-right: auto;
+        }
+        #searchContainer search-input {
+          display: block;
         }
         #searchIcon {
           padding: 10px;
@@ -49,7 +49,7 @@ customElements.whenDefined('card-tools').then(() => {
           width: 100%;
         }
         #searchButtons {
-          padding: 5px 15px;
+          padding: 5px 7px;
         }
         #searchButtons ha-progress-button {
           margin: 3px;

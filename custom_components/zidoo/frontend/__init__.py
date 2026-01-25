@@ -15,8 +15,9 @@ ZIDOO_CARD_FILENAMES = ["zidoo-search-card.js"]
 class ZidooCardRegistration:
     """Custom card registration."""
 
-    def __init__(self, hass):
+    def __init__(self, hass, domain):
         self.hass = hass
+        self._version = getattr(hass.data["integrations"][domain], "version", "0")
 
     async def async_register(self):
         """Custom card registration."""
@@ -55,16 +56,17 @@ class ZidooCardRegistration:
         """Register cards."""
         _LOGGER.debug("Installing Lovelace resources for zidoo cards")
         for card_filename in ZIDOO_CARD_FILENAMES:
-            url = f"{URL_BASE}/{card_filename}"
+            url = f"{URL_BASE}/{card_filename}?v={self._version}"
             resource_loaded = [
                 res["url"]
                 for res in self.hass.data[LOVELACE_DATA].resources.async_items()
                 if res["url"] == url
             ]
             if not resource_loaded:
-                resource_id = await self.hass.data[
-                    LOVELACE_DATA
-                ].resources.async_create_item({"res_type": "module", "url": url})
+                await self.async_unregister()
+                await self.hass.data[LOVELACE_DATA].resources.async_create_item(
+                    {"res_type": "module", "url": url}
+                )
 
     async def async_unregister(self):
         """Unregister cards."""
@@ -77,7 +79,7 @@ class ZidooCardRegistration:
                     for resource in self.hass.data[
                         LOVELACE_DATA
                     ].resources.async_items()
-                    if resource["url"] == url
+                    if resource["url"].startswith(url)
                 ]
                 for resource in zidoo_resources:
                     await self.hass.data[LOVELACE_DATA].resources.async_delete_item(
