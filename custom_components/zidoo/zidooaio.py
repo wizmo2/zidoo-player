@@ -7,9 +7,7 @@ References:
 
 import asyncio
 from datetime import datetime
-import json
 import logging
-import re
 import socket
 import struct
 import urllib.parse
@@ -806,17 +804,6 @@ class ZidooRC:
                         bits = eversolo_audio.get("audioBitsPerSample")
                         bitrate = samplerate * channels * bits
                         return_value["bitrate"] = NUM_STR(bitrate, 2, "bps")
-
-                        # get DLNA subtype from icon name
-                        if self._music_type == 3:  # source == "DLNA":
-                            dlna_subtype = result.get("formIcon")
-                            dlna_subtype = re.sub(
-                                r"^.*musicplay_nav_", "", dlna_subtype
-                            )
-                            dlna_subtype = re.sub(r"_.*", "", dlna_subtype)
-                            dlna_subtype = re.sub(r"@.*", "", dlna_subtype)
-                            dlna_subtype = dlna_subtype.upper()
-                            return_value["source_type"] = dlna_subtype
 
                 return_value["audio"] = (
                     f"{extension}: {channels} channels {bits} bits {samplerate}"

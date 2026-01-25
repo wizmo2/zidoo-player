@@ -202,7 +202,8 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     @property
     def media_track(self):
         """Track number of current playing media (Music track only)."""
-        return self.coordinator.media_info.get("track")
+        track = self.coordinator.media_info.get("track")
+        return str(track).zfill(2) if track else None
 
     @property
     def media_series_title(self):
@@ -212,12 +213,14 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     @property
     def media_season(self):
         """Season of current playing media (TV Show only)."""
-        return str(self.coordinator.media_info.get("season")).zfill(2)
+        season = self.coordinator.media_info.get("season")
+        return str(season).zfill(2) if season else None
 
     @property
     def media_episode(self):
         """Episode of current playing media (TV Show only)."""
-        return str(self.coordinator.media_info.get("episode")).zfill(2)
+        episode = self.coordinator.media_info.get("episode")
+        return str(episode).zfill(2) if episode else None
 
     @property
     def media_duration(self):
@@ -255,7 +258,6 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
             "audio",
             "video",
             "channels",
-            "source_type"
             "id",
             "imdb_id",
             "tmdb_id",
