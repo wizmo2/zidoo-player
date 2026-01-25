@@ -75,7 +75,7 @@ For direct access you need to check the token from the attribute states or looku
 I use the customizable Mini Media Player Card, available through HACS or [github](https://github.com/kalkih/mini-media-player).  An example configuration to show a full screen image with minimal playing details is
 
 ```
-title: nowplaying
+title: Now Playing
 path: nowplaying
 type: panel
 cards:
@@ -107,6 +107,7 @@ cards:
       shuffle: true
       repeat: true
       state_label: true
+      scale: 2
 ```
 
 ![image](https://github.com/user-attachments/assets/bb30c91e-5569-4de9-bb9d-b3f392c32b57)

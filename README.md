@@ -1,10 +1,10 @@
 # Home-assistant component for Zidoo media players
 
-This is a functioning solution for controlling Zidoo media player on Home-Assistant.  Based on the Zidoo REST API, it is developed using a Z9S, but should work on all Zidoo devices (feedback/PRs welcome)
+This is a functioning solution for controlling Zidoo media player on Home-Assistant.  Based on the Zidoo REST API, it is developed using a Z9S, but should work on all Zidoo devices (feedback/PRs welcome)[^1]
 
 ## Features
 
-- Control Zidoo devices as media players through HA
+- Control Zidoo and Eversolo devices as media players through HA[^10]
 - Album art and movie backdrops
 - Browse movies, music, file system, and share mounts through HA Media Browser
 
@@ -16,7 +16,7 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 
 Streaming content currently uses a hack with the players uPNP functions.  There are limitations with content, including issues with the Media Player 6.0 (audio files are streamed to the Video Player for now).  Playlists can be handled using Kodi or ZDMC (this includes support for camera stream, although it is a little buggy). 
 
-A Custom Lovelace card `zidoo-search-card` can be used to filter media browser results.[^7] Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
+A Custom Lovelace card `zidoo-search-card` can be used to filter media browser results. Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.[^7]
 
 ![Search Card](images/search-card.png)
 
@@ -37,7 +37,7 @@ Use the Media Search text editor to add a keyword, then select the desired Media
 
 ### Configuration
 
-1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu
+1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu[^2]
 2. Enter the IP address of player
 3. Enter the Password if you have authentication enabled
 4. Add standard Media Control card for newly added media_player device
@@ -60,10 +60,10 @@ Set Audio - switch through list or select video audio track.[^5]
 
 Set Zoom - switch through list or select video zoom mode[^9]
 
-Remote Send Command = send remote control button key (see [Key Commands](key_commands.md))[^8]
+Remote Send Command = send remote control button key (see [Key Commands](key_commands.md))[^6][^8]
 
 ### Custom Search Card
-After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button. Select the `custom:zidoo-search-card`, then edit the yaml to include a single `entity` value with your zidoo media_player id.
+After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button. Select the `custom:zidoo-search-card`, then edit the yaml to include a single `entity` value with your zidoo media_player id.[^7]
  _*NOTE:  The card requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or add [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
 
 ```
@@ -115,3 +115,4 @@ buttons:
 [^7]: Release 1.4.0 - Add music functionality and search card
 [^8]: Release 2.0.1 - Convert to zidoaio.  Add Remote entity
 [^9]: Release 2.0.2 - Add zoom mode service
+[^10]: Release 2.1.0 - Initial support for Eversolo DAC output
