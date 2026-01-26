@@ -17,7 +17,7 @@ from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 TIMEOUT = 5  # default timeout
 TIMEOUT_INFO = 1  # for playing info
 TIMEOUT_SEARCH = 10  # for searches
@@ -773,12 +773,6 @@ class ZidooRC:
                 samplerate = result.get("SampleRate")
 
                 if eversolo:
-                    # TODO:  alternative meta data may need to be included if not in playingInfo
-                    # return_value["album"] = eversolo.get("albumName")
-                    # return_value["artist"] = eversolo.get("artistName")
-                    # return_value["channels"] = eversolo.get("audioChannels")
-                    # return_value["title"] = eversolo.get("songName")
-
                     eversolo_audio = eversolo.get("everSoloPlayAudioInfo")
                     eversolo_volume = response.get("volumeData")
                     # source = eversolo.get("playTypeSubtitle") if eversolo else "LOCAL"
@@ -797,6 +791,13 @@ class ZidooRC:
                             channels = channels2
 
                     elif eversolo_audio:  # source == "DLNA":
+                        if not return_value["album"]:
+                            return_value["album"] = eversolo_audio.get("albumName")
+                        if not return_value["artist"]:
+                            return_value["artist"] = eversolo_audio.get("artistName")
+                        if not return_value["title"]:
+                            return_value["title"] = eversolo_audio.get("songName")
+
                         # fix for DLNA audio info
                         # extension = (result.get("audioDecodec"),) # not in api ref
                         channels = eversolo_audio.get("audioChannels")
@@ -1008,12 +1009,16 @@ class ZidooRC:
 
     # TODO: investigate analogue volume control on eversolo devices
     # async def get_volume_info(self):
-    #    """Async Get volume info. Not currently supported."""
-    #    return None
+    #    """Async Get volume info. Not currently supported.
+    #         volume_data = music_state.get("volumeData", {})
+    #   current_volume = volume_data.get("currenttVolume")
+    #   max_volume = volume_data.get("maxVolume")
 
     # async def set_volume_level(self, volume):
     #    """Async Set volume level. Not currently supported."""
-    # api_volume = str(int(round(volume * 100)))
+    # max_volume = music_state.get("volumeData", {}).get("maxVolume", 100)
+    # api_volume = int((volume / 100) * max_volume)
+    # f"/ZidooMusicControl/v2/setDevicesVolume?volume={device_volume}"
     #    return 0
 
     async def get_audio_output(self) -> int:
