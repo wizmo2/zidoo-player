@@ -8,7 +8,8 @@ The mini-media-card is available from HACS.  Not only does it provide an alterna
 
 <details>
 <summary>Example YML</summary>
-```
+
+```yaml
 type: custom:mini-media-player
 artwork: full-cover
 source: full
@@ -153,6 +154,7 @@ shortcuts:
           command: Key.Pip
 columns: 4
 ```
+
 </details>
 
 ## Using Additional Attributes (dev)
@@ -173,7 +175,7 @@ The list as of 4/23 includes
 ### Getting aspect ratio
 An example of using a template sensor to return the aspect-ratio
 
-```
+```yaml
 template:
   - sensor:
       - unique_id: zidoo_aspect_ratio
@@ -206,6 +208,7 @@ I use the customizable Mini Media Player Card, available through HACS or [github
 
 <details>
 <summary>Example YAML</summary>
+
 ```yaml
 title: Now Playing
 path: nowplaying
@@ -241,6 +244,7 @@ cards:
       state_label: true
       scale: 2
 ```
+
 </details>
 
 
@@ -260,7 +264,7 @@ The Zidoo Player integration does not support notifications directly, but is sup
 4. In HA, add a new "Notifications for Android TV" service/action and add enter you player IP address. (I named mine 'Zidoo TV')
 
 5. Create a script
-```
+```yaml
 alias: Test Zidoo Notify
 sequence:
 - action: notify.zidoo_tv
@@ -287,7 +291,7 @@ The integration uses `local polling` with the Zidoo REST API to access data.  **
 If you want alternative polling times, the recommended method is to create automatons to activate the `homeassistant.update_entity' service.
 
 For example:
-```
+```yaml
 alias: Zidoo Rapid Update
 description: ''
 trigger:
