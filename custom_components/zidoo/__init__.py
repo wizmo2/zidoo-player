@@ -29,7 +29,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     # Register custom cards
-    cards = ZidooCardRegistration(hass)
+    cards = ZidooCardRegistration(hass, DOMAIN)
     await cards.async_register()
 
     return True
@@ -47,10 +47,10 @@ async def async_unload_entry(hass: HomeAssistant, confid_entry: ConfigEntry) -> 
     other_entries = [
         entry
         for entry in hass.config_entries.async_entries(DOMAIN)
-        if not entry.disabled_by
+        if not entry.disabled_by and entry.entry_id != confid_entry.entry_id
     ]
     if len(other_entries) == 0:
-        cards = ZidooCardRegistration(hass)
+        cards = ZidooCardRegistration(hass, DOMAIN)
         await cards.async_unregister()
 
     return unload_ok
