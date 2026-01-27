@@ -154,8 +154,9 @@ shortcuts:
           command: Key.Pip
 columns: 4
 ```
-
 </details>
+
+_NOTE: Alternatively, you may find the [standard keypad grid](./key_commands.md#frontend-keypad-example) is more responsive_
 
 ## Using Additional Attributes (dev)
 In addition to the native media player attributes, support for extra attributes is available in the `main` beta release when the zidoo video or audio player is playing.
@@ -310,3 +311,4 @@ mode: single
 ```
 
 _NOTE: You can disable the default polling from within the Integration settings._
+
