@@ -167,6 +167,11 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
         return self.coordinator.source_list
 
     @property
+    def media_content_id(self) -> str | None:
+        """Content ID of current playing media."""
+        return self.coordinator.media_info.get("id")
+
+    @property
     def media_content_type(self):
         """Content type of current playing media."""
         return self.coordinator.media_type
@@ -258,7 +263,6 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
             "audio",
             "video",
             "channels",
-            "id",
             "imdb_id",
             "tmdb_id",
         }

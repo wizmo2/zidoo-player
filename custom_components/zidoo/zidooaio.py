@@ -641,6 +641,7 @@ class ZidooRC:
                 ):
                     self._last_video_path = return_value["uri"]
                     self._video_id = await self._get_id_from_uri(self._last_video_path)
+                return_value["id"] = self._video_id
                 return return_value
         # _LOGGER.debug("video play info: %s", str(response))
         return None
@@ -719,6 +720,7 @@ class ZidooRC:
                 if music_id != self._music_id:
                     _LOGGER.debug("music play info %s", str(response))
                     self._music_id = music_id
+                return_value["id"] = self._music_id
                 self._music_type = result.get("type")
 
                 result = response.get("state")
@@ -757,6 +759,7 @@ class ZidooRC:
                 if music_id != self._music_id:
                     _LOGGER.debug("music play info v2 %s", str(response))
                     self._music_id = music_id
+                return_value["id"] = self._music_id
                 self._music_type = int(result.get("type"))
 
                 return_value["album"] = result.get("album")
