@@ -158,7 +158,7 @@ columns: 4
 </details>
 
 ## Using Additional Attributes (dev)
-In addition to the native media player attributes, support for extra attributes is available in the `main` beta release when the zidoo video or audio player is playing.
+In addition to the native media player attributes, support for extra attributes is available when the zidoo video or audio player is playing.
 
 The list as of 4/23 includes
 - "media_uri" - the file reference,

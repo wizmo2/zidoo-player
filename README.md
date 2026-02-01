@@ -22,6 +22,8 @@ A Custom Lovelace card `zidoo-search-card` can be used to filter media browser r
 
 Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
 
+**_NOTE: DAC/Eversolo support is experimental.  Please report any issues, inluding logs from HA with "Debug Logging" enabled (Settings/Integrations/Zidoo - Press 3-dot menu, and Enable)._**
+
 ## Installation
 
 ### HACS Install 
@@ -40,7 +42,7 @@ Use the Media Search text editor to add a keyword, then select the desired Media
 1. Add `Zidoo` Integration from the 'Configuraion-Integration' menu[^2]
 2. Enter the IP address of player
 3. Enter the Password if you have authentication enabled
-4. Add standard Media Control card for newly added media_player device
+4. Add [Custom Dashboard and Search](remote_dashboard.md) cards
 
 ### Options
 
@@ -61,21 +63,6 @@ Set Audio - switch through list or select video audio track.[^5]
 Set Zoom - switch through list or select video zoom mode[^9]
 
 Remote Send Command = send remote control button key (see [Key Commands](key_commands.md))[^6][^8]
-
-### Custom Search Card
-After adding the integration, 'Edit' the dashboard and add the new card using the '+Add Card' button. Select the `custom:zidoo-search-card`, then edit the yaml to include a single `entity` value with your zidoo media_player id.[^7]
- _*NOTE:  The card requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or add [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
-
-```
-type: custom:zidoo-search-card
-entity: media_player.zidoo
-
-# Optional fields to control which Media buttons are available
-# from "video","movie","tvshow","music","album","artist"
-buttons:
-  - movie
-  - tvshow 
-```
 
 ## FAQs
 > Q: Power-on does not work

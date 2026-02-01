@@ -9,7 +9,7 @@ from homeassistant.helpers.event import async_call_later
 _LOGGER = logging.getLogger(__name__)
 
 URL_BASE = "/zidoo"
-ZIDOO_CARD_FILENAMES = ["zidoo-search-card.js"]
+ZIDOO_CARD_FILENAMES = ["zidoo-search-card.js", "zidoo-remote-view.js"]
 
 
 class ZidooCardRegistration:
@@ -22,8 +22,8 @@ class ZidooCardRegistration:
     async def async_register(self):
         """Custom card registration."""
         await self.async_register_zidoo_path()
-        if self.hass.data[LOVELACE_DATA].mode == "storage":
-            await self.async_wait_for_lovelace_resources()
+        # if self.hass.data[LOVELACE_DATA].mode == "storage":
+        #    await self.async_wait_for_lovelace_resources()
 
     async def async_register_zidoo_path(self):
         """Install card resources."""
