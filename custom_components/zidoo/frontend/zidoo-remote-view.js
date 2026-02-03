@@ -31,6 +31,18 @@ class ZidooRemoteStrategy {
   static async generate(config, hass) {
     const cards = [
       {
+        type: "button", name: "Movies", show_name: false, icon: "mdi:movie-outline", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.movie" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.APP.3D" } }
+      },
+      {
+        type: "button", name: "Music", show_name: false, icon: "mdi:music", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.music" } }
+      },
+      {
+        type: "button", name: "Photos", show_name: false, icon: "mdi:image-outline", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.photo" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.APP.HdmiIn" } }
+      },
+      {
+        type: "button", name: "Files", show_name: false, icon: "mdi:folder-outline", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.file" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.APP.Switch" } }
+      },
+      {
         type: "button", name: "PopMenu", show_name: false, icon: "mdi:menu-close", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Info" } }
       },
       {
@@ -40,7 +52,7 @@ class ZidooRemoteStrategy {
         type: "button", name: "Home", show_name: false, icon: "mdi:home-outline", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Home" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.PopUp" } }
       },
       {
-        type: "button", name: "Audio", show_name: false, icon: "mdi:television-speaker", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.set_audio", target: { entity_id: `${config.remote}` } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Audio" } }
+        type: "button", name: "Audio", show_name: false, icon: "mdi:television-speaker", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "zidoo.set_audio", target: { entity_id: `${config.entity}` } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Audio" } }
       },
       {
         type: "button", name: "Left", show_name: false, icon: "mdi:arrow-left-bold", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Left" } },
@@ -52,7 +64,7 @@ class ZidooRemoteStrategy {
         type: "button", name: "Right", show_name: false, icon: "mdi:arrow-right-bold", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Right" } }
       },
       {
-        type: "button", name: "Subtitle", show_name: false, icon: "mdi:subtitles-outline", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.set_subtitle", target: { entity_id: `${config.remote}` }, }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Subtitle" } }
+        type: "button", name: "Subtitle", show_name: false, icon: "mdi:subtitles-outline", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "zidoo.set_subtitle", target: { entity_id: `${config.entity}` }, }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Subtitle" } }
       },
       {
         type: "button", name: "Back", show_name: false, icon: "mdi:backspace-outline", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Back" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Cancel" } }
@@ -64,16 +76,16 @@ class ZidooRemoteStrategy {
         type: "button", name: "Menu", show_name: false, icon: "mdi:menu", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Menu" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Resolution" } }
       },
       {
-        type: "button", name: "App", show_name: false, icon: "mdi:exit-to-app", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Pip" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.APP.Switch" } }
+        type: "button", name: "App", show_name: false, icon: "mdi:exit-to-app", show_icon: true, entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Pip" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.Screenshot" } }
       },
       {
         type: "button", name: "Prev", show_name: false, icon: "mdi:skip-backward", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.MediaPrev" } }
       },
       {
-        type: "button", name: "Backwards", show_name: false, icon: "mdi:rewind", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.MediaBackwards" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.PopUp" } }
+        type: "button", name: "Backwards", show_name: false, icon: "mdi:rewind", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.MediaBackwards" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.PageUp" } }
       },
       {
-        type: "button", name: "Forwards", show_name: false, icon: "mdi:fast-forward", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.MediaForwards" } }
+        type: "button", name: "Forwards", show_name: false, icon: "mdi:fast-forward", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.MediaForwards" } }, hold_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.PageDown" } }
       },
       {
         type: "button", name: "Next", show_name: false, icon: "mdi:skip-forward", show_icon: true, type: "button", entity: `${config.entity}`, tap_action: { action: "call-service", service: "remote.send_command", target: { entity_id: `${config.remote}` }, data: { command: "Key.MediaNext" } }
