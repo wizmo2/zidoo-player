@@ -39,13 +39,7 @@ customElements.whenDefined('card-tools').then(() => {
           margin-left: auto;
           margin-right: auto;
         }
-        #searchContainer search-input {
-          display: block;
-        }
-        #searchIcon {
-          padding: 10px;
-        }
-        #searchText {
+        #searchText{
           width: 100%;
         }
         #searchButtons {
@@ -61,14 +55,12 @@ customElements.whenDefined('card-tools').then(() => {
       return ct.LitHtml `
         <ha-card>
           <div id="searchContainer">
-          <div class="search-toolbar">
-            <search-input .hass=${this.hass}>
+            <div class="search-toolbar" search-input>
               <ha-textfield id="searchText" icon="mdi:magnify" placeholder="${this.search_text}">
               <slot name="prefix" slot="leadingIcon">
-		            <ha-icon icon="mdi:magnify" id="searchIcon" slot="prefix"></ha-icon>
+		            <ha-icon icon="mdi:magnify" slot="prefix"></ha-icon>
               </slot>
               </ha-textfield>
-            </search-input>
             </div>
             <div id="searchButtons" class="sub-section">
               <div class="sub-heading">Search Media</div>
@@ -108,17 +100,11 @@ customElements.whenDefined('card-tools').then(() => {
       `;
     }
 
-    _clearInput()
-    {
-      this.shadowRoot.getElementById('searchText').value = '';
-      super.update()
-    }
-
     _searchMedia(ev) {
-      var searchType = ev.target.id
-      var searchText = this.shadowRoot.getElementById('searchText').value;
+      var searchType = ev.target.id;
+      var searchQuery = this.shadowRoot.getElementById('searchText').value;
 
-      var location = `/media-browser/${this.entity_id}/${searchType}%2C${searchText?searchText+"*":searchType}`;
+      var location = `/media-browser/${this.entity_id}/${searchType}%2C${searchQuery?searchQuery+"*":searchType}`;
 
       history.pushState(null, "", location);
       const event = new Event("location-changed", {
