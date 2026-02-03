@@ -8,7 +8,7 @@ _NOTE: `zidoo.send_key` is depreciated and will be removed in a future release._
 
 ![Front-end Button Example](images/button_grid.png)
 <details>
-  <summary>yaml details:</summary>
+  <summary>Keypad example YAML:</summary>
   
   ### Frontend Keypad Example
   ```yaml
@@ -356,4 +356,5 @@ columns: 4
 | Key.Pip | Pip |
 | Key.Screenshot | Screenshot |
 | Key.APP.Switch | APP Switch |
+
 
