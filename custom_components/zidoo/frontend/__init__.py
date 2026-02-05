@@ -22,8 +22,7 @@ class ZidooCardRegistration:
     async def async_register(self):
         """Custom card registration."""
         await self.async_register_zidoo_path()
-        # if self.hass.data[LOVELACE_DATA].mode == "storage":
-        #    await self.async_wait_for_lovelace_resources()
+        await self.async_register_zidoo_cards()
 
     async def async_register_zidoo_path(self):
         """Install card resources."""
@@ -38,35 +37,27 @@ class ZidooCardRegistration:
             ]
         )
 
-    async def async_wait_for_lovelace_resources(self) -> None:
-        """Check for resorces."""
-
-        async def check_lovelace_resources_loaded(now):
-            if self.hass.data[LOVELACE_DATA].resources.loaded:
-                await self.async_register_zidoo_cards()
-            else:
-                _LOGGER.debug(
-                    "Unable to install Zidoo card resources because Lovelace resources not yet loaded.  Trying again in 5 seconds."
-                )
-                async_call_later(self.hass, 5, check_lovelace_resources_loaded)
-
-        await check_lovelace_resources_loaded(0)
-
     async def async_register_zidoo_cards(self):
         """Register cards."""
         _LOGGER.debug("Installing Lovelace resources for zidoo cards")
         for card_filename in ZIDOO_CARD_FILENAMES:
-            url = f"{URL_BASE}/{card_filename}?v={self._version}"
+            url = f"{URL_BASE}/{card_filename}"
             resource_loaded = [
                 res["url"]
                 for res in self.hass.data[LOVELACE_DATA].resources.async_items()
-                if res["url"] == url
+                if res["url"].startswith(url)
             ]
+            url = f"{url}?v={self._version}"
             if not resource_loaded:
-                await self.async_unregister()
                 await self.hass.data[LOVELACE_DATA].resources.async_create_item(
                     {"res_type": "module", "url": url}
                 )
+            else:
+                for resource in resource_loaded:
+                    if resource["url"] != url:
+                        await resource.async_update_item(
+                            resource["id"], {"res_type": "module", "url": url}
+                        )
 
     async def async_unregister(self):
         """Unregister cards."""
