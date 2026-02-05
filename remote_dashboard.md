@@ -3,6 +3,7 @@ Included in the integration package is a default Zidoo Dashboard and Search Card
 
 ![zidoo-dashboard](images/cr_dashboard.png)
 
+ _*NOTE:  Custom cards requires the [card-tools](https://github.com/thomasloven/lovelace-card-tools) helper.  You can install it from HACS or add [manually](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)*_
 
 ## Zidoo Dashboard
 The Zidoo dashboard automatically creates views for each installed Zidoo device, with examples of the remote button grid and search card.
