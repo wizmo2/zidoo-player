@@ -8,6 +8,8 @@ This is a functioning solution for controlling Zidoo media player on Home-Assist
 - Album art and movie backdrops
 - Browse movies, music, file system, and share mounts through HA Media Browser
 
+**_NOTE: DAC/Eversolo support is experimental.  Please report any issues, including logs from HA with "Debug Logging" enabled (Settings/Integrations/Zidoo - Press 3-dot menu, and Enable)._**
+
 ![Media_Library](images/media_browser.png) ![Media_Player](images/tvshow_browse.png) 
 ![Media_Player](images/movie_playing.png) ![Music_Player](images/music_player.png) ![TVshow_Player](images/tvshow_player.png)
 
@@ -18,8 +20,6 @@ A Custom Lovelace card `zidoo-search-card` can be used to filter media browser r
 ![Search Card](images/search-card.png)
 
 Use the Media Search text editor to add a keyword, then select the desired Media Type button.  The results will be displayed in the standard Media Browser panel.
-
-**_NOTE: DAC/Eversolo support is experimental.  Please report any issues, including logs from HA with "Debug Logging" enabled (Settings/Integrations/Zidoo - Press 3-dot menu, and Enable)._**
 
 ## Installation
 
