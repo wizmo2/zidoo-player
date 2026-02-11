@@ -81,6 +81,7 @@ async def build_item_response(entity, payload):
             if search_id in ZMUSIC_SEARCH_TYPES:
                 result = await player.get_music_list(search_type)
                 if search_type == MediaType.PLAYLIST:  # convert playlist list
+                    result.insert(0, {"name": "FAVORITES", "id": "favorites"})
                     result.insert(0, {"name": "PLAYING", "id": "playing"})
                     result = to_array(result)  # playlist convertor
                 shortcut = get_shortcut_name(search_id)

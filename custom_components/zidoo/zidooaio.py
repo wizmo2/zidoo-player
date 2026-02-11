@@ -264,6 +264,7 @@ ZUPNP_SERVERNAME = "zidoo-rc"
 ZMEDIA_TYPE_ARTIST = "artist"
 ZMEDIA_TYPE_ALBUM = "album"
 ZMEDIA_TYPE_PLAYLIST = "playlist"
+ZMEDIA_PLAYLIST = ["favorites", "playing"]
 
 ZMUSIC_IMAGETYPE = {0: 0, 1: 1, 2: 0, 3: 0, 4: 1}
 ZMUSIC_IMAGETARGET = {0: 16, 1: 16, 2: 32, 3: 16, 4: 32}
@@ -1346,9 +1347,15 @@ class ZidooRC:
                 raw API response if successful
         """
         if playlist_id:
-            if playlist_id == "playing":
+            if playlist_id == ZMEDIA_PLAYLIST[1]:  # playing
                 response = await self._req_json(
                     f"MusicControl/v2/getPlayQueue?start=0&count={max_count}".format()
+                )
+                if response:
+                    self._song_list = self._get_music_ids(response.get("array"))
+            elif playlist_id == ZMEDIA_PLAYLIST[0]:  # favorites
+                response = await self._req_json(
+                    f"MusicControl/v2/getFavorites?start=0&count={max_count}".format()
                 )
                 if response:
                     self._song_list = self._get_music_ids(response.get("array"))
@@ -1592,7 +1599,7 @@ class ZidooRC:
         Returns:
             True if successfull
         """
-        if media_type in ZMUSIC_PLAYLISTTYPE and media_id != "playing":
+        if media_type in ZMUSIC_PLAYLISTTYPE and media_id not in ZMEDIA_PLAYLIST:
             response = await self._req_json(
                 f"MusicControl/v2/playMusic?type={ZMUSIC_PLAYLISTTYPE[media_type]}&id={media_id}&musicId={music_id}&music_type=0&trackIndex=1&sort=0"
             )
