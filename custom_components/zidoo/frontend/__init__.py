@@ -43,7 +43,7 @@ class ZidooCardRegistration:
         for card_filename in ZIDOO_CARD_FILENAMES:
             url = f"{URL_BASE}/{card_filename}"
             resource_loaded = [
-                res["url"]
+                res
                 for res in self.hass.data[LOVELACE_DATA].resources.async_items()
                 if res["url"].startswith(url)
             ]
@@ -53,10 +53,10 @@ class ZidooCardRegistration:
                     {"res_type": "module", "url": url}
                 )
             else:
-                for resource in resource_loaded:
-                    if resource["url"] != url:
-                        await resource.async_update_item(
-                            resource["id"], {"res_type": "module", "url": url}
+                for res in resource_loaded:
+                    if res.get("url") != url:
+                        await res.async_update_item(
+                            res["id"], {"res_type": "module", "url": url}
                         )
 
     async def async_unregister(self):
