@@ -666,7 +666,7 @@ class ZidooRC:
                 release = result["aggregation"].get("releaseDate")
                 if release:
                     try:
-                        movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
+                        movie_info["date"] = datetime.strptime(release, "%Y-%m-%d" if  "_" in release else '$Y')  
                     except ValueError:
                         _LOGGER.debug("skipping date due to bad format!")
                 tmdb = result["aggregation"].get("tmdbId")
