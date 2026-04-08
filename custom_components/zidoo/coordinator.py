@@ -115,7 +115,8 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                         self._media_type = MediaType.APP
                     self._last_update = utcnow()
 
-        except Exception:  # noqa: BLE001
+        except Exception as ex:  # noqa: BLE001
+            _LOGGER.debug("update error: {%s}", str(ex))
             return
 
         if state != self._last_state:

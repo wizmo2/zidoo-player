@@ -665,7 +665,10 @@ class ZidooRC:
                 movie_info["tag"] = result["aggregation"].get("tagLine")
                 release = result["aggregation"].get("releaseDate")
                 if release:
-                    movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
+                    try:
+                        movie_info["date"] = datetime.strptime(release, "%Y-%m-%d")
+                    except ValueError:
+                        _LOGGER.debug("skipping date due to bad format!")
                 tmdb = result["aggregation"].get("tmdbId")
                 if tmdb:
                     movie_info["tmdb_id"] = tmdb
@@ -1603,7 +1606,7 @@ class ZidooRC:
             response = await self._req_json(
                 f"MusicControl/v2/playMusic?type={ZMUSIC_PLAYLISTTYPE[media_type]}&id={media_id}&musicId={music_id}&music_type=0&trackIndex=1&sort=0"
             )
-        else:  # music
+        else:  # last playlist
             response = await self._req_json(
                 f"MusicControl/v2/playMusics?ids={'%2C'.join(self._song_list)}&musicId={music_id}&trackIndex=-1"
             )
