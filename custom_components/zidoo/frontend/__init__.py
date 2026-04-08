@@ -55,7 +55,7 @@ class ZidooCardRegistration:
             else:
                 for res in resource_loaded:
                     if res.get("url") != url:
-                        await res.async_update_item(
+                        await self.hass.data[LOVELACE_DATA].resources.async_update_item(
                             res["id"], {"res_type": "module", "url": url}
                         )
 
