@@ -62,17 +62,15 @@ class ZidooCardRegistration:
     async def async_unregister(self):
         """Unregister cards."""
         # Unload lovelace module resource
-        if self.hass.data[LOVELACE_DATA].mode == "storage":
-            for card_filename in ZIDOO_CARD_FILENAMES:
-                url = f"{URL_BASE}/{card_filename}"
-                zidoo_resources = [
-                    resource
-                    for resource in self.hass.data[
-                        LOVELACE_DATA
-                    ].resources.async_items()
-                    if resource["url"].startswith(url)
-                ]
-                for resource in zidoo_resources:
-                    await self.hass.data[LOVELACE_DATA].resources.async_delete_item(
-                        resource.get("id")
-                    )
+        # if self.hass.data[LOVELACE_DATA].resource_mode == "storage":
+        for card_filename in ZIDOO_CARD_FILENAMES:
+            url = f"{URL_BASE}/{card_filename}"
+            zidoo_resources = [
+                resource
+                for resource in self.hass.data[LOVELACE_DATA].resources.async_items()
+                if resource["url"].startswith(url)
+            ]
+            for resource in zidoo_resources:
+                await self.hass.data[LOVELACE_DATA].resources.async_delete_item(
+                    resource.get("id")
+                )
