@@ -39,38 +39,43 @@ class ZidooCardRegistration:
 
     async def async_register_zidoo_cards(self):
         """Register cards."""
+        resources = self.hass.data[LOVELACE_DATA].resources
+
+        # Fix for 2026.x lazy-load issues #165773
+        #  based on @renaudallard code.  Can be removes 2027.x
+        if hasattr(resources, "loaded") and not resources.loaded:
+            await resources.async_load()
+            resources.loaded = True
+
         _LOGGER.debug("Installing Lovelace resources for zidoo cards")
         for card_filename in ZIDOO_CARD_FILENAMES:
             url = f"{URL_BASE}/{card_filename}"
-            resource_loaded = [
-                res
-                for res in self.hass.data[LOVELACE_DATA].resources.async_items()
-                if res["url"].startswith(url)
+            matched_resources = [
+                resource
+                for resource in resources.async_items()
+                if resource["url"].startswith(url)
             ]
             url = f"{url}?v={self._version}"
-            if not resource_loaded:
-                await self.hass.data[LOVELACE_DATA].resources.async_create_item(
-                    {"res_type": "module", "url": url}
-                )
+            if not matched_resources:
+                await resources.async_create_item({"res_type": "module", "url": url})
             else:
-                for res in resource_loaded:
-                    if res.get("url") != url:
-                        await self.hass.data[LOVELACE_DATA].resources.async_update_item(
-                            res["id"], {"res_type": "module", "url": url}
+                for resource in matched_resources:
+                    if resource.get("url") != url:
+                        await resources.async_update_item(
+                            resource["id"], {"res_type": "module", "url": url}
                         )
 
     async def async_unregister(self):
         """Unregister cards."""
+        resources = self.hass.data[LOVELACE_DATA].resources
+
         # Unload lovelace module resource
-        # if self.hass.data[LOVELACE_DATA].resource_mode == "storage":
         for card_filename in ZIDOO_CARD_FILENAMES:
             url = f"{URL_BASE}/{card_filename}"
-            zidoo_resources = [
+            matched_resources = [
                 resource
-                for resource in self.hass.data[LOVELACE_DATA].resources.async_items()
+                for resource in resources.async_items()
                 if resource["url"].startswith(url)
             ]
-            for resource in zidoo_resources:
-                await self.hass.data[LOVELACE_DATA].resources.async_delete_item(
-                    resource.get("id")
-                )
+            for resource in matched_resources:
+                await resources.async_delete_item(resource["id"])
