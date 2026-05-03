@@ -37,9 +37,21 @@ class ZidooCardRegistration:
             ]
         )
 
+    def _get_storage_mode_resources(self):
+        """Check for storage mode."""
+        lovelace_data = self.hass.data[LOVELACE_DATA]
+        mode = (
+            lovelace_data.resource_mode
+            if hasattr(lovelace_data, "resource_mode")
+            else lovelace_data.mode
+        )
+        return lovelace_data.resources if mode and mode == "storage" else None
+
     async def async_register_zidoo_cards(self):
         """Register cards."""
-        resources = self.hass.data[LOVELACE_DATA].resources
+        resources = self._get_storage_mode_resources()
+        if resources is None:
+            return
 
         # Fix for 2026.x lazy-load issues #165773
         #  based on @renaudallard code.  Can be removes 2027.x
@@ -67,7 +79,9 @@ class ZidooCardRegistration:
 
     async def async_unregister(self):
         """Unregister cards."""
-        resources = self.hass.data[LOVELACE_DATA].resources
+        resources = self._get_storage_mode_resources()
+        if resources is None:
+            return
 
         # Unload lovelace module resource
         for card_filename in ZIDOO_CARD_FILENAMES:
