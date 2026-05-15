@@ -474,6 +474,7 @@ class ZidooRC:
 
             if max_retries > 0:
                 _LOGGER.warning("[W] Retry %d: url:%s", max_retries, url)
+                await asyncio.sleep(0.5)
             max_retries -= 1
 
         # clear cookies to show not connected
