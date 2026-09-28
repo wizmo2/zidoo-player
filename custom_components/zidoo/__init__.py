@@ -11,7 +11,7 @@ from .coordinator import ZidooCoordinator
 from .frontend import ZidooCardRegistration
 from .zidooaio import ZidooRC
 
-PLATFORMS = [Platform.MEDIA_PLAYER, Platform.REMOTE]
+PLATFORMS = [Platform.MEDIA_PLAYER, Platform.REMOTE, Platform.SELECT]
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

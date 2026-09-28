@@ -246,7 +246,9 @@ class ZidooMediaPlayer(ZidooEntity, MediaPlayerEntity):
     @property
     def media_position_updated_at(self):
         """Last time status was updated."""
-        return self.coordinator.last_updated
+        if self.media_position is not None:
+            return self.coordinator.last_updated
+        return None
 
     @property
     def extra_state_attributes(self):

@@ -44,6 +44,10 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
         self._last_state = MediaPlayerState.OFF
         self._audio_output_list = []
         self._last_audio_output = None
+        self._audio_tracks = []
+        self._subtitle_tracks = []
+        self._zoom_modes = {}
+        self._last_media_id = None
 
         super().__init__(
             hass,
@@ -91,8 +95,22 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                 playing_info = await self.player.get_playing_info()
                 self._media_info = {}
                 if playing_info is None or not playing_info:
-                    self._media_type = MediaType.APP
-                    state = MediaPlayerState.IDLE
+                    # If the polling fails but the library says to keep the old data, keep previous state and media info. Otherwise, reset to default values.
+                    if self.player._should_keep_stale_media():
+                        _LOGGER.debug("Keeping zidoo metadata for transient network error.")
+                        if self._last_state in (MediaPlayerState.PLAYING, MediaPlayerState.PAUSED):
+                            state = self._last_state
+                        else:
+                            state = MediaPlayerState.IDLE
+                    else:
+                        self._media_info = {}
+                        self._media_type = MediaType.APP
+                        state = MediaPlayerState.IDLE
+                        self._last_media_id = None
+                        self._source = None
+                        self._audio_tracks = []
+                        self._subtitle_tracks = []
+                        self._zoom_modes = {}
                 else:
                     self._media_info = playing_info
                     status = playing_info.get("status")
@@ -108,9 +126,23 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
                             else:
                                 self._media_type = MediaType.MOVIE
                             self._source = ZCONTENT_VIDEO
+
+                            current_media_id = self._media_info.get("id")
+                            if current_media_id != self._last_media_id:
+                                # Only fetch tracks if the media has changed
+                                self._audio_tracks = await self.player.get_audio_list(log_errors=False)
+                                self._subtitle_tracks = await self.player.get_subtitle_list(log_errors=False)
+                                self._zoom_modes = await self.player.get_zoom_list()
+                                self._last_media_id = current_media_id
+
                         else:
                             self._media_type = MediaType.MUSIC
                             self._source = ZCONTENT_MUSIC
+
+                            # Reset arrays if content is music
+                            self._audio_tracks = []
+                            self._subtitle_tracks = []
+                            self._last_media_id = None
                     else:
                         self._media_type = MediaType.APP
                     self._last_update = utcnow()
@@ -192,3 +224,18 @@ class ZidooCoordinator(DataUpdateCoordinator[None]):
     def last_updated(self):
         """Last state update."""
         return self._last_update
+
+    @property
+    def audio_tracks(self):
+        """Audio tracks for the current video."""
+        return self._audio_tracks
+
+    @property
+    def subtitle_tracks(self):
+        """Subtitle tracks for the current video."""
+        return self._subtitle_tracks
+
+    @property
+    def zoom_modes(self):
+        """Zoom modes for the current video."""
+        return self._zoom_modes
